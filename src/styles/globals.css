@@ -1,0 +1,161 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --hex-grid: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='64' viewBox='0 0 56 64'%3E%3Cpath d='M28 0 56 16v32L28 64 0 48V16Z' fill='none' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E");
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-paper font-sans text-body text-ink-900 antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    @apply bg-decart-500/25;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display font-semibold;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-decart-600 ring-offset-2 ring-offset-paper;
+  }
+
+  .dark-section :focus-visible {
+    @apply ring-decart-300 ring-offset-ink-950;
+  }
+
+  /*
+   * Animated elements start hidden, but only once the motion layer has confirmed it is running.
+   * If JS never boots (or motion is off) the content simply stays visible — content is never
+   * hostage to an animation.
+   */
+  html.motion-ready [data-anim] {
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+  html.motion-off [data-anim] {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+  }
+
+  /* Lenis */
+  html.lenis {
+    height: auto;
+  }
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+}
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-container px-5 md:px-8;
+  }
+
+  .section {
+    @apply py-16 md:py-28;
+  }
+
+  /* faint hexagon grid used on ink bands */
+  .hex-grid::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: var(--hex-grid);
+    background-size: 56px 64px;
+    opacity: 0.06;
+    pointer-events: none;
+  }
+
+  /* clipped hex-corner frame for product imagery */
+  .hex-frame {
+    clip-path: polygon(
+      14px 0,
+      calc(100% - 14px) 0,
+      100% 14px,
+      100% calc(100% - 14px),
+      calc(100% - 14px) 100%,
+      14px 100%,
+      0 calc(100% - 14px),
+      0 14px
+    );
+  }
+
+  .prose-decart {
+    @apply text-[1.0625rem] leading-[1.75] text-ink-900;
+  }
+  .prose-decart h2 {
+    @apply mb-3 mt-10 font-display text-h3 text-ink-950;
+  }
+  .prose-decart h3 {
+    @apply mb-2 mt-8 text-lg font-semibold text-ink-950;
+  }
+  .prose-decart p {
+    @apply mb-5;
+  }
+  .prose-decart ul {
+    @apply mb-5 list-none space-y-2 pl-0;
+  }
+  .prose-decart ul li {
+    @apply relative pl-6;
+  }
+  .prose-decart ul li::before {
+    content: '';
+    @apply absolute left-0 top-[0.6em] h-[9px] w-[8px] bg-decart-500;
+    clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  }
+  .prose-decart ol {
+    @apply mb-5 list-decimal space-y-2 pl-5;
+  }
+  .prose-decart a {
+    @apply text-decart-700 underline underline-offset-2;
+  }
+  .prose-decart blockquote {
+    @apply my-6 border-l-2 border-decart-500 pl-5 font-display text-xl text-ink-950;
+  }
+  .prose-decart img {
+    @apply my-6 rounded-img;
+  }
+  .prose-decart strong {
+    @apply font-semibold text-ink-950;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
