@@ -30,8 +30,13 @@ const OUT_HERO = path.join(ROOT, 'public', 'hero');
 const MANIFEST = path.join(ROOT, 'src', 'data', 'photoshoot-images.generated.ts');
 
 const FORCE = process.argv.includes('--force');
-const WIDTH = 1400;
-const QUALITY = 80;
+/**
+ * Nothing on the site displays a product above ~700 CSS px (the PDP gallery is the largest),
+ * so 1200 still covers a 1.7x retina crop while cutting a third of the pixels versus 1400.
+ * q74/effort-6 is visually indistinguishable on white-backdrop studio shots at these sizes.
+ */
+const WIDTH = 1200;
+const QUALITY = 74;
 /** Decoding 6K masters is the bottleneck; one worker per core keeps all of them busy. */
 const CONCURRENCY = Math.max(2, os.cpus().length - 1);
 
@@ -238,7 +243,7 @@ async function transcode(src: string, out: string) {
     pipeline = pipeline.composite([{ input: patch, left, top: 0 }]);
   }
 
-  await pipeline.webp({ quality: QUALITY, effort: 5 }).toFile(out);
+  await pipeline.webp({ quality: QUALITY, effort: 6 }).toFile(out);
   return true;
 }
 

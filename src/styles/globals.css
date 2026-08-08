@@ -15,6 +15,9 @@
   body {
     @apply bg-paper font-sans text-body text-ink-900 antialiased;
     text-rendering: optimizeLegibility;
+    /* full-bleed rails (hero lineup, marquees) must never make the page scroll sideways.
+       `clip` rather than `hidden` so position:sticky keeps working inside. */
+    overflow-x: clip;
   }
 
   ::selection {

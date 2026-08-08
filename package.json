@@ -11,6 +11,7 @@
     "seed": "tsx scripts/seed.ts",
     "check-images": "tsx scripts/check-images.ts",
     "ingest-images": "tsx scripts/ingest-images.ts",
+    "optimise-images": "tsx scripts/optimise-images.ts",
     "brand": "tsx scripts/brand-assets.ts"
   },
   "dependencies": {

@@ -83,7 +83,7 @@ export function Hero() {
   const lineup = LINEUP.filter((item) => publicFileExists(item.src));
 
   return (
-    <section data-hero className="relative overflow-hidden pt-28 md:pt-32">
+    <section data-hero className="relative overflow-hidden pt-24 sm:pt-28 md:pt-32">
       {/* the stage: diagonal blue→white wash with two soft glows, like the campaign banner */}
       <div
         aria-hidden
@@ -122,30 +122,32 @@ export function Hero() {
               furniture, manufactured in-house and delivered pan-India.
             </p>
 
-            <div data-anim="up" className="mt-8 flex flex-wrap items-center gap-3">
-              <ButtonLink href="/products" size="lg">
+            {/* full-width taps on a phone, inline pills from sm up */}
+            <div data-anim="up" className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <ButtonLink href="/products" size="lg" className="w-full sm:w-auto">
                 Explore products
                 <ArrowRight aria-hidden className="h-4 w-4" />
               </ButtonLink>
-              <ButtonLink href="/quote" size="lg" variant="secondary">
+              <ButtonLink href="/quote" size="lg" variant="secondary" className="w-full sm:w-auto">
                 Get a quote
               </ButtonLink>
               <a
                 href={SITE.phoneHref}
                 data-call
-                className="inline-flex h-[52px] items-center gap-2 rounded-btn px-4 font-mono text-sm text-ink-900 transition-colors hover:bg-paper"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-btn px-4 font-mono text-sm text-ink-900 transition-colors hover:bg-paper sm:h-[52px] sm:justify-start"
               >
                 <Phone aria-hidden className="h-4 w-4 text-decart-600" />
                 {SITE.phone}
               </a>
             </div>
 
-            {/* thin-line feature icons, straight off the banner */}
-            <ul data-anim="up" className="mt-10 grid max-w-md grid-cols-4 gap-3">
+            {/* thin-line feature icons, straight off the banner — 2-up on a phone so the
+                labels get room to breathe, 4-up once there is width for them */}
+            <ul data-anim="up" className="mt-10 grid max-w-md grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-3">
               {FEATURES.map((feature) => (
                 <li key={feature.label} className="flex flex-col items-center gap-2.5 text-center">
-                  <span className="flex h-14 w-14 items-center justify-center rounded-full border-[1.5px] border-decart-300 bg-paper/70 text-decart-600">
-                    <feature.icon aria-hidden className="h-6 w-6" strokeWidth={1.5} />
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full border-[1.5px] border-decart-300 bg-paper/70 text-decart-600 sm:h-14 sm:w-14">
+                    <feature.icon aria-hidden className="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={1.5} />
                   </span>
                   <span className="text-xs leading-snug text-steel-600">{feature.label}</span>
                 </li>
@@ -155,13 +157,14 @@ export function Hero() {
 
           {/* ---------------------------------------------------------- podium lineup */}
           <div className="relative" data-anim="scale">
-            <div className="no-scrollbar flex items-end gap-1 overflow-x-auto pb-1 sm:gap-2 lg:justify-end lg:overflow-visible">
+            {/* the lineup bleeds to the screen edges on a phone so the scroll reads as a rail */}
+            <div className="no-scrollbar -mx-5 flex snap-x snap-mandatory items-end gap-1 overflow-x-auto px-5 pb-1 sm:gap-2 md:-mx-8 md:px-8 lg:mx-0 lg:justify-end lg:overflow-visible lg:px-0">
               {lineup.map((item, i) => (
                 <Link
                   key={item.code}
                   href={item.href}
                   aria-label={`${item.name} — ${item.colour}`}
-                  className="group flex w-[130px] shrink-0 flex-col items-center sm:w-[150px] lg:w-auto lg:flex-1"
+                  className="group flex w-[122px] shrink-0 snap-start flex-col items-center sm:w-[150px] lg:w-auto lg:flex-1 lg:snap-align-none"
                 >
                   <div className="relative z-10 -mb-6 aspect-[3/4] w-full transition-transform duration-300 ease-out group-hover:-translate-y-2">
                     <Image
