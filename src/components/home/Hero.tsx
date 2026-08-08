@@ -168,7 +168,9 @@ export function Hero() {
                       src={item.src}
                       alt={`DecArt ${item.name} ${item.code} — ${item.colour}`}
                       fill
+                      // only the chairs in the first viewport are worth blocking the LCP for
                       priority={i < 3}
+                      loading={i < 3 ? undefined : 'lazy'}
                       sizes="(max-width: 640px) 130px, (max-width: 1024px) 150px, 170px"
                       className="object-contain drop-shadow-[0_18px_20px_rgb(14_27_40/0.18)]"
                     />

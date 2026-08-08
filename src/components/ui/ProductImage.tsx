@@ -81,24 +81,31 @@ export function ProductImage({
   fit?: 'contain' | 'cover';
 }) {
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const show = src && !failed;
 
   return (
     <div className={cn('relative h-full w-full overflow-hidden', className)}>
       {show ? (
-        <Image
-          src={src}
-          alt={alt}
-          fill
-          sizes={sizes}
-          priority={priority}
-          onError={() => setFailed(true)}
-          className={cn(
-            fit === 'contain' ? 'object-contain' : 'object-cover',
-            'transition-transform duration-300 ease-out',
-            imgClassName,
-          )}
-        />
+        <>
+          {/* a calm tint holds the box until the photo decodes — no flash of empty white */}
+          {!loaded ? <span aria-hidden className="absolute inset-0 animate-pulse bg-porcelain" /> : null}
+          <Image
+            src={src}
+            alt={alt}
+            fill
+            sizes={sizes}
+            priority={priority}
+            onError={() => setFailed(true)}
+            onLoad={() => setLoaded(true)}
+            className={cn(
+              fit === 'contain' ? 'object-contain' : 'object-cover',
+              'transition-[transform,opacity] duration-500 ease-out',
+              loaded ? 'opacity-100' : 'opacity-0',
+              imgClassName,
+            )}
+          />
+        </>
       ) : (
         <PlaceholderImage label={label} />
       )}
