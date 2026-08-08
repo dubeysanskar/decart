@@ -1,151 +1,208 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, ArrowUpRight } from 'lucide-react';
+import { ArrowRight, PersonStanding, Wind, SlidersHorizontal, Gem, Phone } from 'lucide-react';
 import { ButtonLink } from '@/components/ui/Button';
-import { SpecPlate } from '@/components/ui/SpecPlate';
 import { publicFileExists } from '@/lib/assets';
-import { PlaceholderImage } from '@/components/ui/ProductImage';
 import { SITE } from '@/lib/site';
-
-const TICKER = [
-  'Director',
-  'Executive',
-  'Ergonomic Mesh',
-  'Task',
-  'Visitor',
-  'Café',
-  'Workstations',
-  'Conference',
-  'Storage',
-];
+import { cn } from '@/lib/utils';
 
 /**
- * Showroom hero (§4.6-3) — a full-height ink.950 stage. The chair is lit by a single
- * blue spotlight and carries its nameplate like a tag on the showroom floor; the faint
- * hexagon grid is the only other decoration. Runs under the transparent header.
+ * "Smart seating" hero — the founder's campaign banner rebuilt as a live page.
+ * Airy blue-white gradient stage, a heavy two-tone uppercase headline, thin-line
+ * feature icons, and the real colourway photography standing on white podiums.
  */
-export function Hero({
-  heroImage = '/hero/home-chair.webp',
-  heroCode = 'BONAI-HB',
-  heroLabel = 'MESH · WITH HANGER',
-  heroHref = '/products/mesh/bonai-hb',
-}: {
-  heroImage?: string;
-  heroCode?: string;
-  heroLabel?: string;
-  heroHref?: string;
-}) {
-  const hasHero = publicFileExists(heroImage);
+
+const FEATURES = [
+  { icon: PersonStanding, label: 'Ergonomic design' },
+  { icon: Wind, label: 'Breathable mesh' },
+  { icon: SlidersHorizontal, label: 'Adjustable comfort' },
+  { icon: Gem, label: 'Durable & stylish' },
+];
+
+/** The podium lineup — every image is a real studio shot of a stock colourway. */
+const LINEUP = [
+  {
+    code: 'GLANZA-HB',
+    name: 'Glanza',
+    colour: 'White mesh',
+    dot: '#E9EBEC',
+    src: '/products/mesh/glanza-hb/white-1.webp',
+    href: '/products/mesh/glanza-hb',
+    tall: false,
+  },
+  {
+    code: 'BONAI-HB',
+    name: 'Bonai',
+    colour: 'Black · hanger back',
+    dot: '#23272B',
+    src: '/products/mesh/bonai-hb/black-1.webp',
+    href: '/products/mesh/bonai-hb',
+    tall: true,
+  },
+  {
+    code: 'MUSTANG-HB',
+    name: 'Mustang',
+    colour: 'Red seat',
+    dot: '#C93A3A',
+    src: '/products/ultra-luxury-mesh/mustang-hb/black-with-red-1.webp',
+    href: '/products/ultra-luxury-mesh/mustang-hb',
+    tall: false,
+  },
+  {
+    code: 'EIFFEL-HB',
+    name: 'Eiffel',
+    colour: 'Orange seat',
+    dot: '#E07B23',
+    src: '/products/special-luxury-mesh/eiffel-hb/black-with-orange-1.webp',
+    href: '/products/special-luxury-mesh/eiffel-hb',
+    tall: true,
+  },
+  {
+    code: 'BUBBLE-MB',
+    name: 'Bubble',
+    colour: 'Blue seat',
+    dot: '#2E6FC7',
+    src: '/products/task-mesh/bubble-mb/black-with-blue-1.webp',
+    href: '/products/task-mesh/bubble-mb',
+    tall: false,
+  },
+  {
+    code: 'COMFORT-HI-STOOL',
+    name: 'Comfort Stool',
+    colour: 'Green',
+    dot: '#5CB335',
+    src: '/products/cafe/comfort-hi-stool/green-1.webp',
+    href: '/products/cafe/comfort-hi-stool',
+    tall: true,
+  },
+];
+
+const MARKETPLACES = ['GeM', 'Flipkart', 'Amazon', 'IndiaMART', 'TradeIndia'];
+
+export function Hero() {
+  const lineup = LINEUP.filter((item) => publicFileExists(item.src));
 
   return (
-    <section data-hero className="dark-section relative flex min-h-[100svh] flex-col overflow-hidden bg-ink-950 text-porcelain">
-      {/* stage dressing: hex grid + one spotlight aimed at the product */}
-      <div aria-hidden className="hex-grid absolute inset-0" />
-      <span
+    <section data-hero className="relative overflow-hidden pt-28 md:pt-32">
+      {/* the stage: diagonal blue→white wash with two soft glows, like the campaign banner */}
+      <div
         aria-hidden
         className="absolute inset-0"
-        style={{ background: 'radial-gradient(60% 50% at 72% 42%, rgb(79 174 227 / 0.16), transparent)' }}
+        style={{
+          background:
+            'linear-gradient(128deg, #D8EBF9 0%, #EDF6FC 38%, #FFFFFF 72%), radial-gradient(48% 42% at 88% 10%, rgb(61 159 224 / 0.18), transparent), radial-gradient(40% 36% at 6% 90%, rgb(61 159 224 / 0.12), transparent)',
+          backgroundBlendMode: 'multiply',
+        }}
       />
-      <span
-        aria-hidden
-        className="absolute inset-x-0 bottom-0 h-40"
-        style={{ background: 'linear-gradient(to top, rgb(10 12 14 / 0.9), transparent)' }}
-      />
 
-      <div className="container-x relative grid flex-1 items-center gap-10 pb-12 pt-32 md:pt-36 lg:grid-cols-[1.05fr_1fr] lg:gap-6">
-        <div className="max-w-2xl">
-          <p data-anim="up" className="font-mono text-[11px] uppercase tracking-[0.16em] text-decart-300">
-            DecArt Industries · Faridabad · Since {SITE.established}
-          </p>
+      <div className="container-x relative">
+        <div className="grid items-end gap-10 lg:grid-cols-[1fr_1.05fr] lg:gap-6">
+          {/* ---------------------------------------------------------- copy */}
+          <div className="pb-2 lg:pb-14">
+            <p
+              data-anim="up"
+              className="inline-flex items-center gap-2 rounded-full border border-line bg-paper/85 px-4 py-2 text-xs font-medium text-ink-900 shadow-card backdrop-blur"
+            >
+              <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-decart-500" />
+              DecArt Industries · Faridabad · Since {SITE.established}
+            </p>
 
-          <h1 data-anim="clip" className="mt-6 font-display text-hero font-semibold text-porcelain">
-            Seating a workday
-            <br />
-            can rest on.
-          </h1>
+            <h1
+              data-anim="clip"
+              className="mt-7 font-display text-[clamp(2.25rem,4.6vw,3.5rem)] font-bold uppercase leading-[1.04] tracking-tight"
+            >
+              <span className="block text-ink-950">Smart seating</span>
+              <span className="block text-decart-600">for every space.</span>
+            </h1>
 
-          <p data-anim="up" className="mt-6 max-w-lg text-lg leading-relaxed text-steel-400">
-            From director cabins to 500-seat floors — chairs, workstations and office furniture manufactured
-            in-house and delivered pan-India.
-          </p>
+            <span aria-hidden data-anim="up" className="mt-5 block h-1 w-16 rounded-full bg-decart-500" />
 
-          <div data-anim="up" className="mt-9 flex flex-wrap items-center gap-3">
-            <ButtonLink href="/products" size="lg" onDark>
-              Explore products
-              <ArrowRight aria-hidden className="h-4 w-4" />
-            </ButtonLink>
-            <ButtonLink href="/quote" size="lg" variant="secondary" onDark>
-              Get a quote
-            </ButtonLink>
+            <p data-anim="up" className="mt-5 max-w-lg text-lg leading-relaxed text-steel-600">
+              Ergonomic. Stylish. Built for comfort — 350+ models across seating, desking and institutional
+              furniture, manufactured in-house and delivered pan-India.
+            </p>
+
+            <div data-anim="up" className="mt-8 flex flex-wrap items-center gap-3">
+              <ButtonLink href="/products" size="lg">
+                Explore products
+                <ArrowRight aria-hidden className="h-4 w-4" />
+              </ButtonLink>
+              <ButtonLink href="/quote" size="lg" variant="secondary">
+                Get a quote
+              </ButtonLink>
+              <a
+                href={SITE.phoneHref}
+                data-call
+                className="inline-flex h-[52px] items-center gap-2 rounded-btn px-4 font-mono text-sm text-ink-900 transition-colors hover:bg-paper"
+              >
+                <Phone aria-hidden className="h-4 w-4 text-decart-600" />
+                {SITE.phone}
+              </a>
+            </div>
+
+            {/* thin-line feature icons, straight off the banner */}
+            <ul data-anim="up" className="mt-10 grid max-w-md grid-cols-4 gap-3">
+              {FEATURES.map((feature) => (
+                <li key={feature.label} className="flex flex-col items-center gap-2.5 text-center">
+                  <span className="flex h-14 w-14 items-center justify-center rounded-full border-[1.5px] border-decart-300 bg-paper/70 text-decart-600">
+                    <feature.icon aria-hidden className="h-6 w-6" strokeWidth={1.5} />
+                  </span>
+                  <span className="text-xs leading-snug text-steel-600">{feature.label}</span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <ul data-anim="up" className="mt-10 flex flex-wrap items-center gap-x-3 gap-y-2">
-            {['Since 2015', 'In-house manufacturing', 'Pan-India delivery'].map((item, i) => (
-              <li key={item} className="flex items-center gap-3">
-                {i > 0 ? (
-                  <span
-                    aria-hidden
-                    className="inline-block h-[9px] w-[8px] bg-decart-500/70"
-                    style={{ clipPath: 'polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%)' }}
+          {/* ---------------------------------------------------------- podium lineup */}
+          <div className="relative" data-anim="scale">
+            <div className="no-scrollbar flex items-end gap-1 overflow-x-auto pb-1 sm:gap-2 lg:justify-end lg:overflow-visible">
+              {lineup.map((item, i) => (
+                <Link
+                  key={item.code}
+                  href={item.href}
+                  aria-label={`${item.name} — ${item.colour}`}
+                  className="group flex w-[130px] shrink-0 flex-col items-center sm:w-[150px] lg:w-auto lg:flex-1"
+                >
+                  <div className="relative z-10 -mb-6 aspect-[3/4] w-full transition-transform duration-300 ease-out group-hover:-translate-y-2">
+                    <Image
+                      src={item.src}
+                      alt={`DecArt ${item.name} ${item.code} — ${item.colour}`}
+                      fill
+                      priority={i < 3}
+                      sizes="(max-width: 640px) 130px, (max-width: 1024px) 150px, 170px"
+                      className="object-contain drop-shadow-[0_18px_20px_rgb(14_27_40/0.18)]"
+                    />
+                  </div>
+                  {/* the white podium */}
+                  <div
+                    className={cn(
+                      'w-full rounded-t-[2rem] bg-paper shadow-podium transition-shadow group-hover:shadow-pop',
+                      item.tall ? 'h-24 md:h-32' : 'h-14 md:h-20',
+                    )}
                   />
-                ) : null}
-                <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-steel-400">{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* the product on stage */}
-        <div className="relative" data-parallax="0.05">
-          <div data-anim="scale" className="relative mx-auto aspect-square w-full max-w-[580px]">
-            {/* floor shadow grounds the cut-out on the stage */}
-            <span
-              aria-hidden
-              className="absolute bottom-[4%] left-1/2 h-10 w-[70%] -translate-x-1/2 rounded-[100%] bg-black/60 blur-2xl"
-            />
-            {hasHero ? (
-              <Image
-                src={heroImage}
-                alt={`DecArt ${heroCode} ergonomic mesh office chair`}
-                fill
-                priority
-                sizes="(max-width: 1024px) 88vw, 580px"
-                className="object-contain drop-shadow-[0_32px_48px_rgb(0_0_0/0.45)]"
-              />
-            ) : (
-              <PlaceholderImage label="Hero photography" tone="dark" className="rounded-card" />
-            )}
-
-            {/* the nameplate, parked on the chair like a showroom tag */}
-            <Link
-              href={heroHref}
-              aria-label={`View the ${heroCode}`}
-              className="group absolute bottom-8 left-1/2 flex -translate-x-1/2 items-center gap-3 rounded-full border border-white/15 bg-ink-900/85 py-2 pl-3 pr-4 backdrop-blur transition-colors hover:border-decart-500/60"
-            >
-              <SpecPlate code={heroCode} label={heroLabel} size="sm" onDark className="border-0 bg-transparent pl-6" />
-              <ArrowUpRight aria-hidden className="h-4 w-4 text-steel-400 transition-colors group-hover:text-porcelain" />
-            </Link>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* family ticker — quiet proof of range along the foot of the stage */}
-      <div className="relative border-t border-white/10">
-        <div className="container-x no-scrollbar flex items-center gap-7 overflow-x-auto py-4">
-          <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.14em] text-decart-300">
-            30 families
-          </span>
-          {TICKER.map((name) => (
-            <span key={name} className="flex shrink-0 items-center gap-7">
-              <span aria-hidden className="h-1 w-1 rounded-full bg-white/20" />
-              <Link
-                href="/products"
-                className="text-sm font-medium text-steel-400 transition-colors hover:text-porcelain"
-              >
-                {name}
-              </Link>
+      {/* marketplace + tagline strip along the foot of the banner */}
+      <div className="relative border-t border-line bg-paper/85 backdrop-blur">
+        <div className="container-x flex flex-col items-start justify-between gap-3 py-4 md:flex-row md:items-center">
+          <div className="no-scrollbar flex items-center gap-5 overflow-x-auto">
+            <span className="shrink-0 rounded-full bg-decart-600 px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white">
+              Available on
             </span>
-          ))}
+            {MARKETPLACES.map((name) => (
+              <span key={name} className="shrink-0 text-sm font-semibold text-steel-600">
+                {name}
+              </span>
+            ))}
+          </div>
+          <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-steel-400">
+            Comfort that keeps you ahead
+          </p>
         </div>
       </div>
     </section>

@@ -43,16 +43,18 @@ export function ColourStory({ product }: { product?: CatalogueProduct }) {
   const hero = colourways[0]?.images?.[0];
 
   return (
-    <section className="section overflow-hidden bg-ink-950 text-porcelain">
+    <section
+      className="section overflow-hidden"
+      style={{ background: 'linear-gradient(128deg, #DFEFFA 0%, #F3F8FC 50%, #FFFFFF 100%)' }}
+    >
       <div className="container-x">
         <SectionHeading
           eyebrow="Finishes"
           index="04"
-          onDark
           title={`One chair. ${colourways.length} standard colourways.`}
           lede="Zone a floor by team without changing model. Every combination below is a stock build — and project quantities can be matched to any shade you send us."
           action={
-            <ButtonLink href={`/products/${product.family}/${product.slug}`} variant="secondary" onDark>
+            <ButtonLink href={`/products/${product.family}/${product.slug}`} variant="secondary">
               See the {product.name.split(' ')[0]}
               <ArrowUpRight aria-hidden className="h-4 w-4" />
             </ButtonLink>
@@ -60,7 +62,10 @@ export function ColourStory({ product }: { product?: CatalogueProduct }) {
         />
 
         <div className="mt-12 grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
-          <div className="relative mx-auto aspect-square w-full max-w-[460px] overflow-hidden rounded-card bg-porcelain" data-anim="scale">
+          <div
+            className="relative mx-auto aspect-square w-full max-w-[460px] overflow-hidden rounded-card bg-paper shadow-podium"
+            data-anim="scale"
+          >
             <ProductImage
               src={hero}
               alt={`DecArt ${product.name} colourways`}
@@ -77,13 +82,13 @@ export function ColourStory({ product }: { product?: CatalogueProduct }) {
                 <div
                   key={colour.slug}
                   data-anim="up"
-                  className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition-colors hover:border-white/25"
+                  className="flex items-center gap-3 rounded-2xl border border-line bg-paper p-3 shadow-card transition-all hover:-translate-y-0.5 hover:border-decart-300"
                 >
-                  <span className="flex h-8 w-8 shrink-0 overflow-hidden rounded-full ring-1 ring-white/20">
+                  <span className="flex h-8 w-8 shrink-0 overflow-hidden rounded-full ring-1 ring-line">
                     <span className="h-full w-1/2" style={{ background: base }} />
                     <span className="h-full w-1/2" style={{ background: accent }} />
                   </span>
-                  <span className="text-xs leading-tight text-steel-400">{colour.label}</span>
+                  <span className="text-xs leading-tight text-steel-600">{colour.label}</span>
                 </div>
               );
             })}

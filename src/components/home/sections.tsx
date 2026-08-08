@@ -28,7 +28,7 @@ export function TrustBar() {
                 key={counter.label}
                 className={cn('px-5 py-8 md:px-7 md:py-11', i < 2 && 'border-b border-line md:border-b-0')}
               >
-                <p className="font-display text-[clamp(2rem,3.4vw,3rem)] leading-none text-ink-950">
+                <p className="font-display text-[clamp(2rem,3.4vw,3rem)] font-semibold leading-none text-decart-700">
                   {numeric ? (
                     <span data-count={numeric[1]} data-count-suffix={numeric[2]}>
                       0{numeric[2]}
@@ -93,13 +93,13 @@ export function FamilyGrid({ families }: { families: FamilyTile[] }) {
           <Link
             href={`/products/${featured.slug}`}
             data-anim="up"
-            className="group relative col-span-2 row-span-2 flex flex-col overflow-hidden rounded-card bg-ink-950 text-porcelain transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_32px_48px_-24px_rgb(10_12_14/0.5)]"
+            className="group relative col-span-2 row-span-2 flex flex-col overflow-hidden rounded-card text-white shadow-pop transition-all duration-300 hover:-translate-y-1"
+            style={{ background: 'linear-gradient(135deg, #1E7FC9 0%, #1565A6 55%, #0F4E82 100%)' }}
           >
-            <div aria-hidden className="hex-grid absolute inset-0" />
             <span
               aria-hidden
               className="absolute inset-0"
-              style={{ background: 'radial-gradient(70% 60% at 50% 35%, rgb(79 174 227 / 0.14), transparent)' }}
+              style={{ background: 'radial-gradient(70% 60% at 50% 30%, rgb(255 255 255 / 0.22), transparent)' }}
             />
             <div className="relative aspect-[4/3] md:aspect-auto md:flex-1">
               <ProductImage
@@ -107,18 +107,18 @@ export function FamilyGrid({ families }: { families: FamilyTile[] }) {
                 alt={`DecArt ${featured.name}`}
                 label={featured.name}
                 sizes="(max-width: 768px) 100vw, 50vw"
-                imgClassName="p-8 drop-shadow-[0_24px_32px_rgb(0_0_0/0.4)] transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                imgClassName="p-8 drop-shadow-[0_24px_32px_rgb(14_27_40/0.35)] transition-transform duration-500 ease-out group-hover:scale-[1.04]"
               />
             </div>
             <div className="relative flex items-end justify-between gap-4 p-6 md:p-7">
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-decart-300">
+                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-decart-100">
                   01 · {featured.count} {featured.count === 1 ? 'model' : 'models'}
                 </p>
                 <h3 className="mt-2 font-display text-2xl font-semibold md:text-3xl">{featured.name}</h3>
-                <p className="mt-1.5 line-clamp-2 max-w-md text-sm text-steel-400">{featured.lede}</p>
+                <p className="mt-1.5 line-clamp-2 max-w-md text-sm text-decart-100/90">{featured.lede}</p>
               </div>
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/20 transition-colors group-hover:border-decart-500 group-hover:bg-decart-500 group-hover:text-ink-950">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/40 transition-colors group-hover:border-white group-hover:bg-white group-hover:text-decart-700">
                 <ArrowRight aria-hidden className="h-4 w-4" />
               </span>
             </div>
@@ -220,7 +220,7 @@ export function WhyDecArt() {
   return (
     <section className="section bg-porcelain">
       <div className="container-x grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
-        <div className="hex-frame relative aspect-[4/3] overflow-hidden rounded-img bg-ink-900" data-anim="up">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-img bg-decart-100" data-anim="up">
           <ProductImage
             src={factory}
             alt="DecArt manufacturing floor in Faridabad"
@@ -415,7 +415,7 @@ export function ProjectStrip() {
         />
         <div className="mt-12 grid grid-cols-2 gap-4 md:grid-cols-4" data-stagger>
           {installs.map((src) => (
-            <div key={src} className="hex-frame relative aspect-square overflow-hidden bg-ink-900" data-anim="up">
+            <div key={src} className="relative aspect-square overflow-hidden rounded-img bg-decart-100" data-anim="up">
               <Image src={src} alt="DecArt installation" fill sizes="(max-width: 768px) 50vw, 25vw" className="object-cover" />
             </div>
           ))}
@@ -429,20 +429,22 @@ export function ProjectStrip() {
 
 export function QuoteBand() {
   return (
-    <section className="dark-section relative overflow-hidden bg-ink-950 py-20 text-porcelain md:py-32">
-      <div className="hex-grid absolute inset-0" aria-hidden />
+    <section
+      className="dark-section relative overflow-hidden py-20 text-white md:py-32"
+      style={{ background: 'linear-gradient(128deg, #1E7FC9 0%, #1565A6 55%, #0F4E82 100%)' }}
+    >
       <span
         aria-hidden
         className="absolute inset-0"
-        style={{ background: 'radial-gradient(55% 70% at 50% 0%, rgb(79 174 227 / 0.14), transparent)' }}
+        style={{ background: 'radial-gradient(55% 70% at 50% 0%, rgb(255 255 255 / 0.18), transparent)' }}
       />
       <div className="container-x relative">
         <div className="mx-auto max-w-3xl text-center" data-anim="up">
-          <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-decart-300">
+          <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-decart-100">
             Request quote · WhatsApp · Call
           </p>
-          <h2 className="mt-6 font-display text-h1 font-semibold text-porcelain">{COPY.quoteBand.heading}</h2>
-          <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-steel-400">{COPY.quoteBand.sub}</p>
+          <h2 className="mt-6 font-display text-h1 font-semibold text-white">{COPY.quoteBand.heading}</h2>
+          <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-decart-100">{COPY.quoteBand.sub}</p>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <ButtonLink href="/quote" size="lg" onDark>
@@ -453,11 +455,11 @@ export function QuoteBand() {
             </ButtonLink>
           </div>
 
-          <p className="mt-8 font-mono text-xs tracking-[0.08em] text-steel-400">
-            <a href={SITE.phoneHref} data-call className="transition-colors hover:text-porcelain">
+          <p className="mt-8 font-mono text-xs tracking-[0.08em] text-decart-100">
+            <a href={SITE.phoneHref} data-call className="transition-colors hover:text-white">
               {SITE.phone}
             </a>
-            <span aria-hidden className="mx-3 text-white/20">·</span>
+            <span aria-hidden className="mx-3 text-white/40">·</span>
             {SITE.hours}
           </p>
         </div>

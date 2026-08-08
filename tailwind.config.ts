@@ -5,19 +5,20 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // "bright gallery" palette — near-black text, warm-white wells, logo blue as sole accent
-        ink: { 950: '#0A0C0E', 900: '#14171A', 800: '#23272C' },
-        porcelain: '#F4F4F2',
+        // "smart seating" palette — deep navy text on airy blue-white, saturated brand blue for CTAs
+        ink: { 950: '#0E1B28', 900: '#16273A', 800: '#24384E' },
+        porcelain: '#F3F8FC',
         paper: '#FFFFFF',
-        line: '#E7E7E4',
-        steel: { 600: '#63696F', 400: '#989FA6' },
+        line: '#E1EAF2',
+        steel: { 600: '#5B6B7A', 400: '#93A3B2' },
         decart: {
-          50: '#EDF7FD',
-          100: '#DBEFFA',
+          50: '#EFF7FD',
+          100: '#DFEFFA',
           300: '#8FCDEF',
-          500: '#4FAEE3',
-          600: '#2E8FC7',
-          700: '#1F6F9E',
+          500: '#3D9FE0',
+          600: '#1E7FC9',
+          700: '#1565A6',
+          800: '#0F4E82',
         },
         cognac: { 500: '#C9822E', 600: '#A96A22' },
         success: '#1E9E5A',
@@ -40,8 +41,10 @@ const config: Config = {
       borderRadius: { card: '24px', btn: '999px', img: '20px' },
       maxWidth: { container: '1200px' },
       boxShadow: {
-        card: '0 1px 2px rgb(15 19 23 / .06)',
-        lift: '0 8px 24px -12px rgb(15 19 23 / .18)',
+        card: '0 1px 2px rgb(14 27 40 / .06)',
+        lift: '0 8px 24px -12px rgb(14 27 40 / .18)',
+        podium: '0 24px 40px -18px rgb(21 101 166 / .28)',
+        pop: '0 16px 40px -16px rgb(21 101 166 / .35)',
       },
       spacing: { section: '4rem', 'section-lg': '7rem' },
       keyframes: {

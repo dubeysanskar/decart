@@ -19,8 +19,8 @@ function styles(variant: ButtonVariant, onDark: boolean) {
   switch (variant) {
     case 'primary':
       return onDark
-        ? 'bg-decart-500 text-ink-950 hover:bg-decart-300'
-        : 'bg-ink-900 text-porcelain hover:bg-ink-800';
+        ? 'bg-paper text-decart-700 hover:bg-decart-50'
+        : 'bg-decart-600 text-white shadow-pop hover:bg-decart-700';
     case 'secondary':
       return onDark
         ? 'border border-white/25 text-porcelain hover:border-white/60 hover:bg-white/5'

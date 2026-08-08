@@ -23,9 +23,8 @@ const LINKS = [
 
 export function Header({ groups }: { groups: NavGroup[] }) {
   const pathname = usePathname();
-  // showroom design: on the home page the header runs transparent over the dark hero
-  // and solidifies on scroll; every other page gets the light bar from the start.
-  const overlay = pathname === '/';
+  // bright "smart seating" design: the header is always the light bar, on every page
+  const overlay = false;
   const [scrolled, setScrolled] = useState(!overlay);
   const [megaOpen, setMegaOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
