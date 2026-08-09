@@ -22,7 +22,9 @@ export function buildMetadata({
 }): Metadata {
   const url = `${SITE.url}${path === '/' ? '' : path}`;
   return {
-    title,
+    // absolute: these titles already follow the §12 patterns and name the company, so the
+    // root layout's "%s | DecArt Industries" template would otherwise double it up
+    title: { absolute: title },
     description,
     keywords,
     alternates: { canonical: url },

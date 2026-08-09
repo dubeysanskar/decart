@@ -114,6 +114,22 @@ export const SCHEMA_STATEMENTS = [
   )`,
   `CREATE INDEX IF NOT EXISTS idx_blog_status ON blog_posts (status, publishedAt DESC)`,
 
+  /**
+   * Editorial content per product family — the SEO copy that sits under a category listing
+   * and the category FAQ. Kept in its own table (not on `products`) because it belongs to the
+   * family, and the client edits it from /admin/categories without touching any product.
+   */
+  `CREATE TABLE IF NOT EXISTS family_content (
+    slug TEXT PRIMARY KEY,
+    heading TEXT NOT NULL DEFAULT '',
+    intro TEXT NOT NULL DEFAULT '',
+    bodyHtml TEXT NOT NULL DEFAULT '',
+    faq TEXT NOT NULL DEFAULT '[]',
+    seoTitle TEXT NOT NULL DEFAULT '',
+    seoDescription TEXT NOT NULL DEFAULT '',
+    updatedAt TEXT NOT NULL
+  )`,
+
   `CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
     data TEXT NOT NULL DEFAULT '{}',

@@ -13,6 +13,10 @@ const PAGES = [
   ['contact', '/contact'],
   ['quote', '/quote'],
   ['about', '/about'],
+  ['life', '/life-at-decart'],
+  ['sustain', '/sustainability'],
+  ['certs', '/certificates'],
+  ['career', '/career'],
 ];
 
 await fs.mkdir(OUT, { recursive: true });

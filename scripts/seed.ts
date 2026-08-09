@@ -16,8 +16,8 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 
 import { ensureSchema } from '../src/lib/schema';
-import { allSeedProducts } from '../src/data/catalogue.seed';
-import { SITE } from '../src/lib/site';
+import { allSeedProducts, FAMILIES, FAMILY_LEDE } from '../src/data/catalogue.seed';
+import { SITE, COPY } from '../src/lib/site';
 
 // match Next's precedence: .env.local wins over .env, and neither overrides a real shell var
 dotenv.config({ path: '.env.local' });
@@ -252,6 +252,58 @@ async function main() {
   } else {
     console.log('Settings: singleton already present\n');
   }
+
+  // ---------------------------------------------------------------- category content
+  /**
+   * Starter description + FAQ per family so the category pages are never bare and the client has
+   * something concrete to edit at /admin/categories. Only ever inserts — a row the client has
+   * touched is left alone, even with --overwrite, because that copy is theirs.
+   */
+  let contentCreated = 0;
+  let contentKept = 0;
+
+  for (const family of FAMILIES.filter((f) => !f.hidden)) {
+    const present = (
+      await db.execute({ sql: `SELECT slug FROM family_content WHERE slug = ?`, args: [family.slug] })
+    ).rows[0];
+    if (present) {
+      contentKept++;
+      continue;
+    }
+
+    const lede = FAMILY_LEDE[family.slug] ?? '';
+    const singular = family.name.replace(/s$/, '');
+    const faq = [
+      {
+        q: `What is the minimum order for ${family.name.toLowerCase()}?`,
+        a: 'Single pieces for most chairs; project MOQs apply to workstations and custom builds. Tell us the quantity and we will confirm on the quote.',
+      },
+      {
+        q: `Can ${family.name.toLowerCase()} be customised?`,
+        a: 'Yes. Upholstery, mesh, base, castors, gas lift and armrests are all specified per order, and we match powder-coat shades on project quantities.',
+      },
+      { q: 'Do you show prices?', a: COPY.quoteFaq[0].a },
+      { q: 'Do you deliver outside NCR?', a: COPY.quoteFaq[2].a },
+    ];
+
+    await db.execute({
+      sql: `INSERT INTO family_content (slug, heading, intro, bodyHtml, faq, seoTitle, seoDescription, updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        family.slug,
+        `About ${family.name.toLowerCase()}`,
+        lede,
+        `<p>${singular} models from DecArt Industries are designed and manufactured end-to-end at our Faridabad facility. ${lede}</p>`,
+        J(faq),
+        '',
+        '',
+        now(),
+      ],
+    });
+    contentCreated++;
+  }
+
+  console.log(`Categories: ${contentCreated} seeded · ${contentKept} left as the client wrote them\n`);
 
   db.close();
   console.log('Done.');

@@ -3,9 +3,10 @@ import { notFound } from 'next/navigation';
 import { PageHeader } from '@/components/site/PageHeader';
 import { FamilyBrowser } from '@/components/product/FamilyBrowser';
 import { QuoteBand } from '@/components/home/sections';
-import { getFamilyProducts, getNavFamilies, familyBySlug, FAMILY_LEDE } from '@/lib/catalogue';
+import { getFamilyProducts, getNavFamilies, familyBySlug, FAMILY_LEDE, getFamilyContent } from '@/lib/catalogue';
 import { FAMILIES } from '@/data/catalogue.seed';
 import { buildMetadata, breadcrumbLd } from '@/lib/seo';
+import { CategoryContent, categoryFaqLd } from '@/components/product/CategoryContent';
 
 export const revalidate = 3600;
 
@@ -16,9 +17,13 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: { family: string } }): Promise<Metadata> {
   const family = familyBySlug(params.family);
   if (!family) return {};
+  // admin-authored SEO wins over the generated default when it has been filled in
+  const content = await getFamilyContent(family.slug);
   return buildMetadata({
-    title: `${family.name} — DecArt Industries | Manufacturer in Faridabad`,
-    description: `${FAMILY_LEDE[family.slug] ?? family.name} Manufactured in-house by DecArt Industries, Faridabad. Request a quote or WhatsApp for pricing.`,
+    title: content?.seoTitle || `${family.name} — DecArt Industries | Manufacturer in Faridabad`,
+    description:
+      content?.seoDescription ||
+      `${FAMILY_LEDE[family.slug] ?? family.name} Manufactured in-house by DecArt Industries, Faridabad. Request a quote or WhatsApp for pricing.`,
     path: `/products/${family.slug}`,
   });
 }
@@ -27,7 +32,11 @@ export default async function FamilyPage({ params }: { params: { family: string 
   const family = familyBySlug(params.family);
   if (!family) notFound();
 
-  const [products, navFamilies] = await Promise.all([getFamilyProducts(family.slug), getNavFamilies()]);
+  const [products, navFamilies, content] = await Promise.all([
+    getFamilyProducts(family.slug),
+    getNavFamilies(),
+    getFamilyContent(family.slug),
+  ]);
   const siblings = navFamilies.filter((f) => f.group === family.group && f.slug !== family.slug);
 
   const tags = [...new Set(products.flatMap((p) => p.tags ?? []))].sort();
@@ -50,6 +59,9 @@ export default async function FamilyPage({ params }: { params: { family: string 
       />
 
       <FamilyBrowser products={products} familyName={family.name} tags={tags} />
+
+      {/* client brief: descriptive copy + an FAQ under every category, both admin-editable */}
+      <CategoryContent content={content} familyName={family.name} />
 
       {siblings.length ? (
         <section className="border-t border-line bg-porcelain py-12">
@@ -79,11 +91,14 @@ export default async function FamilyPage({ params }: { params: { family: string 
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(
-            breadcrumbLd([
-              { name: 'Home', path: '/' },
-              { name: 'Products', path: '/products' },
-              { name: family.name, path: `/products/${family.slug}` },
-            ]),
+            [
+              breadcrumbLd([
+                { name: 'Home', path: '/' },
+                { name: 'Products', path: '/products' },
+                { name: family.name, path: `/products/${family.slug}` },
+              ]),
+              ...(content?.faq?.length ? [categoryFaqLd(content.faq)] : []),
+            ],
           ),
         }}
       />

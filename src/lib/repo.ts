@@ -792,6 +792,79 @@ export async function deletePostBySlug(slug: string) {
   await run(`DELETE FROM blog_posts WHERE slug = ?`, [slug]);
 }
 
+// ================================================================ family content
+
+export type FaqItem = { q: string; a: string };
+
+export type FamilyContentRecord = {
+  slug: string;
+  heading: string;
+  intro: string;
+  bodyHtml: string;
+  faq: FaqItem[];
+  seoTitle: string;
+  seoDescription: string;
+  updatedAt: string;
+};
+
+function mapFamilyContent(row: Row): FamilyContentRecord {
+  return {
+    slug: String(row.slug),
+    heading: String(row.heading ?? ''),
+    intro: String(row.intro ?? ''),
+    bodyHtml: String(row.bodyHtml ?? ''),
+    faq: parse(row.faq, [] as FaqItem[]),
+    seoTitle: String(row.seoTitle ?? ''),
+    seoDescription: String(row.seoDescription ?? ''),
+    updatedAt: String(row.updatedAt),
+  };
+}
+
+export async function familyContent(slug: string): Promise<FamilyContentRecord | null> {
+  const row = await one(`SELECT * FROM family_content WHERE slug = ?`, [slug]);
+  return row ? mapFamilyContent(row) : null;
+}
+
+export async function allFamilyContent(): Promise<FamilyContentRecord[]> {
+  const rows = await all(`SELECT * FROM family_content ORDER BY slug ASC`);
+  return rows.map(mapFamilyContent);
+}
+
+/** Upsert — the admin screen saves the whole record for one family at a time. */
+export async function saveFamilyContent(
+  slug: string,
+  data: Partial<Omit<FamilyContentRecord, 'slug' | 'updatedAt'>>,
+): Promise<FamilyContentRecord> {
+  const current = await familyContent(slug);
+  const merged = {
+    heading: data.heading ?? current?.heading ?? '',
+    intro: data.intro ?? current?.intro ?? '',
+    bodyHtml: data.bodyHtml ?? current?.bodyHtml ?? '',
+    faq: data.faq ?? current?.faq ?? [],
+    seoTitle: data.seoTitle ?? current?.seoTitle ?? '',
+    seoDescription: data.seoDescription ?? current?.seoDescription ?? '',
+  };
+  await run(
+    `INSERT INTO family_content (slug, heading, intro, bodyHtml, faq, seoTitle, seoDescription, updatedAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(slug) DO UPDATE SET
+       heading = excluded.heading, intro = excluded.intro, bodyHtml = excluded.bodyHtml,
+       faq = excluded.faq, seoTitle = excluded.seoTitle, seoDescription = excluded.seoDescription,
+       updatedAt = excluded.updatedAt`,
+    [
+      slug,
+      merged.heading,
+      merged.intro,
+      merged.bodyHtml,
+      J(merged.faq),
+      merged.seoTitle,
+      merged.seoDescription,
+      now(),
+    ],
+  );
+  return (await familyContent(slug))!;
+}
+
 // ================================================================ settings
 
 export type SettingsRecord = Record<string, unknown> & { key: string };

@@ -141,6 +141,19 @@ export const blogSchema = z.object({
     .default({ metaTitle: '', metaDescription: '', ogImage: '', keywords: [] }),
 });
 
+/** Category (family) editorial content — §10.5 companion, edited at /admin/categories. */
+export const familyContentSchema = z.object({
+  heading: z.string().trim().max(160).default(''),
+  intro: z.string().trim().max(600).default(''),
+  bodyHtml: z.string().max(40000).default(''),
+  faq: z
+    .array(z.object({ q: z.string().trim().max(300), a: z.string().trim().max(3000) }))
+    .max(30)
+    .default([]),
+  seoTitle: z.string().trim().max(120).default(''),
+  seoDescription: z.string().trim().max(300).default(''),
+});
+
 export const settingsSchema = z.object({
   phone: z.string().max(40).optional(),
   whatsapp: z.string().max(20).optional(),

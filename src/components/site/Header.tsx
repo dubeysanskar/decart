@@ -13,9 +13,17 @@ import { cn } from '@/lib/utils';
 export type NavFamily = { slug: string; name: string; group: string; count: number; lede: string; cover?: string };
 export type NavGroup = { slug: string; name: string; families: NavFamily[] };
 
+/** Client brief: group the corporate pages behind a "Company" dropdown (AFC-style). */
+const COMPANY = [
+  { href: '/about', label: 'About Us', blurb: 'Who we are and how we started.' },
+  { href: '/life-at-decart', label: 'Life at DecArt', blurb: 'The people behind the products.' },
+  { href: '/manufacturing', label: 'Manufacturing', blurb: 'Inside the Faridabad factory.' },
+  { href: '/sustainability', label: 'Sustainability', blurb: 'How we build responsibly.' },
+  { href: '/certificates', label: 'Certificates', blurb: 'Compliance and registrations.' },
+  { href: '/career', label: 'Career', blurb: 'Open roles and how to apply.' },
+];
+
 const LINKS = [
-  { href: '/about', label: 'About' },
-  { href: '/manufacturing', label: 'Manufacturing' },
   { href: '/clients', label: 'Clients' },
   { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
@@ -27,9 +35,12 @@ export function Header({ groups }: { groups: NavGroup[] }) {
   const overlay = false;
   const [scrolled, setScrolled] = useState(!overlay);
   const [megaOpen, setMegaOpen] = useState(false);
+  const [companyOpen, setCompanyOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(groups[0]?.slug ?? null);
+  const [companyDrawerOpen, setCompanyDrawerOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const companyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!overlay) {
@@ -45,6 +56,7 @@ export function Header({ groups }: { groups: NavGroup[] }) {
   useEffect(() => {
     setDrawerOpen(false);
     setMegaOpen(false);
+    setCompanyOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -58,6 +70,7 @@ export function Header({ groups }: { groups: NavGroup[] }) {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
       setMegaOpen(false);
+      setCompanyOpen(false);
       setDrawerOpen(false);
     };
     window.addEventListener('keydown', onKey);
@@ -68,12 +81,25 @@ export function Header({ groups }: { groups: NavGroup[] }) {
 
   const openMega = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
+    setCompanyOpen(false);
     setMegaOpen(true);
   };
   const closeMega = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
     closeTimer.current = setTimeout(() => setMegaOpen(false), 120);
   };
+
+  const openCompany = () => {
+    if (companyTimer.current) clearTimeout(companyTimer.current);
+    setMegaOpen(false);
+    setCompanyOpen(true);
+  };
+  const closeCompany = () => {
+    if (companyTimer.current) clearTimeout(companyTimer.current);
+    companyTimer.current = setTimeout(() => setCompanyOpen(false), 120);
+  };
+
+  const companyActive = COMPANY.some((item) => pathname.startsWith(item.href));
 
   return (
     <header
@@ -103,6 +129,39 @@ export function Header({ groups }: { groups: NavGroup[] }) {
             Products
             <ChevronDown aria-hidden className={cn('h-3.5 w-3.5 transition-transform', megaOpen && 'rotate-180')} />
           </button>
+
+          {/* Company dropdown */}
+          <div className="relative" onMouseEnter={openCompany} onMouseLeave={closeCompany}>
+            <button
+              type="button"
+              onFocus={openCompany}
+              onClick={() => setCompanyOpen((v) => !v)}
+              aria-expanded={companyOpen}
+              className={cn(
+                'flex items-center gap-1 rounded-btn px-3 py-2 text-sm font-medium transition-colors',
+                onDark ? 'text-porcelain hover:bg-white/10' : 'text-ink-900 hover:bg-porcelain',
+                companyActive && (onDark ? 'bg-white/10' : 'bg-porcelain'),
+              )}
+            >
+              Company
+              <ChevronDown aria-hidden className={cn('h-3.5 w-3.5 transition-transform', companyOpen && 'rotate-180')} />
+            </button>
+
+            {companyOpen ? (
+              <div className="absolute left-0 top-full w-72 rounded-card border border-line bg-paper p-2 shadow-lift">
+                {COMPANY.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="block rounded-btn px-3 py-2.5 hover:bg-porcelain"
+                  >
+                    <span className="block text-sm font-semibold text-ink-900">{item.label}</span>
+                    <span className="mt-0.5 block text-xs text-steel-600">{item.blurb}</span>
+                  </Link>
+                ))}
+              </div>
+            ) : null}
+          </div>
 
           {LINKS.map((link) => (
             <Link
@@ -258,6 +317,31 @@ export function Header({ groups }: { groups: NavGroup[] }) {
             <Link href="/products" className="block border-b border-line py-4 text-base font-semibold text-ink-950">
               All products
             </Link>
+
+            {/* Company group — same set as the desktop dropdown */}
+            <div className="border-b border-line">
+              <button
+                type="button"
+                onClick={() => setCompanyDrawerOpen((v) => !v)}
+                aria-expanded={companyDrawerOpen}
+                className="flex w-full items-center justify-between py-4 text-left text-base font-semibold text-ink-950"
+              >
+                Company
+                <ChevronDown aria-hidden className={cn('h-4 w-4 transition-transform', companyDrawerOpen && 'rotate-180')} />
+              </button>
+              {companyDrawerOpen ? (
+                <ul className="pb-3">
+                  {COMPANY.map((item) => (
+                    <li key={item.href}>
+                      <Link href={item.href} className="block py-3 text-[0.9375rem] text-steel-600">
+                        {item.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+
             {LINKS.map((link) => (
               <Link
                 key={link.href}

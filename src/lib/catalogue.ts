@@ -103,6 +103,11 @@ export async function getRelated(product: CatalogueProduct, limit = 8): Promise<
   return (withImages.length >= 4 ? withImages : pool).slice(0, limit);
 }
 
+/** Admin-authored category copy + FAQ. Null when the client has not written it yet. */
+export async function getFamilyContent(slug: string) {
+  return withDb(() => repo.familyContent(slug), null as repo.FamilyContentRecord | null);
+}
+
 export async function getApprovedReviews(productSlug: string) {
   return withDb(() => repo.approvedReviewsFor(productSlug), [] as repo.ReviewRecord[]);
 }

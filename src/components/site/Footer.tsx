@@ -8,7 +8,11 @@ import type { NavFamily } from './Header';
 
 const COMPANY = [
   { href: '/about', label: 'About DecArt' },
+  { href: '/life-at-decart', label: 'Life at DecArt' },
   { href: '/manufacturing', label: 'Manufacturing' },
+  { href: '/sustainability', label: 'Sustainability' },
+  { href: '/certificates', label: 'Certificates' },
+  { href: '/career', label: 'Career' },
   { href: '/clients', label: 'Clients' },
   { href: '/gallery', label: 'Gallery' },
   { href: '/blog', label: 'Blog' },
