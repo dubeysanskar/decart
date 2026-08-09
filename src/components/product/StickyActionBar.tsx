@@ -49,14 +49,16 @@ export function StickyActionBar({ waHref, quoteHref }: { waHref: string; quoteHr
           target="_blank"
           rel="noopener noreferrer"
           data-wa="pdp-bar"
-          className="flex h-12 flex-1 items-center justify-center gap-2 rounded-btn bg-[#25D366] font-semibold text-white"
+          // min-w-0: without it a flex child refuses to shrink below its text width, so at 390px
+          // the three actions together overflowed the bar and forced the whole page wider.
+          className="flex h-12 min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-btn bg-[#25D366] font-semibold text-white"
         >
-          <MessageCircle className="h-4 w-4" />
+          <MessageCircle className="h-4 w-4 shrink-0" />
           WhatsApp
         </a>
         <Link
           href={quoteHref}
-          className="flex h-12 w-1/2 items-center justify-center rounded-btn bg-ink-900 font-semibold text-porcelain"
+          className="flex h-12 min-w-0 flex-[1.2] items-center justify-center whitespace-nowrap rounded-btn bg-ink-900 font-semibold text-porcelain"
         >
           Get Quote
         </Link>

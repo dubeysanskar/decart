@@ -23,3 +23,6 @@ next-env.d.ts
 
 # original (unoptimised) photo-shoot masters — derivatives live in /public/products
 source-images/
+
+# local dev server logs
+serve.log

@@ -61,7 +61,9 @@ export function ProductGallery({
   const alt = `DecArt ${name} (${code})${colourLabel ? ` in ${colourLabel}` : ''} — office chair manufacturer, Faridabad`;
 
   return (
-    <div className="flex flex-col gap-4">
+    // min-w-0: as a grid item this defaults to min-width:auto, so the thumbnail strip below
+    // would force the whole PDP wider than a 390px phone.
+    <div className="flex min-w-0 flex-col gap-4">
       <div className="hex-frame relative aspect-square overflow-hidden rounded-img bg-porcelain">
         {current ? (
           <>

@@ -97,8 +97,11 @@ export function Hero() {
 
       <div className="container-x relative">
         <div className="grid items-end gap-10 lg:grid-cols-[1fr_1.05fr] lg:gap-6">
-          {/* ---------------------------------------------------------- copy */}
-          <div className="pb-2 lg:pb-14">
+          {/* ---------------------------------------------------------- copy
+              min-w-0: grid items default to min-width:auto and refuse to shrink below their
+              content, so without this the podium rail below drags this whole column past the
+              viewport and the headline, copy and buttons get clipped on a phone. */}
+          <div className="min-w-0 pb-2 lg:pb-14">
             <p
               data-anim="up"
               className="inline-flex items-center gap-2 rounded-full border border-line bg-paper/85 px-4 py-2 text-xs font-medium text-ink-900 shadow-card backdrop-blur"
@@ -156,7 +159,7 @@ export function Hero() {
           </div>
 
           {/* ---------------------------------------------------------- podium lineup */}
-          <div className="relative" data-anim="scale">
+          <div className="relative min-w-0" data-anim="scale">
             {/* the lineup bleeds to the screen edges on a phone so the scroll reads as a rail */}
             <div className="no-scrollbar -mx-5 flex snap-x snap-mandatory items-end gap-1 overflow-x-auto px-5 pb-1 sm:gap-2 md:-mx-8 md:px-8 lg:mx-0 lg:justify-end lg:overflow-visible lg:px-0">
               {lineup.map((item, i) => (
@@ -195,7 +198,7 @@ export function Hero() {
       {/* marketplace + tagline strip along the foot of the banner */}
       <div className="relative border-t border-line bg-paper/85 backdrop-blur">
         <div className="container-x flex flex-col items-start justify-between gap-3 py-4 md:flex-row md:items-center">
-          <div className="no-scrollbar flex items-center gap-5 overflow-x-auto">
+          <div className="no-scrollbar flex w-full min-w-0 items-center gap-5 overflow-x-auto md:w-auto">
             <span className="shrink-0 rounded-full bg-decart-600 px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white">
               Available on
             </span>

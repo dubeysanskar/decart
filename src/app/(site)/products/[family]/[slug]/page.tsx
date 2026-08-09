@@ -151,7 +151,7 @@ export default async function ProductPage({ params }: { params: { family: string
               code={product.code}
             />
 
-            <div>
+            <div className="min-w-0">
               <Eyebrow>{family?.name ?? product.family}</Eyebrow>
               <h1 className="mt-3 font-display text-h2 text-ink-950">{product.name}</h1>
 
