@@ -261,12 +261,13 @@ async function main() {
    */
   let contentCreated = 0;
   let contentKept = 0;
+  let contentRefreshed = 0;
 
   for (const family of FAMILIES.filter((f) => !f.hidden)) {
     const present = (
       await db.execute({ sql: `SELECT slug FROM family_content WHERE slug = ?`, args: [family.slug] })
     ).rows[0];
-    if (present) {
+    if (present && !OVERWRITE) {
       contentKept++;
       continue;
     }
@@ -286,24 +287,54 @@ async function main() {
       { q: 'Do you deliver outside NCR?', a: COPY.quoteFaq[2].a },
     ];
 
-    await db.execute({
-      sql: `INSERT INTO family_content (slug, heading, intro, bodyHtml, faq, seoTitle, seoDescription, updatedAt)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      args: [
-        family.slug,
-        `About ${family.name.toLowerCase()}`,
-        lede,
-        `<p>${singular} models from DecArt Industries are designed and manufactured end-to-end at our Faridabad facility. ${lede}</p>`,
-        J(faq),
-        '',
-        '',
-        now(),
-      ],
-    });
-    contentCreated++;
+    /**
+     * Section order follows the reference page the client sent (geeken.in/collections/wood-storage):
+     * About the manufacturer → Our <Category> Range → Our Process. Every family gets the same
+     * skeleton so the client edits copy rather than inventing structure.
+     */
+    const bodyHtml = [
+      `<p>DecArt Industries has manufactured office furniture in Faridabad since ${SITE.established}. Frames, ply, metalwork and upholstery are all produced in-house, which is how we can quote a specification and then actually ship it — ${family.name.toLowerCase()} included.</p>`,
+      `<h3>Our ${family.name} Range</h3>`,
+      `<p>${lede} Every ${singular.toLowerCase()} is built to order: finish, mechanism, base and upholstery are specified per requirement, and project quantities can be matched to a shade or a reference design.</p>`,
+      `<h3>Our Process — How We Work</h3>`,
+      `<ul>`,
+      `<li><strong>Design.</strong> Ergonomics, frame geometry and finish planned against how the product will really be used.</li>`,
+      `<li><strong>Fabricate.</strong> Frames, ply and metalwork made and finished on our own floor.</li>`,
+      `<li><strong>Upholster &amp; assemble.</strong> High-density moulded PU foam, mesh and leatherette fitted by hand.</li>`,
+      `<li><strong>Test &amp; pack.</strong> BIFMA/SGS-tested components, per-piece checks, and packing that survives Indian roads.</li>`,
+      `</ul>`,
+    ].join('');
+
+    const args = [
+      `About DecArt — Trusted Office Furniture Manufacturer`,
+      lede,
+      bodyHtml,
+      J(faq),
+      '',
+      '',
+      now(),
+    ];
+
+    if (present) {
+      await db.execute({
+        sql: `UPDATE family_content SET heading = ?, intro = ?, bodyHtml = ?, faq = ?, seoTitle = ?,
+                seoDescription = ?, updatedAt = ? WHERE slug = ?`,
+        args: [...args, family.slug],
+      });
+      contentRefreshed++;
+    } else {
+      await db.execute({
+        sql: `INSERT INTO family_content (slug, heading, intro, bodyHtml, faq, seoTitle, seoDescription, updatedAt)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        args: [family.slug, ...args],
+      });
+      contentCreated++;
+    }
   }
 
-  console.log(`Categories: ${contentCreated} seeded · ${contentKept} left as the client wrote them\n`);
+  console.log(
+    `Categories: ${contentCreated} seeded · ${contentRefreshed} refreshed · ${contentKept} left as the client wrote them\n`,
+  );
 
   db.close();
   console.log('Done.');

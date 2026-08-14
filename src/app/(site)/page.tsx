@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { Hero } from '@/components/home/Hero';
+import { Hero, MarketplaceStrip } from '@/components/home/Hero';
+import { CategoryDirectory } from '@/components/home/CategoryDirectory';
 import {
   TrustBar,
   FamilyGrid,
@@ -10,16 +11,10 @@ import {
   ProjectStrip,
   QuoteBand,
 } from '@/components/home/sections';
-import {
-  ColourStory,
-  HowItWorks,
-  HomeFaq,
-  CatalogueStrip,
-  SegmentList,
-} from '@/components/home/extra-sections';
+import { ColourStory, HowItWorks, HomeFaq, SegmentList } from '@/components/home/extra-sections';
 import { SectionHeading } from '@/components/ui/typography';
 import { ButtonLink } from '@/components/ui/Button';
-import { getFeatured, getFeaturedFamilies, getFeaturedReviews, getProduct } from '@/lib/catalogue';
+import { getFeatured, getFamilyTiles, getFeaturedReviews, getProduct } from '@/lib/catalogue';
 import { getPublishedPosts } from '@/lib/blog';
 import { formatDate } from '@/lib/utils';
 import { ProductImage } from '@/components/ui/ProductImage';
@@ -28,8 +23,8 @@ export const revalidate = 3600;
 
 export default async function HomePage() {
   const [families, bestsellers, reviews, posts, colourHero] = await Promise.all([
-    // 9 tiles: one featured 2×2 stage + eight standard tiles fill the 4-column grid exactly
-    getFeaturedFamilies(9),
+    // every visible family, so the directory can show all three groups
+    getFamilyTiles(),
     getFeatured(10),
     getFeaturedReviews(3),
     getPublishedPosts(3),
@@ -37,11 +32,18 @@ export default async function HomePage() {
     getProduct('bubble-mb'),
   ]);
 
+  // the slider leads with the families we hold real photography for
+  const photographed = families.filter((family) => family.cover);
+  const heroCategories = photographed.slice(0, 8);
+  // 9 tiles: one featured 2×2 stage + eight standard tiles fill the 4-column grid exactly
+  const featuredFamilies = (photographed.length >= 4 ? photographed : families).slice(0, 9);
+
   return (
     <>
-      <Hero />
+      <Hero categories={heroCategories} />
       <TrustBar />
-      <FamilyGrid families={families} />
+      <FamilyGrid families={featuredFamilies} />
+      <CategoryDirectory families={families} />
       <BestsellerRail products={bestsellers} />
       <WhyDecArt />
       <ColourStory product={colourHero ?? undefined} />
@@ -50,7 +52,6 @@ export default async function HomePage() {
       <ClientMarquee />
       <Testimonials reviews={reviews} />
       <ProjectStrip />
-      <CatalogueStrip />
       <HomeFaq />
 
       {posts.length ? (
@@ -100,6 +101,9 @@ export default async function HomePage() {
           </div>
         </section>
       ) : null}
+
+      {/* the client asked for the marketplace strip at the foot of the page */}
+      <MarketplaceStrip />
 
       <QuoteBand />
     </>

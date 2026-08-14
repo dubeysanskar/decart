@@ -1,10 +1,7 @@
-import Image from 'next/image';
-import Link from 'next/link';
 import { ArrowRight, PersonStanding, Wind, SlidersHorizontal, Gem, Phone } from 'lucide-react';
 import { ButtonLink } from '@/components/ui/Button';
-import { publicFileExists } from '@/lib/assets';
 import { SITE } from '@/lib/site';
-import { cn } from '@/lib/utils';
+import { HeroCategorySlider, type HeroCategory } from './HeroCategorySlider';
 
 /**
  * "Smart seating" hero — the founder's campaign banner rebuilt as a live page.
@@ -19,69 +16,9 @@ const FEATURES = [
   { icon: Gem, label: 'Durable & stylish' },
 ];
 
-/** The podium lineup — every image is a real studio shot of a stock colourway. */
-const LINEUP = [
-  {
-    code: 'GLANZA-HB',
-    name: 'Glanza',
-    colour: 'White mesh',
-    dot: '#E9EBEC',
-    src: '/products/mesh/glanza-hb/white-1.webp',
-    href: '/products/mesh/glanza-hb',
-    tall: false,
-  },
-  {
-    code: 'BONAI-HB',
-    name: 'Bonai',
-    colour: 'Black · hanger back',
-    dot: '#23272B',
-    src: '/products/mesh/bonai-hb/black-1.webp',
-    href: '/products/mesh/bonai-hb',
-    tall: true,
-  },
-  {
-    code: 'MUSTANG-HB',
-    name: 'Mustang',
-    colour: 'Red seat',
-    dot: '#C93A3A',
-    src: '/products/ultra-luxury-mesh/mustang-hb/black-with-red-1.webp',
-    href: '/products/ultra-luxury-mesh/mustang-hb',
-    tall: false,
-  },
-  {
-    code: 'EIFFEL-HB',
-    name: 'Eiffel',
-    colour: 'Orange seat',
-    dot: '#E07B23',
-    src: '/products/special-luxury-mesh/eiffel-hb/black-with-orange-1.webp',
-    href: '/products/special-luxury-mesh/eiffel-hb',
-    tall: true,
-  },
-  {
-    code: 'BUBBLE-MB',
-    name: 'Bubble',
-    colour: 'Blue seat',
-    dot: '#2E6FC7',
-    src: '/products/task-mesh/bubble-mb/black-with-blue-1.webp',
-    href: '/products/task-mesh/bubble-mb',
-    tall: false,
-  },
-  {
-    code: 'COMFORT-HI-STOOL',
-    name: 'Comfort Stool',
-    colour: 'Green',
-    dot: '#5CB335',
-    src: '/products/cafe/comfort-hi-stool/green-1.webp',
-    href: '/products/cafe/comfort-hi-stool',
-    tall: true,
-  },
-];
-
 const MARKETPLACES = ['GeM', 'Flipkart', 'Amazon', 'IndiaMART', 'TradeIndia'];
 
-export function Hero() {
-  const lineup = LINEUP.filter((item) => publicFileExists(item.src));
-
+export function Hero({ categories }: { categories: HeroCategory[] }) {
   return (
     <section data-hero className="relative overflow-hidden pt-24 sm:pt-28 md:pt-32">
       {/* the stage: diagonal blue→white wash with two soft glows, like the campaign banner */}
@@ -158,60 +95,45 @@ export function Hero() {
             </ul>
           </div>
 
-          {/* ---------------------------------------------------------- podium lineup */}
+          {/* ------------------------------------------------- category slider on podiums */}
           <div className="relative min-w-0" data-anim="scale">
-            {/* the lineup bleeds to the screen edges on a phone so the scroll reads as a rail */}
-            <div className="no-scrollbar -mx-5 flex snap-x snap-mandatory items-end gap-1 overflow-x-auto px-5 pb-1 sm:gap-2 md:-mx-8 md:px-8 lg:mx-0 lg:justify-end lg:overflow-visible lg:px-0">
-              {lineup.map((item, i) => (
-                <Link
-                  key={item.code}
-                  href={item.href}
-                  aria-label={`${item.name} — ${item.colour}`}
-                  className="group flex w-[122px] shrink-0 snap-start flex-col items-center sm:w-[150px] lg:w-auto lg:flex-1 lg:snap-align-none"
-                >
-                  <div className="relative z-10 -mb-6 aspect-[3/4] w-full transition-transform duration-300 ease-out group-hover:-translate-y-2">
-                    <Image
-                      src={item.src}
-                      alt={`DecArt ${item.name} ${item.code} — ${item.colour}`}
-                      fill
-                      // only the chairs in the first viewport are worth blocking the LCP for
-                      priority={i < 3}
-                      loading={i < 3 ? undefined : 'lazy'}
-                      sizes="(max-width: 640px) 130px, (max-width: 1024px) 150px, 170px"
-                      className="object-contain drop-shadow-[0_18px_20px_rgb(14_27_40/0.18)]"
-                    />
-                  </div>
-                  {/* the white podium */}
-                  <div
-                    className={cn(
-                      'w-full rounded-t-[2rem] bg-paper shadow-podium transition-shadow group-hover:shadow-pop',
-                      item.tall ? 'h-24 md:h-32' : 'h-14 md:h-20',
-                    )}
-                  />
-                </Link>
-              ))}
-            </div>
+            <HeroCategorySlider categories={categories} />
           </div>
         </div>
       </div>
 
-      {/* marketplace + tagline strip along the foot of the banner */}
-      <div className="relative border-t border-line bg-paper/85 backdrop-blur">
-        <div className="container-x flex flex-col items-start justify-between gap-3 py-4 md:flex-row md:items-center">
-          <div className="no-scrollbar flex w-full min-w-0 items-center gap-5 overflow-x-auto md:w-auto">
-            <span className="shrink-0 rounded-full bg-decart-600 px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white">
-              Available on
-            </span>
-            {MARKETPLACES.map((name) => (
-              <span key={name} className="shrink-0 text-sm font-semibold text-steel-600">
-                {name}
-              </span>
-            ))}
-          </div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-steel-400">
+      <div className="relative border-t border-line bg-paper/70 backdrop-blur">
+        <div className="container-x py-4">
+          <p className="text-center font-mono text-[11px] uppercase tracking-[0.12em] text-steel-400 md:text-left">
             Comfort that keeps you ahead
           </p>
         </div>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * "Available on" marketplace strip. The client asked for this at the foot of the page rather
+ * than under the hero, so it ships as its own section and the home page places it near the end.
+ */
+export function MarketplaceStrip() {
+  return (
+    <section className="border-y border-line bg-porcelain py-10">
+      <div className="container-x flex flex-col items-center gap-6">
+        <span className="rounded-full bg-decart-600 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white">
+          Available on
+        </span>
+        <div className="no-scrollbar flex w-full min-w-0 items-center justify-start gap-8 overflow-x-auto md:justify-center">
+          {MARKETPLACES.map((name) => (
+            <span key={name} className="shrink-0 text-base font-semibold text-steel-600 md:text-lg">
+              {name}
+            </span>
+          ))}
+        </div>
+        <p className="text-center text-sm text-steel-600">
+          Buy single pieces through our marketplace listings, or talk to us directly for project quantities.
+        </p>
       </div>
     </section>
   );

@@ -299,41 +299,48 @@ export function ClientMarquee() {
   const logos = listPublic('clients');
 
   if (!logos.length) {
+    // no logo files yet — the whole band is still a link through to the client wall
     return (
       <section className="border-y border-line bg-porcelain py-12">
-        <div className="container-x text-center">
+        <Link href="/clients" className="container-x group block text-center">
           <Eyebrow>Trusted by teams across India</Eyebrow>
           <p className="mx-auto mt-5 max-w-4xl text-sm leading-relaxed text-steel-600">
             {SITE.clients.join(' · ')}
           </p>
-          <Link href="/clients" className="mt-6 inline-block text-sm font-semibold text-decart-700 hover:underline">
+          <span className="mt-6 inline-block text-sm font-semibold text-decart-700 group-hover:underline">
             See the client wall →
-          </Link>
-        </div>
+          </span>
+        </Link>
       </section>
     );
   }
 
   const doubled = [...logos, ...logos];
 
+  // client brief: "logo slider — click karne pe client page open ho jaye"
   return (
     <section className="overflow-hidden border-y border-line bg-porcelain py-12">
       <div className="container-x text-center">
         <Eyebrow>Trusted by teams across India</Eyebrow>
       </div>
-      <div className="group mt-8 flex w-max animate-marquee gap-12 hover:[animation-play-state:paused]">
-        {doubled.map((src, i) => (
-          <Image
-            key={`${src}-${i}`}
-            src={src}
-            alt=""
-            width={120}
-            height={56}
-            aria-hidden={i >= logos.length}
-            className="h-12 w-auto opacity-60 grayscale transition hover:opacity-100 hover:grayscale-0"
-          />
-        ))}
-      </div>
+      <Link href="/clients" aria-label="See the client wall" className="group block">
+        <div className="mt-8 flex w-max animate-marquee gap-12 group-hover:[animation-play-state:paused]">
+          {doubled.map((src, i) => (
+            <Image
+              key={`${src}-${i}`}
+              src={src}
+              alt=""
+              width={120}
+              height={56}
+              aria-hidden={i >= logos.length}
+              className="h-12 w-auto opacity-60 grayscale transition hover:opacity-100 hover:grayscale-0"
+            />
+          ))}
+        </div>
+        <span className="container-x mt-8 block text-center text-sm font-semibold text-decart-700 group-hover:underline">
+          See the client wall →
+        </span>
+      </Link>
     </section>
   );
 }

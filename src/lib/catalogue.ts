@@ -75,8 +75,11 @@ export async function getNavFamilies() {
     .map((f) => ({ ...f, count: counts[f.slug] ?? 0, lede: FAMILY_LEDE[f.slug] ?? '' }));
 }
 
-/** Family tiles for the homepage — families we hold real photography for lead the list. */
-export async function getFeaturedFamilies(limit = 8) {
+/**
+ * Every visible family as a tile, with a cover image where we hold photography.
+ * Photographed families sort first; the rest keep their catalogue order by size.
+ */
+export async function getFamilyTiles() {
   const families = await getNavFamilies();
   const products = await getAllProducts();
   const photoCount = products.reduce<Record<string, number>>((acc, p) => {
@@ -87,10 +90,14 @@ export async function getFeaturedFamilies(limit = 8) {
   const cover = (slug: string) =>
     products.find((p) => p.family === slug && p.images?.length)?.images?.[0]?.src ?? '';
 
-  const tiles = families
+  return families
     .map((f) => ({ ...f, photos: photoCount[f.slug] ?? 0, cover: cover(f.slug) }))
     .sort((a, b) => b.photos - a.photos || b.count - a.count);
+}
 
+/** Family tiles for the homepage grid — families we hold real photography for lead the list. */
+export async function getFeaturedFamilies(limit = 8) {
+  const tiles = await getFamilyTiles();
   // a homepage tile with no cover image is a hole in the grid — only pad with them if we must
   const shot = tiles.filter((t) => t.cover);
   return (shot.length >= 4 ? shot : tiles).slice(0, limit);
