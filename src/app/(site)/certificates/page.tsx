@@ -10,7 +10,7 @@ import { SITE } from '@/lib/site';
 export const revalidate = 3600;
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Certificates & Compliance — DecArt Industries',
+  title: 'Certificates & Compliance — DecArt Furniture',
   description:
     'GST registration, BIFMA/SGS-tested components and the quality standards DecArt Industries builds to. Documentation available on request for tenders and audits.',
   path: '/certificates',

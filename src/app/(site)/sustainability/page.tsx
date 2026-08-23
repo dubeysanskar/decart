@@ -8,7 +8,7 @@ import { buildMetadata } from '@/lib/seo';
 export const revalidate = 3600;
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Sustainability — DecArt Industries',
+  title: 'Sustainability — DecArt Furniture',
   description:
     'How DecArt Industries builds responsibly: durable-first design, in-house manufacturing that cuts transport, material efficiency, and repairability that keeps chairs out of landfill.',
   path: '/sustainability',

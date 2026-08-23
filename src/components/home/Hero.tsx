@@ -121,7 +121,7 @@ export function MarketplaceStrip() {
   return (
     <section className="border-y border-line bg-porcelain py-10">
       <div className="container-x flex flex-col items-center gap-6">
-        <span className="rounded-full bg-decart-600 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white">
+        <span className="rounded-full bg-decart-700 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white">
           Available on
         </span>
         <div className="no-scrollbar flex w-full min-w-0 items-center justify-start gap-8 overflow-x-auto md:justify-center">

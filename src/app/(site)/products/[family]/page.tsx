@@ -20,10 +20,11 @@ export async function generateMetadata({ params }: { params: { family: string } 
   // admin-authored SEO wins over the generated default when it has been filled in
   const content = await getFamilyContent(family.slug);
   return buildMetadata({
-    title: content?.seoTitle || `${family.name} — DecArt Industries | Manufacturer in Faridabad`,
+    // shape mirrors the reference site the client sent: benefit + category + manufacturer + brand
+    title: content?.seoTitle || `Quality ${family.name} by Office Furniture Manufacturer DecArt`,
     description:
       content?.seoDescription ||
-      `${FAMILY_LEDE[family.slug] ?? family.name} Manufactured in-house by DecArt Industries, Faridabad. Request a quote or WhatsApp for pricing.`,
+      `Explore DecArt's ${family.name.toLowerCase()} range. ${FAMILY_LEDE[family.slug] ?? ''} Built with durable materials and customisable for every workspace need, manufactured in Faridabad.`,
     path: `/products/${family.slug}`,
   });
 }

@@ -1,5 +1,6 @@
 import 'server-only';
 import { withDb, hasDb } from './db';
+import { publicFileExists } from './assets';
 import * as repo from './repo';
 import {
   FAMILIES,
@@ -87,8 +88,17 @@ export async function getFamilyTiles() {
     return acc;
   }, {});
 
-  const cover = (slug: string) =>
-    products.find((p) => p.family === slug && p.images?.length)?.images?.[0]?.src ?? '';
+  /**
+   * Cover priority: a real studio shot of a product in the family, else the client's own
+   * category artwork lifted from decartseatings.in into /public/families, else nothing
+   * (the tile then renders the branded placeholder).
+   */
+  const cover = (slug: string) => {
+    const shot = products.find((p) => p.family === slug && p.images?.length)?.images?.[0]?.src;
+    if (shot) return shot;
+    const artwork = `/families/${slug}.webp`;
+    return publicFileExists(artwork) ? artwork : '';
+  };
 
   return families
     .map((f) => ({ ...f, photos: photoCount[f.slug] ?? 0, cover: cover(f.slug) }))

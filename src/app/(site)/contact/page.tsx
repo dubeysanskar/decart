@@ -9,7 +9,7 @@ import { waLink, WA } from '@/lib/whatsapp';
 export const revalidate = 3600;
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Contact DecArt Industries — Faridabad Office Furniture Manufacturer',
+  title: 'Contact DecArt Furniture — Faridabad Office Furniture Manufacturer',
   description:
     'Call +91 93119 42001, WhatsApp us or send an enquiry. DecArt Industries, Plot 230-C, Sector 87, Faridabad, Haryana. Mon–Sat, 9:30 AM – 6:00 PM.',
   path: '/contact',

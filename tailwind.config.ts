@@ -5,20 +5,22 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // "smart seating" palette — deep navy text on airy blue-white, saturated brand blue for CTAs
-        ink: { 950: '#0E1B28', 900: '#16273A', 800: '#24384E' },
+        // palette sampled from the logo: #58B5E0 (mark) and #2B2A28 (wordmark).
+        // 500 is the exact brand blue. 600/700 are darkened only where text and button fills
+        // need AA contrast on white — the brand blue itself is 2.31:1 and fails as a text colour.
+        ink: { 950: '#2B2A28', 900: '#1F1E1C', 800: '#3C3A37' },
         porcelain: '#F3F8FC',
         paper: '#FFFFFF',
         line: '#E1EAF2',
         steel: { 600: '#5B6B7A', 400: '#93A3B2' },
         decart: {
-          50: '#EFF7FD',
-          100: '#DFEFFA',
-          300: '#8FCDEF',
-          500: '#3D9FE0',
-          600: '#1E7FC9',
-          700: '#1565A6',
-          800: '#0F4E82',
+          50: '#F2FAFD',
+          100: '#E1F3FB',
+          300: '#9BD5EE',
+          500: '#58B5E0',
+          600: '#2E8BB8',
+          700: '#24708F',
+          800: '#1B5A75',
         },
         cognac: { 500: '#C9822E', 600: '#A96A22' },
         success: '#1E9E5A',

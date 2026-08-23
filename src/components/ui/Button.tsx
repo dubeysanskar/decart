@@ -20,7 +20,8 @@ function styles(variant: ButtonVariant, onDark: boolean) {
     case 'primary':
       return onDark
         ? 'bg-paper text-decart-700 hover:bg-decart-50'
-        : 'bg-decart-600 text-white shadow-pop hover:bg-decart-700';
+        // 700, not the raw brand blue: white on #58B5E0 is 2.31:1 and on 600 still only 3.82:1
+        : 'bg-decart-700 text-white shadow-pop hover:bg-decart-800';
     case 'secondary':
       return onDark
         ? 'border border-white/25 text-porcelain hover:border-white/60 hover:bg-white/5'

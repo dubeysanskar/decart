@@ -32,7 +32,7 @@ export function buildMetadata({
       title,
       description,
       url,
-      siteName: SITE.shortName,
+      siteName: SITE.brandName,
       type,
       locale: 'en_IN',
       images: [{ url: image.startsWith('http') ? image : `${SITE.url}${image}`, width: 1200, height: 630, alt: title }],

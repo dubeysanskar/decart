@@ -18,14 +18,14 @@ const mono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500'], display
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   ...buildMetadata({
-    title: 'DecArt Industries — Office Chairs & Furniture Manufacturer, Faridabad',
+    title: 'Trusted Office Furniture Manufacturer in India | DecArt Furniture',
     description:
-      'DecArt Industries manufactures office chairs, ergonomic mesh seating, workstations and institutional furniture in Faridabad since 2015. 350+ models, pan-India delivery.',
+      'DecArt Furniture is a leading office furniture manufacturer in Faridabad, offering ergonomic seating, workstations and modular designs. Since 2015, 350+ models, BIFMA/SGS-tested components, pan-India delivery.',
     path: '/',
   }),
   title: {
-    default: 'DecArt Industries — Office Chairs & Furniture Manufacturer, Faridabad',
-    template: '%s | DecArt Industries',
+    default: 'Trusted Office Furniture Manufacturer in India | DecArt Furniture',
+    template: '%s | DecArt Furniture',
   },
   robots: { index: true, follow: true },
   manifest: undefined,

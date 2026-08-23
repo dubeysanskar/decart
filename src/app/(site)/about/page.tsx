@@ -11,7 +11,7 @@ import { listPublic } from '@/lib/assets';
 export const revalidate = 3600;
 
 export const metadata: Metadata = buildMetadata({
-  title: 'About DecArt Industries — Office Furniture Manufacturer Since 2015',
+  title: 'About DecArt Furniture — Office Furniture Manufacturer Since 2015',
   description:
     'DecArt Industries has designed and built office chairs and modular furniture in Faridabad since 2015 — 350+ models across 30 families, manufactured end-to-end in our own facility.',
   path: '/about',

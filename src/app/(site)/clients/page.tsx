@@ -12,7 +12,7 @@ import { SITE } from '@/lib/site';
 export const revalidate = 3600;
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Clients & Testimonials — DecArt Industries',
+  title: 'Clients & Testimonials — DecArt Furniture',
   description:
     'Corporates, universities, hotels and hospitals across India furnish with DecArt. See the client wall, read reviews, or apply to become a DecArt dealer.',
   path: '/clients',

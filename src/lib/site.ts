@@ -3,6 +3,8 @@
 export const SITE = {
   legalName: 'DecArt Industries Private Limited',
   shortName: 'DecArt Industries',
+  /** Marketing brand used in page titles and og:site_name (the legal entity stays above). */
+  brandName: 'DecArt Furniture',
   tagline: 'Trust Is Our Sign',
   established: 2015,
   url: process.env.NEXT_PUBLIC_SITE_URL || 'https://decartseatings.in',

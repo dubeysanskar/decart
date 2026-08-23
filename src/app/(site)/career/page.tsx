@@ -10,7 +10,7 @@ import { SITE } from '@/lib/site';
 export const revalidate = 3600;
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Careers at DecArt Industries — Faridabad',
+  title: 'Careers at DecArt Furniture — Faridabad',
   description:
     'Join DecArt Industries in Faridabad. Openings across production, upholstery, quality, design, sales and dispatch at an office furniture manufacturer building end-to-end in-house.',
   path: '/career',
