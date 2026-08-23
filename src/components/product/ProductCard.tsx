@@ -35,12 +35,15 @@ export function ProductCard({
   priority = false,
   className,
   sizes = '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw',
+  anim,
 }: {
   product: CatalogueProduct;
   familyName?: string;
   priority?: boolean;
   className?: string;
   sizes?: string;
+  /** opt this card into the scroll-reveal layer, e.g. anim="rise" */
+  anim?: string;
 }) {
   const hero = product.images?.[0];
   const colourways = product.colourways ?? [];
@@ -48,6 +51,7 @@ export function ProductCard({
   return (
     <Link
       href={`/products/${product.family}/${product.slug}`}
+      data-anim={anim}
       className={cn(
         'group relative flex flex-col overflow-hidden rounded-card bg-paper',
         'shadow-[0_0_0_1px_rgb(227_231_236)] transition-all duration-300',

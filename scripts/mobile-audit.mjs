@@ -45,11 +45,14 @@ for (const [name, path] of PAGES) {
       document.body.style.overflowX = 'visible';
       document.documentElement.style.overflowX = 'visible';
       const winW = window.innerWidth;
-      const inScroller = (el) => {
+      // an element that sticks out is only a problem if nothing clips it: a horizontal
+      // scroller contains it, and so does an ancestor with overflow hidden/clip (which is how
+      // decorative bleeds are meant to work). The doc-width check below catches real overflow.
+      const isContained = (el) => {
         let p = el.parentElement;
         while (p) {
           const ov = getComputedStyle(p).overflowX;
-          if (ov === 'auto' || ov === 'scroll') return true;
+          if (ov === 'auto' || ov === 'scroll' || ov === 'hidden' || ov === 'clip') return true;
           p = p.parentElement;
         }
         return false;
@@ -59,7 +62,7 @@ for (const [name, path] of PAGES) {
       for (const el of document.querySelectorAll('body *')) {
         const r = el.getBoundingClientRect();
         if (r.width === 0 || r.height === 0) continue;
-        if (r.right > winW + 1 && !inScroller(el)) {
+        if (r.right > winW + 1 && !isContained(el)) {
           bad.push({
             tag: el.tagName.toLowerCase(),
             cls: String(el.className || '').slice(0, 82),

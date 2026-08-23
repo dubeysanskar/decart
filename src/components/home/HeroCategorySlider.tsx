@@ -79,6 +79,7 @@ export function HeroCategorySlider({ categories }: { categories: HeroCategory[] 
         ref={railRef}
         role="region"
         aria-label="Product categories"
+        data-stagger="0.08"
         className="no-scrollbar -mx-4 flex snap-x snap-mandatory items-stretch overflow-x-auto px-4 pb-2 md:-mx-7 md:px-7 lg:mx-0 lg:px-0"
       >
         {categories.map((category, i) => (
@@ -86,6 +87,7 @@ export function HeroCategorySlider({ categories }: { categories: HeroCategory[] 
             key={category.slug}
             href={`/products/${category.slug}`}
             aria-label={`${category.name} — ${category.count} models`}
+            data-anim="rise"
             className="group flex w-1/2 shrink-0 snap-start flex-col px-1 sm:w-1/3 lg:w-1/4"
           >
             {/*
@@ -93,7 +95,7 @@ export function HeroCategorySlider({ categories }: { categories: HeroCategory[] 
               podium block underneath just produced a visible seam against the blue stage.
             */}
             <div className="flex flex-1 flex-col overflow-hidden rounded-card bg-paper shadow-podium transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-pop">
-              <div className="relative aspect-[3/4] w-full">
+              <div className="relative aspect-[4/5] w-full lg:aspect-[3/4]">
                 {category.cover ? (
                   <Image
                     src={category.cover}
@@ -111,8 +113,8 @@ export function HeroCategorySlider({ categories }: { categories: HeroCategory[] 
                 )}
               </div>
 
-              <div className="flex flex-col items-center border-t border-line px-3 py-3.5">
-                <span className="line-clamp-1 text-center text-[0.8125rem] font-semibold text-ink-950 group-hover:text-decart-700">
+              <div className="flex flex-col items-center border-t border-line px-3 py-3.5 transition-colors group-hover:bg-decart-50">
+                <span className="line-clamp-1 text-center text-[0.8125rem] font-semibold text-ink-950 transition-colors group-hover:text-decart-700">
                   {category.name}
                 </span>
                 <span className="mt-0.5 font-mono text-[10px] tracking-[0.08em] text-steel-400">

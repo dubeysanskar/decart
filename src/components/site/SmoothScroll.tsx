@@ -107,19 +107,44 @@ export function SmoothScroll() {
           return { opacity: 0, scale: 0.94 };
         case 'clip':
           return { opacity: 0, clipPath: 'inset(0 0 100% 0)', y: 12 };
+        // headline lines: wipe in from the left rather than sliding
+        case 'mask':
+          return { opacity: 1, clipPath: 'inset(0 100% 0 0)' };
+        case 'left':
+          return { opacity: 0, x: -44 };
+        case 'right':
+          return { opacity: 0, x: 44 };
+        // cards and product shots: a little further, with a touch of scale
+        case 'rise':
+          return { opacity: 0, y: 52, scale: 0.97 };
         default:
           return { opacity: 0, y: 28 };
       }
     };
-    const to = (kind: string) =>
-      kind === 'clip' ? { opacity: 1, clipPath: 'inset(0 0 0% 0)', y: 0 } : { opacity: 1, y: 0, scale: 1 };
+    const to = (kind: string) => {
+      switch (kind) {
+        case 'clip':
+          return { opacity: 1, clipPath: 'inset(0 0 0% 0)', y: 0 };
+        case 'mask':
+          return { opacity: 1, clipPath: 'inset(0 0% 0 0)' };
+        case 'left':
+        case 'right':
+          return { opacity: 1, x: 0 };
+        default:
+          return { opacity: 1, y: 0, scale: 1 };
+      }
+    };
 
     let ctx: ReturnType<typeof gsap.context> | null = null;
 
     try {
       ctx = gsap.context(() => {
         // ---- hero: plays on load, no scroll trigger ----
-        const heroItems = gsap.utils.toArray<HTMLElement>('[data-hero] [data-anim]');
+        // elements inside a [data-stagger] group are cascaded by that group instead, so the
+        // hero sequence stays short rather than stepping through twenty items one by one
+        const heroItems = gsap.utils
+          .toArray<HTMLElement>('[data-hero] [data-anim]')
+          .filter((el) => !el.closest('[data-stagger]'));
         if (heroItems.length) {
           const tl = gsap.timeline({ defaults: { duration: 0.95, ease } });
           heroItems.forEach((el, i) => {
@@ -132,17 +157,15 @@ export function SmoothScroll() {
         gsap.utils.toArray<HTMLElement>('[data-stagger]').forEach((group) => {
           const children = gsap.utils.toArray<HTMLElement>('[data-anim]', group);
           if (!children.length) return;
-          gsap.fromTo(
-            children,
-            from(children[0].dataset.anim || 'up'),
-            {
-              ...to(children[0].dataset.anim || 'up'),
-              duration: 0.85,
-              ease,
-              stagger: 0.075,
-              scrollTrigger: { trigger: group, start: 'top 85%', once: true },
-            },
-          );
+          const kind = children[0].dataset.anim || 'up';
+          gsap.fromTo(children, from(kind), {
+            ...to(kind),
+            duration: 0.85,
+            ease,
+            // data-stagger="0.12" tunes the cascade; grids feel better a touch quicker
+            stagger: Number(group.dataset.stagger) || 0.075,
+            scrollTrigger: { trigger: group, start: 'top 85%', once: true },
+          });
         });
 
         // ---- individual elements (skip ones already handled above) ----
@@ -155,6 +178,19 @@ export function SmoothScroll() {
             ease,
             delay: Number(el.dataset.animDelay ?? 0),
             scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+          });
+        });
+
+        // ---- idle float: decorative orbs and the hero product drift gently, forever ----
+        gsap.utils.toArray<HTMLElement>('[data-float]').forEach((el, i) => {
+          const distance = Number(el.dataset.float) || 10;
+          gsap.to(el, {
+            y: -distance,
+            duration: 3.2 + i * 0.35,
+            ease: 'sine.inOut',
+            repeat: -1,
+            yoyo: true,
+            delay: i * 0.25,
           });
         });
 

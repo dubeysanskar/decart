@@ -181,7 +181,10 @@ export function BestsellerRail({ products }: { products: CatalogueProduct[] }) {
         />
       </div>
 
-      <div className="no-scrollbar mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 md:px-8 lg:mx-auto lg:max-w-container">
+      <div
+        data-stagger="0.07"
+        className="no-scrollbar mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 md:px-8 lg:mx-auto lg:max-w-container"
+      >
         {products.map((product, i) => (
           <ProductCard
             key={product.slug}
@@ -220,7 +223,11 @@ export function WhyDecArt() {
   return (
     <section className="section bg-porcelain">
       <div className="container-x grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
-        <div className="relative aspect-[4/3] overflow-hidden rounded-img bg-decart-100" data-anim="up">
+        <div
+          className="relative aspect-[4/3] overflow-hidden rounded-img bg-decart-100"
+          data-anim="left"
+          data-parallax="0.05"
+        >
           <ProductImage
             src={factory}
             alt="DecArt manufacturing floor in Faridabad"
@@ -422,7 +429,7 @@ export function ProjectStrip() {
         />
         <div className="mt-12 grid grid-cols-2 gap-4 md:grid-cols-4" data-stagger>
           {installs.map((src) => (
-            <div key={src} className="relative aspect-square overflow-hidden rounded-img bg-decart-100" data-anim="up">
+            <div key={src} className="relative aspect-square overflow-hidden rounded-img bg-decart-100" data-anim="rise">
               <Image src={src} alt="DecArt installation" fill sizes="(max-width: 768px) 50vw, 25vw" className="object-cover" />
             </div>
           ))}
