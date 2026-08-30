@@ -105,20 +105,23 @@ export function Hero({
             />
           ))}
 
-          {/* the headline is dark ink, so the artwork is veiled heavily under the copy and
-              thins out to the right where the picture actually shows */}
+          {/* The veil is shaped around the text, not spread evenly, so the photograph reads as a
+              photograph. It stays near-opaque across the copy column because the subtitle is
+              steel-600 (#5B6B7A) and needs a background luminance of about 0.82 to clear 4.5:1,
+              then falls away fast over the half of the frame that carries no text. On a phone the
+              copy runs full width, so the thinning happens above and below it instead. */}
           <span
             className="absolute inset-0 md:hidden"
             style={{
               background:
-                'linear-gradient(180deg, rgb(255 255 255 / 0.94) 0%, rgb(255 255 255 / 0.88) 58%, rgb(255 255 255 / 0.95) 100%)',
+                'linear-gradient(180deg, rgb(255 255 255 / 0.32) 0%, rgb(255 255 255 / 0.72) 9%, rgb(255 255 255 / 0.92) 17%, rgb(255 255 255 / 0.92) 76%, rgb(255 255 255 / 0.60) 92%, rgb(255 255 255 / 0.34) 100%)',
             }}
           />
           <span
             className="absolute inset-0 hidden md:block"
             style={{
               background:
-                'linear-gradient(100deg, rgb(255 255 255 / 0.97) 0%, rgb(255 255 255 / 0.93) 34%, rgb(255 255 255 / 0.64) 60%, rgb(255 255 255 / 0.32) 100%)',
+                'linear-gradient(100deg, rgb(255 255 255 / 0.96) 0%, rgb(255 255 255 / 0.92) 33%, rgb(255 255 255 / 0.48) 50%, rgb(255 255 255 / 0.14) 72%, rgb(255 255 255 / 0.04) 100%)',
             }}
           />
         </div>
@@ -281,26 +284,6 @@ export function Hero({
               ))}
             </ul>
 
-            {/* proof, in the hero rather than only in the band below it */}
-            <dl data-stagger="0.08" className="mt-8 flex flex-wrap gap-x-8 gap-y-4 border-t border-line/70 pt-5">
-              {SITE.counters.map((counter) => {
-                const numeric = /^(\d+)(.*)$/.exec(counter.value);
-                return (
-                  <div key={counter.label} data-anim="up" className="min-w-0">
-                    <dt className="font-display text-2xl font-semibold text-ink-950">
-                      {numeric ? (
-                        <span data-count={numeric[1]} data-count-suffix={numeric[2]}>
-                          0{numeric[2]}
-                        </span>
-                      ) : (
-                        counter.value
-                      )}
-                    </dt>
-                    <dd className="mt-0.5 text-xs text-steel-600">{counter.label}</dd>
-                  </div>
-                );
-              })}
-            </dl>
           </div>
 
           {/* ------------------------------------------------- category slider */}

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { Menu, Phone, X, ChevronDown } from 'lucide-react';
+import { Menu, Phone, X, ChevronDown, Download } from 'lucide-react';
 import { Logo } from './Logo';
 import { ButtonLink } from '@/components/ui/Button';
 import { SITE } from '@/lib/site';
@@ -192,6 +192,19 @@ export function Header({ groups }: { groups: NavGroup[] }) {
             {SITE.phone}
           </a>
 
+          {/* the brochure only fits on a wide bar — on a phone it lives in the drawer, where
+              there is room for a full label */}
+          <ButtonLink
+            href={SITE.catalogueHref}
+            size="sm"
+            variant="secondary"
+            external
+            className="hidden lg:inline-flex"
+          >
+            <Download aria-hidden className="h-4 w-4" />
+            Brochure
+          </ButtonLink>
+
           {/* the quote CTA used to be hidden below 640px, which left phone visitors with no way
               to reach /quote except the drawer. It stays on-screen now, with a shorter label
               where the bar is tightest. */}
@@ -372,6 +385,10 @@ export function Header({ groups }: { groups: NavGroup[] }) {
             </div>
             <ButtonLink href="/quote" className="mt-3 w-full">
               Get a Quote
+            </ButtonLink>
+            <ButtonLink href={SITE.catalogueHref} variant="secondary" external className="mt-3 w-full">
+              <Download aria-hidden className="h-4 w-4" />
+              Download brochure
             </ButtonLink>
           </div>
         </div>

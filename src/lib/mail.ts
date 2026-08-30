@@ -180,7 +180,7 @@ export function ackHtml(d: LeadMailData) {
       ${button(SITE.phoneHref, `Call ${SITE.phone}`, '#20719F')}
     </div>
     <div style="margin-top:14px;">
-      ${button(`${SITE.url}${SITE.catalogueLocal}`, 'Download the catalogue', '#161B21')}
+      ${button(SITE.catalogueHref, 'Download the catalogue', '#161B21')}
     </div>
     <p style="margin:22px 0 0;font-size:13px;color:#5C6670;">DecArt Industries Private Limited · Trust is our Sign.</p>`;
 
@@ -198,7 +198,7 @@ export function ackText(d: LeadMailData) {
     d.message && `Your message: ${d.message}`,
     '',
     `Need it faster? WhatsApp ${waLink(WA.float())} or call ${SITE.phone}.`,
-    `Catalogue: ${SITE.url}${SITE.catalogueLocal}`,
+    `Catalogue: ${SITE.catalogueHref}`,
     '',
     'DecArt Industries Private Limited',
     SITE.addressFactory,

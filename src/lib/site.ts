@@ -39,7 +39,13 @@ export const SITE = {
   gstin: '08AAACD3344H1ZW',
 
   catalogueDrive: 'https://drive.google.com/file/d/1AyocxBIMq1PNqeH5hwHyiLaiBIehQr17/view?usp=sharing',
-  catalogueLocal: '/downloads/decart-catalogue.pdf',
+  /**
+   * The one link every "download the brochure" button and email should use. It pointed at
+   * /downloads/decart-catalogue.pdf, which does not exist in /public — so the customer
+   * acknowledgement email was shipping a 404 to everybody who filled in a form. Point this at
+   * the local path again the day that PDF is actually added.
+   */
+  catalogueHref: 'https://drive.google.com/file/d/1AyocxBIMq1PNqeH5hwHyiLaiBIehQr17/view?usp=sharing',
 
   social: {
     instagram: '',

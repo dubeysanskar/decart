@@ -165,7 +165,7 @@ export function LeadForm({
           <ButtonLink href={waFallback} variant="whatsapp" data-wa="form-success">
             Continue on WhatsApp
           </ButtonLink>
-          <ButtonLink href={SITE.catalogueLocal} variant="secondary" external>
+          <ButtonLink href={SITE.catalogueHref} variant="secondary" external>
             Download catalogue
           </ButtonLink>
         </div>

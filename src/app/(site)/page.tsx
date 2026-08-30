@@ -13,6 +13,7 @@ import {
 } from '@/components/home/sections';
 import { ColourStory, HomeFaq, SegmentList } from '@/components/home/extra-sections';
 import { HomeSeo } from '@/components/home/HomeSeo';
+import { ContactBand } from '@/components/site/ContactBand';
 import { SectionHeading } from '@/components/ui/typography';
 import { ButtonLink } from '@/components/ui/Button';
 import { getFeatured, getFamilyTiles, getFeaturedReviews, getProduct } from '@/lib/catalogue';
@@ -121,6 +122,8 @@ export default async function HomePage() {
           </div>
         </section>
       ) : null}
+
+      <ContactBand />
 
       <HomeSeo />
 
