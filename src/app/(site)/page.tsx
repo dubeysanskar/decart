@@ -4,7 +4,6 @@ import { CategoryDirectory } from '@/components/home/CategoryDirectory';
 import { LatestProjects, ClientWall } from '@/components/home/ContentSections';
 import {
   TrustBar,
-  FamilyGrid,
   BestsellerRail,
   WhyDecArt,
   ClientMarquee,
@@ -12,7 +11,8 @@ import {
   ProjectStrip,
   QuoteBand,
 } from '@/components/home/sections';
-import { ColourStory, HowItWorks, HomeFaq, SegmentList } from '@/components/home/extra-sections';
+import { ColourStory, HomeFaq, SegmentList } from '@/components/home/extra-sections';
+import { HomeSeo } from '@/components/home/HomeSeo';
 import { SectionHeading } from '@/components/ui/typography';
 import { ButtonLink } from '@/components/ui/Button';
 import { getFeatured, getFamilyTiles, getFeaturedReviews, getProduct } from '@/lib/catalogue';
@@ -41,25 +41,22 @@ export default async function HomePage() {
   // the slider leads with the families we hold real photography for
   const photographed = families.filter((family) => family.cover);
   const heroCategories = photographed.slice(0, 8);
-  // eight tiles, two even rows
-  const featuredFamilies = (photographed.length >= 4 ? photographed : families).slice(0, 8);
 
   return (
     <>
       {/* banners now sit behind the hero rather than in a strip under it */}
       <Hero categories={heroCategories} banners={banners} />
       <TrustBar />
-      <FamilyGrid families={featuredFamilies} />
       <CategoryDirectory families={families} />
       <BestsellerRail products={bestsellers} />
       <WhyDecArt />
       <ColourStory product={colourHero ?? undefined} />
-      <HowItWorks />
       <SegmentList />
-      <LatestProjects projects={projects} />
+      {/* one projects section, not two: the client-managed one when they have added
+          projects, the installation gallery as the fallback */}
+      {projects.length ? <LatestProjects projects={projects} /> : <ProjectStrip />}
       {clientLogos.length ? <ClientWall clients={clientLogos} /> : <ClientMarquee />}
       <Testimonials reviews={reviews} />
-      <ProjectStrip />
       <HomeFaq />
 
       {posts.length ? (
@@ -67,7 +64,7 @@ export default async function HomePage() {
           <div className="container-x">
             <SectionHeading
               eyebrow="From the workshop"
-              index="10"
+              index="09"
               title="Notes on seating, specs and floors"
               action={
                 <ButtonLink href="/blog" variant="secondary">
@@ -124,6 +121,8 @@ export default async function HomePage() {
           </div>
         </section>
       ) : null}
+
+      <HomeSeo />
 
       {/* the client asked for the marketplace strip at the foot of the page */}
       <MarketplaceStrip />

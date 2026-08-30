@@ -92,7 +92,7 @@ export function LatestProjects({ projects }: { projects: ProjectRecord[] }) {
       <div className="container-x">
         <SectionHeading
           eyebrow="Latest projects"
-          index="07"
+          index="06"
           title="Recently finished floors"
           lede="A look at what left the factory lately — the brief, the build and where it landed."
           action={

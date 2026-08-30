@@ -89,7 +89,7 @@ export function Numbers() {
 
 // ---------------------------------------------------------------- how buying works
 
-const STEPS = [
+export const BUYING_STEPS = [
   {
     n: '01',
     title: 'Send the requirement',
@@ -125,7 +125,7 @@ export function HowItWorks() {
         />
 
         <ol className="mt-12 grid gap-px overflow-hidden rounded-card bg-line md:grid-cols-2 lg:grid-cols-4" data-stagger>
-          {STEPS.map((step) => (
+          {BUYING_STEPS.map((step) => (
             <li key={step.n} data-anim="up" className="group relative bg-paper p-7 transition-colors hover:bg-porcelain md:p-8">
               <span className="font-mono text-xs tracking-[0.14em] text-decart-600">{step.n}</span>
               <h3 className="mt-4 text-lg font-semibold text-ink-950">{step.title}</h3>
@@ -163,7 +163,7 @@ export function HomeFaq() {
         <div>
           <SectionHeading
             eyebrow="Questions"
-            index="09"
+            index="08"
             title="Asked before every order"
             lede="If yours is not here, the sales desk answers it in one call."
           />
@@ -253,7 +253,7 @@ export function SegmentList() {
       <div className="container-x">
         <SectionHeading
           eyebrow="Who we serve"
-          index="06"
+          index="05"
           title="Fitted out, floor by floor"
           lede="The same catalogue answers a 12-seat cabin and a 500-seat campus — the difference is how we quote it."
         />

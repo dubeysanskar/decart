@@ -4,6 +4,7 @@ import { FileText, Package, Handshake, Factory, Wrench, Clock, MessageCircle } f
 import { PageHeader } from '@/components/site/PageHeader';
 import { LeadForm } from '@/components/forms/LeadForm';
 import { Accordion } from '@/components/ui/Accordion';
+import { BUYING_STEPS } from '@/components/home/extra-sections';
 import { ButtonLink } from '@/components/ui/Button';
 import { getNavFamilies, getProduct } from '@/lib/catalogue';
 import { buildMetadata } from '@/lib/seo';
@@ -124,6 +125,27 @@ export default async function QuotePage({ searchParams }: { searchParams: Search
               />
             </div>
           </aside>
+        </div>
+      </section>
+
+      {/* these four steps used to sit on the home page next to a second, near-identical
+          four-step block. They belong here, in front of somebody about to send an enquiry. */}
+      <section className="border-t border-line bg-porcelain py-14 md:py-16">
+        <div className="container-x">
+          <h2 className="font-display text-h3 text-ink-950">What happens after you send this</h2>
+          <p className="mt-3 max-w-2xl text-[0.9375rem] text-steel-600">
+            We are enquiry-led rather than a checkout — a floor of 200 chairs is never a cart.
+          </p>
+
+          <ol className="mt-10 grid gap-px overflow-hidden rounded-card bg-line md:grid-cols-2 lg:grid-cols-4">
+            {BUYING_STEPS.map((step) => (
+              <li key={step.n} className="min-w-0 bg-paper p-6 md:p-7">
+                <span className="font-mono text-xs tracking-[0.14em] text-decart-600">{step.n}</span>
+                <h3 className="mt-4 text-base font-semibold text-ink-950">{step.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-steel-600">{step.body}</p>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
     </>

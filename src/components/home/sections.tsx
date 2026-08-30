@@ -384,7 +384,7 @@ export function ProjectStrip() {
       <div className="container-x">
         <SectionHeading
           eyebrow="On site"
-          index="08"
+          index="06"
           title="Installations"
           action={
             <ButtonLink href="/gallery" variant="secondary">
