@@ -46,6 +46,13 @@ export function ProductCard({
   anim?: string;
 }) {
   const hero = product.images?.[0];
+  /**
+   * Most of the catalogue has no photograph of its own yet, which left every grid a wall of
+   * empty plates. A product without a shot falls back to its family's artwork — a picture of
+   * the range it belongs to — and ProductImage still drops to the branded plate if even that
+   * file is missing.
+   */
+  const fallback = `/families/${product.family}.webp`;
   const colourways = product.colourways ?? [];
 
   return (
@@ -64,7 +71,7 @@ export function ProductCard({
           as a visible rectangle instead of letting the product sit on the card */}
       <div className="relative aspect-[4/5] overflow-hidden bg-paper">
         <ProductImage
-          src={hero?.src}
+          src={hero?.src || fallback}
           alt={hero?.alt || `DecArt ${product.name} (${product.code})`}
           label={product.code}
           priority={priority}

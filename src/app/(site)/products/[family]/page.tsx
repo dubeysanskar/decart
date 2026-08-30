@@ -9,6 +9,8 @@ import { buildMetadata, breadcrumbLd } from '@/lib/seo';
 import { CategoryContent, categoryFaqLd } from '@/components/product/CategoryContent';
 import { ProductImage } from '@/components/ui/ProductImage';
 import { publicFileExists } from '@/lib/assets';
+import sharp from 'sharp';
+import path from 'path';
 
 export const revalidate = 3600;
 
@@ -47,6 +49,16 @@ export default async function FamilyPage({ params }: { params: { family: string 
   // the family's own artwork, by the /families/<slug>.webp convention
   const artwork = `/families/${family.slug}.webp`;
   const cover = publicFileExists(artwork) ? artwork : '';
+  // wide photography fills the band; a portrait cut-out must not be cropped to a sliver
+  let coverIsWide = false;
+  if (cover) {
+    try {
+      const meta = await sharp(path.join(process.cwd(), 'public', artwork)).metadata();
+      coverIsWide = (meta.width ?? 0) / (meta.height ?? 1) >= 1.2;
+    } catch {
+      // unreadable metadata: the contained layout is the safe default
+    }
+  }
 
   return (
     <>
@@ -64,16 +76,24 @@ export default async function FamilyPage({ params }: { params: { family: string 
           { name: family.name },
         ]}
       >
-        {/* the category's own photograph. Most products in the catalogue still have no shot of
-            their own, so without this a family page is a wall of text above a grid of plates. */}
+        {/* The category's own artwork. Wide photography can fill the band edge to edge, but most
+            covers are portrait cut-outs — forcing those through object-cover showed a huge crop
+            of one armrest, so they sit contained on a light well instead. */}
         {cover ? (
-          <div className="relative aspect-[21/9] w-full overflow-hidden rounded-img border border-line bg-paper md:aspect-[24/7]">
+          <div
+            className={
+              coverIsWide
+                ? 'relative aspect-[21/9] w-full overflow-hidden rounded-img border border-line bg-paper md:aspect-[24/7]'
+                : 'relative h-56 w-full overflow-hidden rounded-img border border-line bg-paper md:h-64'
+            }
+          >
             <ProductImage
               src={cover}
               alt={`DecArt ${family.name}`}
               label={family.name}
-              fit="cover"
+              fit={coverIsWide ? 'cover' : 'contain'}
               sizes="(max-width: 1024px) 100vw, 1200px"
+              imgClassName={coverIsWide ? undefined : 'p-4'}
             />
           </div>
         ) : null}

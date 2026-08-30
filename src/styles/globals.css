@@ -140,6 +140,26 @@
 }
 
 @layer utilities {
+  /* Glass enquiry card over the hero photograph. Scoped to .glass-form so the shared control
+     styling (bg-paper) is untouched everywhere else. Placeholders are darkened rather than
+     lightened: they sit over artwork here, not over white. */
+  .glass-form input,
+  .glass-form textarea,
+  .glass-form select {
+    background-color: rgb(255 255 255 / 0.62);
+    border-color: rgb(255 255 255 / 0.85);
+    backdrop-filter: blur(6px);
+  }
+  .glass-form input:focus,
+  .glass-form textarea:focus,
+  .glass-form select:focus {
+    background-color: rgb(255 255 255 / 0.9);
+  }
+  .glass-form input::placeholder,
+  .glass-form textarea::placeholder {
+    color: rgb(91 107 122 / 0.85);
+  }
+
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }

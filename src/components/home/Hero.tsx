@@ -284,7 +284,7 @@ export function Hero({ banners = [] }: { banners?: HeroBanner[] }) {
           {/* the category rail lived here; the client asked for an enquiry card instead, so the
               hero now captures a lead rather than sending people off to browse */}
           <div className="relative min-w-0">
-            <div className="rounded-card border border-line bg-paper/95 p-5 shadow-lift backdrop-blur md:p-6">
+            <div className="rounded-card border border-white/60 bg-paper/55 p-5 shadow-lift backdrop-blur-md md:p-6">
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-decart-700">
                 Tell us what you need
               </p>
@@ -294,7 +294,7 @@ export function Hero({ banners = [] }: { banners?: HeroBanner[] }) {
                 {' '}{SITE.hours}.
               </p>
 
-              <div className="mt-5">
+              <div className="glass-form mt-5">
                 <LeadForm type="quote" short compact />
               </div>
             </div>
