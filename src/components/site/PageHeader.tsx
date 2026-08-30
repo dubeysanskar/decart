@@ -38,7 +38,7 @@ export function PageHeader({
     <section
       className={cn(
         'relative overflow-hidden',
-        compact ? 'pb-8 pt-24 md:pb-10 md:pt-28' : 'pb-10 pt-28 md:pb-14 md:pt-36',
+        compact ? 'pb-6 pt-24 md:pb-7 md:pt-28' : 'pb-10 pt-28 md:pb-14 md:pt-36',
         dark ? 'dark-section bg-ink-950 text-porcelain' : 'border-b border-line bg-porcelain',
         className,
       )}

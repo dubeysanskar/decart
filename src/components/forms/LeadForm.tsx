@@ -177,7 +177,7 @@ export function LeadForm({
   const needsCompany = alwaysAskCompany || type === 'dealer' || type === 'oem' || type === 'bulk';
 
   return (
-    <form onSubmit={onSubmit} className="relative flex flex-col gap-4" noValidate>
+    <form onSubmit={onSubmit} className="relative flex flex-col gap-3" noValidate>
       <Honeypot />
 
       {productName ? (
@@ -189,7 +189,7 @@ export function LeadForm({
         </div>
       ) : null}
 
-      <div className={compact ? 'grid gap-4' : 'grid gap-4 md:grid-cols-2'}>
+      <div className={compact ? 'grid gap-3' : 'grid gap-3 md:grid-cols-2'}>
         <Input label="Name" name="name" required value={values.name} onChange={set('name')} error={errors.name} autoComplete="name" />
         <Input
           label="Phone / WhatsApp"
@@ -204,7 +204,7 @@ export function LeadForm({
         />
       </div>
 
-      <div className={compact ? 'grid gap-4' : 'grid gap-4 md:grid-cols-2'}>
+      <div className={compact ? 'grid gap-3' : 'grid gap-3 md:grid-cols-2'}>
         <Input
           label="Email"
           name="email"
@@ -227,7 +227,7 @@ export function LeadForm({
       </div>
 
       {/* city depends on the state above it — pick Haryana and you get Haryana's cities */}
-      <div className={compact ? 'grid gap-4' : 'grid gap-4 md:grid-cols-2'}>
+      <div className={compact ? 'grid gap-3' : 'grid gap-3 md:grid-cols-2'}>
         <Select
           label="City"
           name="city"
@@ -259,26 +259,31 @@ export function LeadForm({
         ) : null}
       </div>
 
-      {subjects.length ? (
-        <Select label="Subject" name="subject" value={values.subject} onChange={set('subject')}>
-          <option value="">Select a subject</option>
-          {subjects.map((subject) => (
-            <option key={subject} value={subject}>
-              {subject}
-            </option>
-          ))}
-        </Select>
-      ) : null}
+      {/* paired so neither runs the full width of the column on its own */}
+      {subjects.length || needsCompany ? (
+        <div className={compact ? 'grid gap-3' : 'grid gap-3 md:grid-cols-2'}>
+          {subjects.length ? (
+            <Select label="Subject" name="subject" value={values.subject} onChange={set('subject')}>
+              <option value="">Select a subject</option>
+              {subjects.map((subject) => (
+                <option key={subject} value={subject}>
+                  {subject}
+                </option>
+              ))}
+            </Select>
+          ) : null}
 
-      {needsCompany ? (
-        <Input
-          label="Company"
-          name="company"
-          required={type === 'dealer' || type === 'oem'}
-          value={values.company}
-          onChange={set('company')}
-          error={errors.company}
-        />
+          {needsCompany ? (
+            <Input
+              label="Company"
+              name="company"
+              required={type === 'dealer' || type === 'oem'}
+              value={values.company}
+              onChange={set('company')}
+              error={errors.company}
+            />
+          ) : null}
+        </div>
       ) : null}
 
       {families.length && (type === 'bulk' || type === 'custom') ? (
@@ -293,7 +298,7 @@ export function LeadForm({
       ) : null}
 
       {needsQuantity ? (
-        <div className={compact ? 'grid gap-4' : 'grid gap-4 md:grid-cols-2'}>
+        <div className={compact ? 'grid gap-3' : 'grid gap-3 md:grid-cols-2'}>
           <Input
             label="Quantity"
             name="quantity"
@@ -338,7 +343,7 @@ export function LeadForm({
       {type === 'custom' ? (
         <fieldset className="rounded-card border border-line p-4">
           <legend className="px-1 text-sm font-medium text-ink-900">Build options</legend>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2">
             {BUILD_OPTIONS.map((group) => {
               const key = group.label.replace(/\s+/g, '').replace(/^./, (c) => c.toLowerCase());
               return (

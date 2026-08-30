@@ -12,6 +12,8 @@ export type HeroCategory = {
   count: number;
   cover: string;
   lede?: string;
+  /** seating | tables-desks | furniture — lets the hero re-filter the rail per banner */
+  group?: string;
 };
 
 /**

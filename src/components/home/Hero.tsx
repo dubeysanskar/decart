@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ArrowRight,
   ArrowLeft,
@@ -60,9 +60,12 @@ function splitTitle(title: string): [string, string] {
 export function Hero({
   categories,
   banners = [],
+  bannerFocus = {},
 }: {
   categories: HeroCategory[];
   banners?: HeroBanner[];
+  /** banner id -> the product group that banner is about, resolved on the server */
+  bannerFocus?: Record<string, { group: string; label: string; lead: string }>;
 }) {
   const slides = banners.filter((banner) => banner.image && banner.title);
   const hasBanners = slides.length > 0;
@@ -84,6 +87,22 @@ export function Hero({
 
   const active = hasBanners ? slides[index] : null;
   const [headline, accent] = active ? splitTitle(active.title) : ['Smart seating', 'for every space.'];
+
+  /**
+   * The rail follows the slide: a banner about reception desks shows the desking group, led by
+   * reception itself. Banners that do not point at a category (or point at one we hold no
+   * photography for) fall back to the default eight, so the rail is never empty.
+   */
+  const focus = active ? bannerFocus[active._id] : undefined;
+  const visibleCategories = useMemo(() => {
+    if (!focus) return categories.slice(0, 8);
+    const inGroup = categories.filter((category) => category.group === focus.group);
+    if (!inGroup.length) return categories.slice(0, 8);
+    return [
+      ...inGroup.filter((category) => category.slug === focus.lead),
+      ...inGroup.filter((category) => category.slug !== focus.lead),
+    ].slice(0, 8);
+  }, [categories, focus]);
 
   return (
     <section data-hero className="relative overflow-hidden pt-24 sm:pt-28">
@@ -289,8 +308,9 @@ export function Hero({
           {/* ------------------------------------------------- category slider */}
           <div className="relative min-w-0">
             <div data-anim="up" className="mb-4 flex items-baseline justify-between gap-4">
-              <p className="text-eyebrow font-semibold uppercase tracking-[0.14em] text-decart-700">
+              <p className="min-w-0 truncate text-eyebrow font-semibold uppercase tracking-[0.14em] text-decart-700">
                 Shop by category
+                {focus?.label ? <span className="text-steel-400"> · {focus.label}</span> : null}
               </p>
               <Link
                 href="/products"
@@ -303,7 +323,7 @@ export function Hero({
                 />
               </Link>
             </div>
-            <HeroCategorySlider categories={categories} />
+            <HeroCategorySlider key={focus?.group ?? 'all'} categories={visibleCategories} />
           </div>
         </div>
       </div>

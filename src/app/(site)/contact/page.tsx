@@ -26,7 +26,7 @@ export default function ContactPage({ searchParams }: { searchParams: Search }) 
       <PageHeader
         eyebrow="Contact"
         title="Talk to the people who build it"
-        lede="Three desks, one factory. Pick the one that fits and you reach it directly — no call-centre routing."
+        lede="Three desks, one factory — you reach the right one directly."
         breadcrumbs={[{ name: 'Home', href: '/' }, { name: 'Contact' }]}
         size="compact"
       />
@@ -37,11 +37,11 @@ export default function ContactPage({ searchParams }: { searchParams: Search }) 
         you could type. Side by side, the form opens in the first screen and the desks still keep
         their own level rather than hiding behind a tab.
       */}
-      <section className="bg-paper pb-16 pt-10 md:pb-24 md:pt-12">
-        <div className="container-x grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
+      <section className="bg-paper pb-12 pt-8 md:pb-16 md:pt-10">
+        <div className="container-x grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
           <div className="min-w-0">
             <h2 className="font-display text-h3 text-ink-950">Write to us</h2>
-            <p className="mt-3 text-[0.9375rem] text-steel-600">
+            <p className="mt-2 text-[0.9375rem] text-steel-600">
               This goes to the <strong className="font-semibold text-ink-950">{desk.title.toLowerCase()}</strong>{' '}
               desk — pick a different card to send it somewhere else. Tell us what you are furnishing; if it
               is a specific model, the quote form carries the code through for you.
@@ -49,10 +49,11 @@ export default function ContactPage({ searchParams }: { searchParams: Search }) 
             <div className="mt-8">
               {/* keyed on the desk so switching gives a clean form, and the lead lands in the
                   admin under the right type */}
+              {/* not `compact`: that forces one field per row, which made every input the
+                  full width of the column and doubled the height of the form */}
               <LeadForm
                 key={desk.id}
                 type={desk.leadType}
-                compact
                 subjects={CONTACT_SUBJECTS}
                 alwaysAskCompany
               />
@@ -63,7 +64,7 @@ export default function ContactPage({ searchParams }: { searchParams: Search }) 
         </div>
       </section>
 
-      <section className="border-t border-line bg-porcelain py-14 md:py-16">
+      <section className="border-t border-line bg-porcelain py-10 md:py-12">
         <div className="container-x grid gap-8 lg:grid-cols-[1.6fr_1fr] lg:items-start">
           <div className="overflow-hidden rounded-card border border-line bg-paper">
             <iframe

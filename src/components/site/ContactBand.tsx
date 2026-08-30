@@ -96,16 +96,18 @@ export function ContactBand({
 
                 <p className="mt-2 text-xs leading-relaxed text-steel-600">{desk.blurb}</p>
 
-                <dl className="relative z-10 mt-3 flex flex-col gap-1.5 border-t border-line pt-3">
-                  <div className="flex items-center gap-2">
+                {/* one row, not a stack — it kept the tab twice as tall as it needed to be.
+                    Wraps rather than truncating, because a clipped email is useless. */}
+                <dl className="relative z-10 mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line pt-3">
+                  <div className="flex min-w-0 items-center gap-1.5">
                     <Phone aria-hidden className="h-3.5 w-3.5 shrink-0 text-decart-600" />
                     <dt className="sr-only">Phone</dt>
-                    <dd className="flex min-w-0 flex-wrap gap-x-3">
+                    <dd className="flex min-w-0 flex-wrap gap-x-2">
                       {desk.phones.map((phone) => (
                         <a
                           key={phone}
                           href={`tel:${phone.replace(/[^+\d]/g, '')}`}
-                          className="text-sm font-semibold text-ink-950 hover:text-decart-700"
+                          className="text-[0.8125rem] font-semibold text-ink-950 hover:text-decart-700"
                         >
                           {phone}
                         </a>
@@ -113,13 +115,13 @@ export function ContactBand({
                     </dd>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex min-w-0 items-center gap-1.5">
                     <Mail aria-hidden className="h-3.5 w-3.5 shrink-0 text-decart-600" />
                     <dt className="sr-only">Email</dt>
                     <dd className="min-w-0">
                       <a
                         href={`mailto:${desk.email}`}
-                        className="break-words text-sm text-steel-600 hover:text-decart-700"
+                        className="break-words text-[0.8125rem] text-steel-600 hover:text-decart-700"
                       >
                         {desk.email}
                       </a>
