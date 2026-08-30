@@ -1,119 +1,160 @@
-import { Phone, Mail, Clock, MessageCircle, MapPin } from 'lucide-react';
+import Link from 'next/link';
+import { Phone, Mail, Clock, MessageCircle, MapPin, Headphones, IndianRupee, Info, ArrowRight } from 'lucide-react';
 import { ButtonLink } from '@/components/ui/Button';
-import { CONTACT_DESKS, SITE } from '@/lib/site';
+import { CONTACT_DESKS, SITE, type ContactDeskId } from '@/lib/site';
 import { waLink, WA } from '@/lib/whatsapp';
 import { cn } from '@/lib/utils';
 
+const DESK_ICON: Record<ContactDeskId, typeof Info> = {
+  general: Info,
+  sales: IndianRupee,
+  support: Headphones,
+};
+
 /**
- * Call / Email / Location, with every desk on screen at once. Shared by /contact and the home
- * page (client: "in home page as well") so the numbers can never drift apart between the two.
+ * Every enquiry desk on screen at once, each with its own number and inbox.
  *
- * Desks sharing a number or an inbox collapse into a single row, so the block reads
- * "General · Sales · Support" against one line rather than printing the same number three
- * times. The moment the client sets the per-desk env vars the rows split apart on their own.
+ * An earlier version merged desks that shared a line into a single row, which meant all three
+ * collapsed into one while they still share the main number — the client read that as only the
+ * first desk showing up. Each desk now always prints in full, repeated number or not.
+ *
+ * Shared by /contact and the home page so the details cannot drift apart between the two. On
+ * /contact the cards also pick which desk the form writes to; elsewhere they link through.
  */
-function collapse(entries: { label: string; value: string }[]) {
-  const grouped = new Map<string, string[]>();
-  for (const entry of entries) {
-    grouped.set(entry.value, [...(grouped.get(entry.value) ?? []), entry.label]);
-  }
-  return [...grouped.entries()].map(([value, labels]) => ({ value, label: labels.join(' · ') }));
-}
-
-const deskName = (title: string) => title.replace(/\s*Enquiry$/i, '');
-
-export function ContactBand({ className }: { className?: string }) {
-  const phoneRows = collapse(
-    CONTACT_DESKS.map((option) => ({ label: deskName(option.title), value: option.phones[0] })),
-  );
-  const emailRows = collapse(
-    CONTACT_DESKS.map((option) => ({ label: deskName(option.title), value: option.email })),
-  );
-
+export function ContactBand({
+  activeDesk,
+  selectable = false,
+  className,
+}: {
+  activeDesk?: ContactDeskId;
+  /** On /contact the cards set ?desk= on the same page instead of navigating to it. */
+  selectable?: boolean;
+  className?: string;
+}) {
   return (
-    <section className={cn('border-y border-line bg-paper py-12 md:py-14', className)}>
-      <div className="container-x grid gap-8 md:grid-cols-3">
-        <div className="min-w-0" data-anim="up">
-          <h2 className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-steel-400">
-            <Phone aria-hidden className="h-4 w-4 text-decart-600" />
-            Call
-          </h2>
-          <dl className="mt-4 flex flex-col gap-3">
-            {phoneRows.map((row) => (
-              <div key={row.value}>
-                <dt className="text-xs text-steel-600">{row.label}</dt>
-                <dd>
-                  <a
-                    href={`tel:${row.value.replace(/[^+\d]/g, '')}`}
-                    className="text-[0.9375rem] font-semibold text-ink-950 hover:text-decart-700"
+    <section className={cn('border-y border-line bg-porcelain py-14 md:py-16', className)}>
+      <div className="container-x">
+        <div className="grid gap-4 lg:grid-cols-3" data-stagger="0.06">
+          {CONTACT_DESKS.map((desk) => {
+            const Icon = DESK_ICON[desk.id];
+            const active = selectable && desk.id === activeDesk;
+            return (
+              <div
+                key={desk.id}
+                data-anim="up"
+                className={cn(
+                  'flex min-w-0 flex-col rounded-card border bg-paper p-6 transition-colors',
+                  active ? 'border-ink-900 ring-1 ring-ink-900' : 'border-line',
+                )}
+              >
+                <div className="flex items-center gap-2.5">
+                  <span
+                    className={cn(
+                      'flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
+                      active ? 'bg-ink-900 text-porcelain' : 'bg-decart-50 text-decart-700',
+                    )}
                   >
-                    {row.value}
-                  </a>
-                </dd>
+                    <Icon aria-hidden className="h-4 w-4" />
+                  </span>
+                  <h3 className="font-display text-lg text-ink-950">{desk.title}</h3>
+                </div>
+
+                <p className="mt-3 text-sm leading-relaxed text-steel-600">{desk.blurb}</p>
+
+                <dl className="mt-5 flex flex-col gap-3 border-t border-line pt-5">
+                  <div className="flex items-start gap-2.5">
+                    <Phone aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-decart-600" />
+                    <div className="min-w-0">
+                      <dt className="sr-only">Phone</dt>
+                      <dd className="flex flex-wrap gap-x-3">
+                        {desk.phones.map((phone) => (
+                          <a
+                            key={phone}
+                            href={`tel:${phone.replace(/[^+\d]/g, '')}`}
+                            className="text-[0.9375rem] font-semibold text-ink-950 hover:text-decart-700"
+                          >
+                            {phone}
+                          </a>
+                        ))}
+                      </dd>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2.5">
+                    <Mail aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-decart-600" />
+                    <div className="min-w-0">
+                      <dt className="sr-only">Email</dt>
+                      <dd>
+                        <a
+                          href={`mailto:${desk.email}`}
+                          className="break-words text-[0.9375rem] font-semibold text-ink-950 hover:text-decart-700"
+                        >
+                          {desk.email}
+                        </a>
+                      </dd>
+                    </div>
+                  </div>
+                </dl>
+
+                <Link
+                  href={`/contact?desk=${desk.id}`}
+                  scroll={!selectable}
+                  className={cn(
+                    'group mt-5 inline-flex items-center gap-1.5 text-sm font-semibold',
+                    active ? 'text-steel-600' : 'text-decart-700 hover:underline',
+                  )}
+                  aria-current={active ? 'true' : undefined}
+                >
+                  {active ? 'Writing to this desk below' : 'Write to this desk'}
+                  {active ? null : (
+                    <ArrowRight
+                      aria-hidden
+                      className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+                    />
+                  )}
+                </Link>
               </div>
-            ))}
-            <p className="mt-1 flex items-center gap-2 text-xs text-steel-600">
-              <Clock aria-hidden className="h-3.5 w-3.5 shrink-0" />
-              {SITE.hours}
-            </p>
-          </dl>
+            );
+          })}
         </div>
 
-        <div className="min-w-0" data-anim="up">
-          <h2 className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-steel-400">
-            <Mail aria-hidden className="h-4 w-4 text-decart-600" />
-            Email
-          </h2>
-          <dl className="mt-4 flex flex-col gap-3">
-            {emailRows.map((row) => (
-              <div key={row.value} className="min-w-0">
-                <dt className="text-xs text-steel-600">{row.label}</dt>
-                <dd>
-                  <a
-                    href={`mailto:${row.value}`}
-                    className="break-words text-[0.9375rem] font-semibold text-ink-950 hover:text-decart-700"
-                  >
-                    {row.value}
-                  </a>
-                </dd>
-              </div>
-            ))}
-          </dl>
-          <ButtonLink
-            href={waLink(WA.float())}
-            variant="whatsapp"
-            size="sm"
-            data-wa="contact-band"
-            className="mt-5"
-          >
+        {/* one factory address, so it sits under the desks rather than competing with them */}
+        <div className="mt-4 grid gap-4 rounded-card border border-line bg-paper p-6 md:grid-cols-[1.4fr_1fr_auto] md:items-center">
+          <div className="flex min-w-0 items-start gap-2.5">
+            <MapPin aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-decart-600" />
+            <div className="min-w-0">
+              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-steel-400">
+                Office &amp; factory
+              </p>
+              <address className="mt-1 not-italic text-[0.9375rem] leading-relaxed text-steel-600">
+                {SITE.addressLines.join(', ')}
+              </address>
+              <a
+                href={SITE.mapUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1 inline-block text-sm font-semibold text-decart-700 hover:underline"
+              >
+                Open in Google Maps →
+              </a>
+            </div>
+          </div>
+
+          <div className="flex min-w-0 items-start gap-2.5">
+            <Clock aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-decart-600" />
+            <div className="min-w-0">
+              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-steel-400">Hours</p>
+              <p className="mt-1 text-[0.9375rem] text-steel-600">{SITE.hours}</p>
+              <p className="mt-1 font-mono text-xs uppercase tracking-[0.08em] text-steel-600">
+                GSTIN {SITE.gstin}
+              </p>
+            </div>
+          </div>
+
+          <ButtonLink href={waLink(WA.float())} variant="whatsapp" data-wa="contact-band">
             <MessageCircle aria-hidden className="h-4 w-4" />
             WhatsApp us
           </ButtonLink>
-        </div>
-
-        <div className="min-w-0" data-anim="up">
-          <h2 className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-steel-400">
-            <MapPin aria-hidden className="h-4 w-4 text-decart-600" />
-            Location
-          </h2>
-          <address className="mt-4 not-italic text-[0.9375rem] leading-relaxed text-steel-600">
-            {SITE.addressLines.map((line) => (
-              <span key={line} className="block">
-                {line}
-              </span>
-            ))}
-          </address>
-          <a
-            href={SITE.mapUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-3 inline-block text-sm font-semibold text-decart-700 hover:underline"
-          >
-            Open in Google Maps →
-          </a>
-          <p className="mt-4 font-mono text-xs uppercase tracking-[0.08em] text-steel-600">
-            GSTIN {SITE.gstin}
-          </p>
         </div>
       </div>
     </section>
