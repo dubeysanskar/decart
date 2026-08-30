@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -16,6 +16,15 @@ import { BUILD_OPTIONS } from '@/data/specs';
  * One form powers all six lead types (§10.2). A lead is never lost: on any failure the
  * WhatsApp fallback carries the same data the form collected.
  */
+/** Chunks a flat list of fields into rows of two. */
+function inPairs<T>(list: T[]): T[][] {
+  return list.reduce<T[][]>((rows, item, i) => {
+    if (i % 2 === 0) rows.push([item]);
+    else rows[rows.length - 1].push(item);
+    return rows;
+  }, []);
+}
+
 export function LeadForm({
   type,
   productSlug = '',
@@ -24,6 +33,7 @@ export function LeadForm({
   families = [],
   compact = false,
   subjects = [],
+  subjectLabel = 'Subject',
   alwaysAskCompany = false,
 }: {
   type: LeadType;
@@ -34,6 +44,7 @@ export function LeadForm({
   compact?: boolean;
   /** When given, the form asks what the enquiry is about and files it under extra.subject. */
   subjects?: readonly string[];
+  subjectLabel?: string;
   alwaysAskCompany?: boolean;
 }) {
   const pathname = usePathname();
@@ -176,6 +187,91 @@ export function LeadForm({
   const needsQuantity = type === 'bulk' || type === 'quote' || type === 'custom';
   const needsCompany = alwaysAskCompany || type === 'dealer' || type === 'oem' || type === 'bulk';
 
+  /**
+   * The identity block, in the order the reference layout asks for. Nulls are dropped so the
+   * pairing closes up rather than leaving an empty cell.
+   */
+  const identityFields = (
+    [
+      <Input key="name" label="Name" name="name" required value={values.name} onChange={set('name')} error={errors.name} autoComplete="name" />,
+      needsCompany ? (
+        <Input
+          key="company"
+          label="Company"
+          name="company"
+          required={type === 'dealer' || type === 'oem'}
+          value={values.company}
+          onChange={set('company')}
+          error={errors.company}
+          autoComplete="organization"
+        />
+      ) : null,
+      <Input
+        key="phone"
+        label="Phone / WhatsApp"
+        name="phone"
+        required
+        type="tel"
+        inputMode="tel"
+        autoComplete="tel"
+        value={values.phone}
+        onChange={set('phone')}
+        error={errors.phone}
+      />,
+      <Input
+        key="email"
+        label="Email"
+        name="email"
+        type="email"
+        inputMode="email"
+        autoComplete="email"
+        value={values.email}
+        onChange={set('email')}
+        error={errors.email}
+        hint="So we can send the quotation"
+      />,
+      <Select key="state" label="State" name="state" value={values.state} onChange={onStateChange}>
+        <option value="">Select a state</option>
+        {INDIA_STATES.map((record) => (
+          <option key={record.name} value={record.name}>
+            {record.name}
+          </option>
+        ))}
+      </Select>,
+      // city depends on the state above it — pick Haryana and you get Haryana's cities
+      <Select
+        key="city"
+        label="City"
+        name="city"
+        required={type === 'dealer'}
+        value={values.city}
+        onChange={set('city')}
+        error={errors.city}
+        disabled={!values.state}
+        hint={values.state ? undefined : 'Choose a state first'}
+      >
+        <option value="">{values.state ? 'Select a city' : '—'}</option>
+        {citiesFor(values.state).map((city) => (
+          <option key={city} value={city}>
+            {city}
+          </option>
+        ))}
+        {values.state ? <option value={OTHER_CITY}>{OTHER_CITY} (type it in)</option> : null}
+      </Select>,
+      values.city === OTHER_CITY ? (
+        <Input
+          key="cityOther"
+          label="Which city?"
+          name="cityOther"
+          required={type === 'dealer'}
+          value={values.cityOther}
+          onChange={set('cityOther')}
+          autoComplete="address-level2"
+        />
+      ) : null,
+    ] as (ReactNode | null)[]
+  ).filter(Boolean) as ReactNode[];
+
   return (
     <form onSubmit={onSubmit} className="relative flex flex-col gap-3" noValidate>
       <Honeypot />
@@ -189,101 +285,27 @@ export function LeadForm({
         </div>
       ) : null}
 
-      <div className={compact ? 'grid gap-3' : 'grid gap-3 md:grid-cols-2'}>
-        <Input label="Name" name="name" required value={values.name} onChange={set('name')} error={errors.name} autoComplete="name" />
-        <Input
-          label="Phone / WhatsApp"
-          name="phone"
-          required
-          type="tel"
-          inputMode="tel"
-          autoComplete="tel"
-          value={values.phone}
-          onChange={set('phone')}
-          error={errors.phone}
-        />
-      </div>
-
-      <div className={compact ? 'grid gap-3' : 'grid gap-3 md:grid-cols-2'}>
-        <Input
-          label="Email"
-          name="email"
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          value={values.email}
-          onChange={set('email')}
-          error={errors.email}
-          hint="So we can send the quotation"
-        />
-        <Select label="State" name="state" value={values.state} onChange={onStateChange}>
-          <option value="">Select a state</option>
-          {INDIA_STATES.map((record) => (
-            <option key={record.name} value={record.name}>
-              {record.name}
-            </option>
-          ))}
-        </Select>
-      </div>
-
-      {/* city depends on the state above it — pick Haryana and you get Haryana's cities */}
-      <div className={compact ? 'grid gap-3' : 'grid gap-3 md:grid-cols-2'}>
-        <Select
-          label="City"
-          name="city"
-          required={type === 'dealer'}
-          value={values.city}
-          onChange={set('city')}
-          error={errors.city}
-          disabled={!values.state}
-          hint={values.state ? undefined : 'Choose a state first'}
-        >
-          <option value="">{values.state ? 'Select a city' : '—'}</option>
-          {citiesFor(values.state).map((city) => (
-            <option key={city} value={city}>
-              {city}
-            </option>
-          ))}
-          {values.state ? <option value={OTHER_CITY}>{OTHER_CITY} (type it in)</option> : null}
-        </Select>
-
-        {values.city === OTHER_CITY ? (
-          <Input
-            label="Which city?"
-            name="cityOther"
-            required={type === 'dealer'}
-            value={values.cityOther}
-            onChange={set('cityOther')}
-            autoComplete="address-level2"
-          />
-        ) : null}
-      </div>
-
-      {/* paired so neither runs the full width of the column on its own */}
-      {subjects.length || needsCompany ? (
-        <div className={compact ? 'grid gap-3' : 'grid gap-3 md:grid-cols-2'}>
-          {subjects.length ? (
-            <Select label="Subject" name="subject" value={values.subject} onChange={set('subject')}>
-              <option value="">Select a subject</option>
-              {subjects.map((subject) => (
-                <option key={subject} value={subject}>
-                  {subject}
-                </option>
-              ))}
-            </Select>
-          ) : null}
-
-          {needsCompany ? (
-            <Input
-              label="Company"
-              name="company"
-              required={type === 'dealer' || type === 'oem'}
-              value={values.company}
-              onChange={set('company')}
-              error={errors.company}
-            />
-          ) : null}
+      {/*
+        Field order follows the client's reference layout: name beside company, phone beside
+        email, state beside city. Built as a list and chunked into pairs rather than hardcoded
+        rows, so a field this lead type does not ask for closes the gap instead of leaving a
+        hole in the grid.
+      */}
+      {inPairs(identityFields).map((pair, i) => (
+        <div key={i} className={compact ? 'grid gap-3' : 'grid gap-3 md:grid-cols-2'}>
+          {pair}
         </div>
+      ))}
+
+      {subjects.length ? (
+        <Select label={subjectLabel} name="subject" value={values.subject} onChange={set('subject')}>
+          <option value="">Select an option</option>
+          {subjects.map((subject) => (
+            <option key={subject} value={subject}>
+              {subject}
+            </option>
+          ))}
+        </Select>
       ) : null}
 
       {families.length && (type === 'bulk' || type === 'custom') ? (

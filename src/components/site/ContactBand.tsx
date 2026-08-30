@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Phone, Mail, Clock, MessageCircle, MapPin, Headphones, IndianRupee, Info, Check } from 'lucide-react';
+import { Phone, Mail, Clock, MessageCircle, MapPin, Headphones, IndianRupee, Info, Check, ArrowRight } from 'lucide-react';
 import { ButtonLink } from '@/components/ui/Button';
 import { CONTACT_DESKS, SITE, type ContactDeskId } from '@/lib/site';
 import { waLink, WA } from '@/lib/whatsapp';
@@ -58,24 +58,12 @@ export function ContactBand({
                 key={desk.id}
                 data-anim="up"
                 className={cn(
-                  'relative isolate flex min-w-0 flex-col rounded-card border p-4 transition-colors',
+                  'flex min-w-0 flex-col rounded-card border p-4 transition-colors',
                   active
                     ? 'border-ink-900 bg-paper ring-1 ring-ink-900'
                     : 'border-line bg-paper hover:border-ink-800 hover:bg-porcelain/60',
                 )}
               >
-                {/* the tab hit area: covers the card, sits under the contact links */}
-                <Link
-                  href={`/contact?desk=${desk.id}`}
-                  scroll={!selectable}
-                  aria-current={active ? 'true' : undefined}
-                  className="absolute inset-0 z-0 rounded-card"
-                >
-                  <span className="sr-only">
-                    {active ? `${desk.title}, currently selected` : `Write to the ${desk.title.toLowerCase()}`}
-                  </span>
-                </Link>
-
                 <div className="flex items-center gap-2.5">
                   <span
                     className={cn(
@@ -98,7 +86,7 @@ export function ContactBand({
 
                 {/* one row, not a stack — it kept the tab twice as tall as it needed to be.
                     Wraps rather than truncating, because a clipped email is useless. */}
-                <dl className="relative z-10 mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line pt-3">
+                <dl className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line pt-3">
                   <div className="flex min-w-0 items-center gap-1.5">
                     <Phone aria-hidden className="h-3.5 w-3.5 shrink-0 text-decart-600" />
                     <dt className="sr-only">Phone</dt>
@@ -128,6 +116,23 @@ export function ContactBand({
                     </dd>
                   </div>
                 </dl>
+
+                <Link
+                  href={`/contact?desk=${desk.id}`}
+                  scroll={!selectable}
+                  aria-current={active ? 'true' : undefined}
+                  className={cn(
+                    'group mt-4 inline-flex items-center gap-1.5 self-start rounded-btn px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] transition-colors',
+                    active
+                      ? 'bg-porcelain text-steel-600'
+                      : 'bg-decart-50 text-decart-700 hover:bg-decart-100',
+                  )}
+                >
+                  {active ? 'Writing to this desk' : desk.cta}
+                  {active ? null : (
+                    <ArrowRight aria-hidden className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                  )}
+                </Link>
               </div>
             );
           })}
