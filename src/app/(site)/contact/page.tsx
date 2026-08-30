@@ -1,62 +1,67 @@
 import type { Metadata } from 'next';
-import { Phone, Mail, Clock, MessageCircle, MapPin } from 'lucide-react';
+import Link from 'next/link';
+import { Phone, Mail, Clock, MessageCircle, MapPin, Headphones, IndianRupee, Info } from 'lucide-react';
 import { PageHeader } from '@/components/site/PageHeader';
 import { LeadForm } from '@/components/forms/LeadForm';
+import { ButtonLink } from '@/components/ui/Button';
 import { buildMetadata } from '@/lib/seo';
-import { SITE } from '@/lib/site';
+import { CONTACT_DESKS, SITE, type ContactDeskId } from '@/lib/site';
 import { waLink, WA } from '@/lib/whatsapp';
+import { cn } from '@/lib/utils';
 
 export const revalidate = 3600;
 
 export const metadata: Metadata = buildMetadata({
   title: 'Contact DecArt Furniture — Faridabad Office Furniture Manufacturer',
   description:
-    'Call +91 93119 42001, WhatsApp us or send an enquiry. DecArt Industries, Plot 230-C, Sector 87, Faridabad, Haryana. Mon–Sat, 9:30 AM – 6:00 PM.',
+    'General, sales and support enquiries for DecArt Industries. Call +91 93119 42001, WhatsApp us or send an enquiry. Plot 230-C, Sector 87, Faridabad, Haryana. Mon–Sat, 9:30 AM – 6:00 PM.',
   path: '/contact',
 });
 
-const CARDS = [
-  { icon: Phone, label: 'Call', value: SITE.phone, href: SITE.phoneHref, note: 'Sales desk, Mon–Sat' },
-  { icon: MessageCircle, label: 'WhatsApp', value: '+91 93119 42001', href: waLink(WA.float()), note: 'Fastest reply' },
-  { icon: Mail, label: 'Email', value: SITE.emailPrimary, href: `mailto:${SITE.emailPrimary}`, note: 'Quotes & documents' },
-  { icon: Clock, label: 'Hours', value: 'Mon–Sat', href: '', note: '9:30 AM – 6:00 PM IST' },
-];
+const DESK_ICON: Record<ContactDeskId, typeof Info> = {
+  general: Info,
+  sales: IndianRupee,
+  support: Headphones,
+};
 
-export default function ContactPage() {
+type Search = { desk?: string };
+
+export default function ContactPage({ searchParams }: { searchParams: Search }) {
+  const desk =
+    CONTACT_DESKS.find((option) => option.id === searchParams.desk) ?? CONTACT_DESKS[0];
+
   return (
     <>
       <PageHeader
         eyebrow="Contact"
         title="Talk to the people who build it"
-        lede="One desk handles quotes, dealer enquiries and after-sales. No call-centre routing."
+        lede="Three desks, one factory. Pick the one that fits and you reach it directly — no call-centre routing."
         breadcrumbs={[{ name: 'Home', href: '/' }, { name: 'Contact' }]}
       >
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {CARDS.map((card) => {
-            const Icon = card.icon;
-            const inner = (
-              <>
-                <Icon aria-hidden className="h-5 w-5 text-decart-600" />
-                <span className="mt-3 block text-eyebrow font-semibold uppercase tracking-[0.14em] text-steel-600">
-                  {card.label}
-                </span>
-                <span className="mt-1 block text-[0.9375rem] font-semibold text-ink-950">{card.value}</span>
-                <span className="mt-1 block text-xs text-steel-600">{card.note}</span>
-              </>
-            );
-            return card.href ? (
-              <a
-                key={card.label}
-                href={card.href}
-                {...(card.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                className="rounded-card border border-line bg-paper p-5 transition-colors hover:border-decart-300"
+        {/* the same tab row as /quote — client asked for it here, for three enquiry desks */}
+        <div className="grid gap-3 sm:grid-cols-3">
+          {CONTACT_DESKS.map((option) => {
+            const Icon = DESK_ICON[option.id];
+            const active = option.id === desk.id;
+            return (
+              <Link
+                key={option.id}
+                href={`/contact?desk=${option.id}`}
+                scroll={false}
+                aria-current={active ? 'true' : undefined}
+                className={cn(
+                  'flex min-w-0 flex-col gap-2 rounded-card border p-4 transition-colors',
+                  active
+                    ? 'border-ink-900 bg-ink-900 text-porcelain'
+                    : 'border-line bg-paper text-ink-900 hover:border-ink-800',
+                )}
               >
-                {inner}
-              </a>
-            ) : (
-              <div key={card.label} className="rounded-card border border-line bg-paper p-5">
-                {inner}
-              </div>
+                <Icon aria-hidden className={cn('h-5 w-5', active ? 'text-decart-300' : 'text-steel-600')} />
+                <span className="text-sm font-semibold">{option.title}</span>
+                <span className={cn('text-xs leading-snug', active ? 'text-steel-400' : 'text-steel-600')}>
+                  {option.blurb}
+                </span>
+              </Link>
             );
           })}
         </div>
@@ -64,17 +69,79 @@ export default function ContactPage() {
 
       <section className="section bg-paper">
         <div className="container-x grid gap-12 lg:grid-cols-2">
-          <div>
-            <h2 className="font-display text-h3 text-ink-950">Send an enquiry</h2>
+          <div className="min-w-0">
+            <h2 className="font-display text-h3 text-ink-950">{desk.title}</h2>
             <p className="mt-3 text-[0.9375rem] text-steel-600">
-              Tell us what you are furnishing. If it is a specific model, the quote form carries the code through for you.
+              Tell us what you are furnishing. If it is a specific model, the quote form carries the code
+              through for you.
             </p>
             <div className="mt-8">
-              <LeadForm type="contact" compact />
+              {/* keyed on the desk so switching tabs gives a clean form, and the lead lands in the
+                  admin under the right type */}
+              <LeadForm key={desk.id} type={desk.leadType} compact />
             </div>
           </div>
 
-          <div className="flex flex-col gap-6">
+          <div className="flex min-w-0 flex-col gap-6">
+            {/* the selected desk's own details, as real mailto:/tel: links */}
+            <div className="rounded-card border border-line bg-porcelain p-6">
+              <h2 className="font-display text-lg text-ink-950">{desk.title}</h2>
+              <p className="mt-2 text-sm text-steel-600">{desk.blurb}</p>
+
+              <dl className="mt-5 flex flex-col gap-4 border-t border-line pt-5">
+                <div className="flex items-start gap-3">
+                  <Mail aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-decart-600" />
+                  <div className="min-w-0">
+                    <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-steel-400">Email</dt>
+                    <dd>
+                      <a
+                        href={`mailto:${desk.email}`}
+                        className="break-words text-[0.9375rem] font-semibold text-ink-950 hover:text-decart-700"
+                      >
+                        {desk.email}
+                      </a>
+                    </dd>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <Phone aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-decart-600" />
+                  <div className="min-w-0">
+                    <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-steel-400">Phone</dt>
+                    <dd className="flex flex-wrap gap-x-3">
+                      {desk.phones.map((phone) => (
+                        <a
+                          key={phone}
+                          href={`tel:${phone.replace(/[^+\d]/g, '')}`}
+                          className="text-[0.9375rem] font-semibold text-ink-950 hover:text-decart-700"
+                        >
+                          {phone}
+                        </a>
+                      ))}
+                    </dd>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <Clock aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-decart-600" />
+                  <div className="min-w-0">
+                    <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-steel-400">Hours</dt>
+                    <dd className="text-[0.9375rem] text-steel-600">{SITE.hours}</dd>
+                  </div>
+                </div>
+              </dl>
+
+              <ButtonLink
+                href={waLink(WA.float())}
+                variant="whatsapp"
+                data-wa="contact-desk"
+                className="mt-5 w-full"
+              >
+                <MessageCircle aria-hidden className="h-4 w-4" />
+                WhatsApp us
+              </ButtonLink>
+            </div>
+
             <div className="overflow-hidden rounded-card border border-line">
               <iframe
                 title="DecArt Industries on Google Maps"

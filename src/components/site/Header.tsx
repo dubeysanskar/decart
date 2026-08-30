@@ -192,8 +192,12 @@ export function Header({ groups }: { groups: NavGroup[] }) {
             {SITE.phone}
           </a>
 
-          <ButtonLink href="/quote" size="sm" onDark={onDark} className="hidden sm:inline-flex">
-            Get a Quote
+          {/* the quote CTA used to be hidden below 640px, which left phone visitors with no way
+              to reach /quote except the drawer. It stays on-screen now, with a shorter label
+              where the bar is tightest. */}
+          <ButtonLink href="/quote" size="sm" onDark={onDark} className="px-3 sm:px-4">
+            <span className="sm:hidden">Quote</span>
+            <span className="hidden sm:inline">Get a Quote</span>
           </ButtonLink>
 
           <a

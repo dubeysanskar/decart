@@ -13,6 +13,10 @@ export const SITE = {
   phoneHref: 'tel:+919311942001',
   whatsapp: process.env.NEXT_PUBLIC_WHATSAPP || '919311942001',
   emailPrimary: 'info@decartseatings.in',
+  /** Desk inboxes. They fall back to the primary address until the client creates the aliases,
+      so nothing is ever sent to a mailbox that does not exist yet. */
+  emailSales: process.env.NEXT_PUBLIC_EMAIL_SALES || 'info@decartseatings.in',
+  emailSupport: process.env.NEXT_PUBLIC_EMAIL_SUPPORT || 'info@decartseatings.in',
 
   addressFactory: 'Plot no-230 C, Indra Complex, Industrial Area, Dwa Factory Wali Gali, Sector 87, Faridabad, Haryana 121002',
   addressLines: [
@@ -67,7 +71,7 @@ export const SITE = {
   ],
 } as const;
 
-export const LEAD_TYPES = ['contact', 'quote', 'bulk', 'dealer', 'oem', 'custom'] as const;
+export const LEAD_TYPES = ['contact', 'quote', 'bulk', 'dealer', 'oem', 'custom', 'support'] as const;
 export type LeadType = (typeof LEAD_TYPES)[number];
 
 export const LEAD_TYPE_LABEL: Record<LeadType, string> = {
@@ -77,7 +81,42 @@ export const LEAD_TYPE_LABEL: Record<LeadType, string> = {
   dealer: 'Dealer / distributor',
   oem: 'OEM manufacturing',
   custom: 'Custom chair',
+  support: 'Support / after-sales',
 };
+
+/**
+ * The three enquiry desks on /contact (client brief: the same tab row as /quote, but for
+ * General / Sales / Support). Each desk picks the lead type, which is what mail.ts routes on —
+ * so a support enquiry can be sent to a different inbox from a sales one via MAIL_ROUTING_JSON.
+ */
+export const CONTACT_DESKS = [
+  {
+    id: 'general',
+    leadType: 'contact' as LeadType,
+    title: 'General Enquiry',
+    blurb: 'Anything that is not pricing or a running order.',
+    email: SITE.emailPrimary,
+    phones: [SITE.phone],
+  },
+  {
+    id: 'sales',
+    leadType: 'quote' as LeadType,
+    title: 'Sales Enquiry',
+    blurb: 'Pricing, bulk floors, dealers and OEM.',
+    email: SITE.emailSales,
+    phones: [SITE.phone],
+  },
+  {
+    id: 'support',
+    leadType: 'support' as LeadType,
+    title: 'Support Enquiry',
+    blurb: 'Spares, warranty and after-sales on a delivered order.',
+    email: SITE.emailSupport,
+    phones: [SITE.phone],
+  },
+] as const;
+
+export type ContactDeskId = (typeof CONTACT_DESKS)[number]['id'];
 
 export const LEAD_STATUSES = ['new', 'contacted', 'quoted', 'negotiation', 'won', 'lost', 'junk'] as const;
 export type LeadStatus = (typeof LEAD_STATUSES)[number];
