@@ -24,11 +24,15 @@ const LINE = rgb(0.88, 0.92, 0.95);
 const ACCENT = rgb(0.18, 0.55, 0.72);
 
 /** WinAnsi cannot encode everything — drop what it cannot rather than letting the render throw. */
-const UNSUPPORTED = /[^\x20-\x7E -ÿ–—‘’“”•…]/g;
+// printable ASCII, Latin-1, and the handful of punctuation marks WinAnsi does carry
+const UNSUPPORTED = /[^ -~ -ÿ–—‘’“”•…]/g;
 const safe = (value: unknown) =>
   String(value ?? '')
     .replace(/₹/g, 'INR ')
     .replace(UNSUPPORTED, '');
+
+/** One drawText call is a single line, so a stray newline would render as a blank box. */
+const oneLine = (value: unknown) => safe(value).replace(/\s*\n\s*/g, ' ');
 
 /** Indian grouping: 9,48,720.00 rather than 948,720.00. */
 function inr(amount: number): string {
@@ -95,7 +99,7 @@ function text(
   { size = 9, bold = false, color = INK, align = 'left' as 'left' | 'right', width = 0 } = {},
 ) {
   const font = bold ? ctx.bold : ctx.font;
-  const str = safe(value);
+  const str = oneLine(value);
   const w = font.widthOfTextAtSize(str, size);
   ctx.page.drawText(str, { x: align === 'right' ? x + width - w : x, y, size, font, color });
 }
@@ -103,9 +107,11 @@ function text(
 /** Greedy wrap, so notes and terms cannot run off the page. */
 function wrap(font: PDFFont, value: string, size: number, maxWidth: number): string[] {
   const out: string[] = [];
-  for (const paragraph of safe(value).split('\n')) {
+  // split the raw value first: safe() drops newlines, being below WinAnsi's printable
+  // range, so splitting after it would join every paragraph into one run-on line
+  for (const paragraph of String(value ?? '').split('\n')) {
     let line = '';
-    for (const word of paragraph.split(/\s+/)) {
+    for (const word of safe(paragraph).split(/\s+/).filter(Boolean)) {
       const next = line ? `${line} ${word}` : word;
       if (font.widthOfTextAtSize(next, size) > maxWidth && line) {
         out.push(line);
@@ -135,16 +141,19 @@ function newPage(ctx: Ctx) {
   return ctx.page;
 }
 
-const COLS = { num: MARGIN, item: MARGIN + 22, mrp: 300, disc: 360, rate: 405, qty: 465, amount: 495 };
+// laid out so no two columns can touch: the widest amount is 65.5pt at 9pt bold, and the
+// amount column is 95pt wide, so it starts at 487 while qty ends at 454
+const COLS = { num: MARGIN, item: MARGIN + 22, mrp: 262, disc: 326, rate: 364, qty: 428, amount: 458 };
+const W = { mrp: 60, disc: 34, rate: 60, qty: 26, item: 195 };
 const RIGHT_EDGE = A4.w - MARGIN;
 
 function tableHead(ctx: Ctx) {
   text(ctx, '#', COLS.num, ctx.y, { size: 7.5, bold: true, color: MUTED });
   text(ctx, 'ITEM', COLS.item, ctx.y, { size: 7.5, bold: true, color: MUTED });
-  text(ctx, 'MRP', COLS.mrp, ctx.y, { size: 7.5, bold: true, color: MUTED, align: 'right', width: 50 });
-  text(ctx, 'DISC', COLS.disc, ctx.y, { size: 7.5, bold: true, color: MUTED, align: 'right', width: 36 });
-  text(ctx, 'RATE', COLS.rate, ctx.y, { size: 7.5, bold: true, color: MUTED, align: 'right', width: 52 });
-  text(ctx, 'QTY', COLS.qty, ctx.y, { size: 7.5, bold: true, color: MUTED, align: 'right', width: 24 });
+  text(ctx, 'MRP', COLS.mrp, ctx.y, { size: 7.5, bold: true, color: MUTED, align: 'right', width: W.mrp });
+  text(ctx, 'DISC', COLS.disc, ctx.y, { size: 7.5, bold: true, color: MUTED, align: 'right', width: W.disc });
+  text(ctx, 'RATE', COLS.rate, ctx.y, { size: 7.5, bold: true, color: MUTED, align: 'right', width: W.rate });
+  text(ctx, 'QTY', COLS.qty, ctx.y, { size: 7.5, bold: true, color: MUTED, align: 'right', width: W.qty });
   text(ctx, 'AMOUNT', COLS.amount, ctx.y, {
     size: 7.5,
     bold: true,
@@ -268,7 +277,7 @@ export async function buildQuotationPdf(quotation: QuotationRecord): Promise<Uin
   tableHead(ctx);
 
   for (const [i, item] of quotation.items.entries()) {
-    const nameLines = wrap(bold, item.name, 9, 250);
+    const nameLines = wrap(bold, item.name, 9, W.item);
     const needed = 14 + (nameLines.length - 1) * 11 + (item.code ? 10 : 0) + (item.note ? 10 : 0);
 
     // keep the totals block off a page of its own
@@ -290,21 +299,21 @@ export async function buildQuotationPdf(quotation: QuotationRecord): Promise<Uin
       lineY -= 10;
     }
     if (item.note) {
-      for (const noteLine of wrap(font, item.note, 7.5, 250)) {
+      for (const noteLine of wrap(font, item.note, 7.5, W.item)) {
         text(ctx, noteLine, COLS.item, lineY, { size: 7.5, color: MUTED });
         lineY -= 10;
       }
     }
 
-    text(ctx, item.mrp ? inr(item.mrp) : '-', COLS.mrp, rowTop, { size: 8.5, color: MUTED, align: 'right', width: 50 });
+    text(ctx, item.mrp ? inr(item.mrp) : '-', COLS.mrp, rowTop, { size: 8.5, color: MUTED, align: 'right', width: W.mrp });
     text(ctx, item.discountPct ? `${item.discountPct}%` : '-', COLS.disc, rowTop, {
       size: 8.5,
       color: MUTED,
       align: 'right',
-      width: 36,
+      width: W.disc,
     });
-    text(ctx, inr(item.unitPrice), COLS.rate, rowTop, { size: 8.5, align: 'right', width: 52 });
-    text(ctx, String(item.qty), COLS.qty, rowTop, { size: 8.5, align: 'right', width: 24 });
+    text(ctx, inr(item.unitPrice), COLS.rate, rowTop, { size: 8.5, align: 'right', width: W.rate });
+    text(ctx, String(item.qty), COLS.qty, rowTop, { size: 8.5, align: 'right', width: W.qty });
     text(ctx, inr(item.lineTotal), COLS.amount, rowTop, {
       size: 9,
       bold: true,

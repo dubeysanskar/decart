@@ -8,6 +8,7 @@ import { formatINR, quotePath } from '@/lib/quote-calc';
 import { QuoteDocument } from '@/components/quote/QuoteDocument';
 import { QuoteShare } from '@/components/admin/QuoteShare';
 import { SITE } from '@/lib/site';
+import { absoluteUrl } from '@/lib/origin';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,7 +38,8 @@ export default async function QuotationDetailPage({ params }: { params: { id: st
   if (!quotation || (!isMaster(user.role) && quotation.createdBy !== user.id)) notFound();
 
   const activity = await listActivity(params.id);
-  const link = `${SITE.url}${quotePath(quotation.number, quotation.token)}`;
+  // built from the serving host, not SITE.url: that domain still runs the old WordPress site
+  const link = absoluteUrl(quotePath(quotation.number, quotation.token));
 
   return (
     <div className="flex flex-col gap-5">

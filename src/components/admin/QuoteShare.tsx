@@ -122,9 +122,9 @@ export function QuoteShare({
           {busy === 'link' ? <HexSpinner /> : <Link2 className="h-4 w-4" />}
           Copy link
         </Button>
-        <Button type="button" variant="secondary" onClick={() => window.open(`${link}?print=1`, '_blank', 'noopener')}>
+        <Button type="button" variant="secondary" onClick={() => window.open(`/api/quotations/${id}/pdf`, '_blank', 'noopener')}>
           <Printer className="h-4 w-4" />
-          Print / save PDF
+          Download PDF
         </Button>
       </div>
 

@@ -2,17 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Check, X, Printer } from 'lucide-react';
+import { Check, X, Download } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { HexSpinner } from '@/components/ui/bits';
 import type { QuoteStatus } from '@/lib/quote-calc';
 
 /**
- * What the client can do with a quotation they have been sent: accept it, decline it, or save it
- * as a PDF. The download is reported back so the salesperson can see it was taken.
- *
- * `?print=1` opens straight into the browser's print dialog, which is what the "Print / save PDF"
- * button in the admin links to.
+ * What the client can do with a quotation they have been sent: accept it, decline it, or take the
+ * PDF. The PDF is rendered on the server and counted as it is served, so the salesperson sees the
+ * download without the page having to report it separately.
  */
 export function QuoteActions({ slug, status }: { slug: string; status: QuoteStatus }) {
   const router = useRouter();
@@ -28,11 +26,9 @@ export function QuoteActions({ slug, status }: { slug: string; status: QuoteStat
     });
 
   useEffect(() => {
+    // kept for links sent out before the PDF existed
     if (params.get('print') !== '1') return;
-    void record('download');
-    // let the document paint before the dialog takes over the page
-    const timer = window.setTimeout(() => window.print(), 700);
-    return () => window.clearTimeout(timer);
+    window.location.assign(`/api/q/${slug}/pdf`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params]);
 
@@ -48,9 +44,9 @@ export function QuoteActions({ slug, status }: { slug: string; status: QuoteStat
     router.refresh();
   }
 
-  async function print() {
-    await record('download');
-    window.print();
+  function download() {
+    // the route counts the download as it serves the file
+    window.open(`/api/q/${slug}/pdf`, '_blank', 'noopener');
   }
 
   const closed = done || ['accepted', 'rejected', 'cancelled', 'expired'].includes(status);
@@ -78,9 +74,9 @@ export function QuoteActions({ slug, status }: { slug: string; status: QuoteStat
         </>
       )}
 
-      <Button type="button" variant="ghost" onClick={print}>
-        <Printer className="h-4 w-4" />
-        Save as PDF
+      <Button type="button" variant="secondary" onClick={download}>
+        <Download className="h-4 w-4" />
+        Download PDF
       </Button>
     </div>
   );

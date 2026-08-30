@@ -4,8 +4,12 @@ import { requireUser, isResponse, isMaster } from '@/lib/auth';
 import { getQuotation, setQuoteStatus, addActivity } from '@/lib/repo-quotes';
 import { formatINR, quotePath } from '@/lib/quote-calc';
 import { mailConfigured, sendReply } from '@/lib/mail';
+import { buildQuotationPdf, quotationFilename } from '@/lib/quote-pdf';
 import { SITE } from '@/lib/site';
+import { absoluteUrl } from '@/lib/origin';
 
+// pdf-lib needs the Node runtime
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 /**
@@ -28,7 +32,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
   const body = (await req.json().catch(() => ({}))) as { channel?: string; to?: string };
   const channel = body.channel === 'email' ? 'email' : body.channel === 'whatsapp' ? 'whatsapp' : 'link';
-  const link = `${SITE.url}${quotePath(quotation.number, quotation.token)}`;
+  // built from the serving host, not SITE.url: that domain still runs the old WordPress site
+  const link = absoluteUrl(quotePath(quotation.number, quotation.token));
 
   if (channel === 'email') {
     const to = (body.to || quotation.client?.email || '').trim();
@@ -43,17 +48,19 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       <p>Dear ${quotation.client?.contactPerson || quotation.client?.company || 'Sir/Madam'},</p>
       <p>Thank you for your enquiry. Your quotation <strong>${quotation.number}</strong> is ready,
          totalling <strong>${formatINR(quotation.total)}</strong> inclusive of GST.</p>
-      <p><a href="${link}">View the quotation</a>${quotation.validUntil ? ` &mdash; valid until ${quotation.validUntil}` : ''}</p>
-      <p>You can accept it, or reply to this email with any change you need.</p>
+      <p>The full quotation is attached as a PDF.${quotation.validUntil ? ` It is valid until ${quotation.validUntil}.` : ''}</p>
+      <p><a href="${link}">You can also view and accept it online</a> — or reply to this email with any change you need.</p>
     `;
 
     // sendReply resolves to a message id and throws on an SMTP failure, so this has to catch
     try {
+      const pdf = await buildQuotationPdf(quotation);
       const messageId = await sendReply(
         to,
         `Quotation ${quotation.number} from ${SITE.shortName}`,
         html,
         user.name,
+        [{ filename: quotationFilename(quotation), content: Buffer.from(pdf), contentType: 'application/pdf' }],
       );
       await addActivity(params.id, 'emailed', user.name, { to, messageId });
     } catch (error) {

@@ -246,12 +246,19 @@ export async function sendCustomerAck(d: LeadMailData) {
   });
 }
 
-export async function sendReply(to: string, subject: string, bodyHtml: string, signature: string) {
+export async function sendReply(
+  to: string,
+  subject: string,
+  bodyHtml: string,
+  signature: string,
+  attachments?: nodemailer.SendMailOptions['attachments'],
+) {
   return send({
     to,
     replyTo: SITE.emailPrimary,
     subject,
     html: replyHtml(bodyHtml, signature),
     text: bodyHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
+    attachments,
   });
 }

@@ -13,6 +13,7 @@ import { rateLimit, clientIp, sweep } from '@/lib/rate-limit';
 import { requireAdmin } from '@/lib/auth';
 import { sendAdminNotify, sendCustomerAck, mailConfigured, type LeadMailData } from '@/lib/mail';
 import { SITE } from '@/lib/site';
+import { absoluteUrl } from '@/lib/origin';
 import { allSeedProducts } from '@/data/catalogue.seed';
 
 export const dynamic = 'force-dynamic';
@@ -115,7 +116,9 @@ export async function POST(req: Request) {
     productUrl: data.productSlug ? `${SITE.url}/products` : undefined,
     quantity: data.quantity,
     targetDate: data.targetDate,
-    page: data.page ? `${SITE.url}${data.page}` : '',
+    // the host the form was actually submitted from. SITE.url is a build-time constant and
+    // still points at decartseatings.in, which serves the old WordPress site.
+    page: data.page ? absoluteUrl(data.page) : '',
     extra: data.extra,
     createdAt: new Date(),
   };
