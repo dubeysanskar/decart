@@ -1,14 +1,39 @@
+'use client';
+
+import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, PersonStanding, Wind, SlidersHorizontal, Gem, Phone } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ArrowRight,
+  ArrowLeft,
+  PersonStanding,
+  Wind,
+  SlidersHorizontal,
+  Gem,
+  Phone,
+} from 'lucide-react';
 import { ButtonLink } from '@/components/ui/Button';
 import { SITE } from '@/lib/site';
+import { cn } from '@/lib/utils';
 import { HeroCategorySlider, type HeroCategory } from './HeroCategorySlider';
-import { HeroBanners, type HeroBanner } from './HeroBanners';
+
+export type HeroBanner = {
+  _id: string;
+  title: string;
+  subtitle: string;
+  image: string;
+  imageAlt: string;
+  href: string;
+  ctaLabel?: string;
+};
 
 /**
  * "Smart seating" hero — the founder's campaign banner rebuilt as a live page.
- * Airy blue-white gradient stage, a heavy two-tone uppercase headline, thin-line
- * feature icons, and the real colourway photography standing on white podiums.
+ *
+ * With banners published in /admin/banners the hero becomes a real slide carousel: the
+ * photograph, the headline, the supporting line and the button all change together (client:
+ * "hero ka pura slider with content badalna chahiye, abhi sirf background ki image change ho
+ * rahi hai"). With no banners it falls back to the static campaign lockup.
  */
 
 const FEATURES = [
@@ -20,6 +45,18 @@ const FEATURES = [
 
 const MARKETPLACES = ['GeM', 'Flipkart', 'Amazon', 'IndiaMART', 'TradeIndia'];
 
+const SLIDE_MS = 6500;
+
+/**
+ * The campaign headline is two-tone, so a banner title can be split the same way: put a "|"
+ * (or an em dash) in the title and everything after it picks up the accent colour.
+ */
+function splitTitle(title: string): [string, string] {
+  const parts = title.split(/\s*\|\s*|\s+—\s+/);
+  if (parts.length >= 2) return [parts[0], parts.slice(1).join(' — ')];
+  return [title, ''];
+}
+
 export function Hero({
   categories,
   banners = [],
@@ -27,27 +64,75 @@ export function Hero({
   categories: HeroCategory[];
   banners?: HeroBanner[];
 }) {
-  const hasBanners = banners.some((banner) => banner.image);
+  const slides = banners.filter((banner) => banner.image && banner.title);
+  const hasBanners = slides.length > 0;
+
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  const go = useCallback(
+    (next: number) => setIndex(((next % slides.length) + slides.length) % slides.length),
+    [slides.length],
+  );
+
+  useEffect(() => {
+    if (paused || slides.length < 2) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const timer = window.setInterval(() => setIndex((i) => (i + 1) % slides.length), SLIDE_MS);
+    return () => window.clearInterval(timer);
+  }, [paused, slides.length]);
+
+  const active = hasBanners ? slides[index] : null;
+  const [headline, accent] = active ? splitTitle(active.title) : ['Smart seating', 'for every space.'];
 
   return (
     <section data-hero className="relative overflow-hidden pt-24 sm:pt-28">
-      {/* banners from /admin/banners take the stage when the client has published any;
-          otherwise the campaign gradient stands in */}
       {hasBanners ? (
-        <HeroBanners banners={banners} />
+        // crossfaded and never unmounted, so there is no flash between slides
+        <div aria-hidden className="absolute inset-0 overflow-hidden">
+          {slides.map((banner, i) => (
+            <Image
+              key={banner._id}
+              src={banner.image}
+              alt=""
+              fill
+              priority={i === 0}
+              sizes="100vw"
+              className={cn(
+                'object-cover transition-opacity duration-[1200ms] ease-out',
+                i === index ? 'opacity-100' : 'opacity-0',
+              )}
+            />
+          ))}
+
+          {/* the headline is dark ink, so the artwork is veiled heavily under the copy and
+              thins out to the right where the picture actually shows */}
+          <span
+            className="absolute inset-0 md:hidden"
+            style={{
+              background:
+                'linear-gradient(180deg, rgb(255 255 255 / 0.94) 0%, rgb(255 255 255 / 0.88) 58%, rgb(255 255 255 / 0.95) 100%)',
+            }}
+          />
+          <span
+            className="absolute inset-0 hidden md:block"
+            style={{
+              background:
+                'linear-gradient(100deg, rgb(255 255 255 / 0.97) 0%, rgb(255 255 255 / 0.93) 34%, rgb(255 255 255 / 0.64) 60%, rgb(255 255 255 / 0.32) 100%)',
+            }}
+          />
+        </div>
       ) : (
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={{
-            background:
-              'linear-gradient(128deg, #D2E8F8 0%, #E8F4FB 40%, #FFFFFF 74%), radial-gradient(46% 44% at 84% 8%, rgb(61 159 224 / 0.22), transparent), radial-gradient(40% 36% at 4% 92%, rgb(61 159 224 / 0.14), transparent)',
-            backgroundBlendMode: 'multiply',
-          }}
-        />
-      )}
-      {hasBanners ? null : (
         <>
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{
+              background:
+                'linear-gradient(128deg, #D2E8F8 0%, #E8F4FB 40%, #FFFFFF 74%), radial-gradient(46% 44% at 84% 8%, rgb(61 159 224 / 0.22), transparent), radial-gradient(40% 36% at 4% 92%, rgb(61 159 224 / 0.14), transparent)',
+              backgroundBlendMode: 'multiply',
+            }}
+          />
           {/* the drifting orbs belong to the gradient treatment; over a photograph they muddy it */}
           <span
             aria-hidden
@@ -68,42 +153,113 @@ export function Hero({
               min-w-0: grid items default to min-width:auto and refuse to shrink below their
               content, so without this the rail beside it drags this whole column past the
               viewport and the headline, copy and buttons get clipped on a phone. */}
-          <div className="min-w-0 pb-2 lg:pb-10">
-            {/* each line wipes in on its own, so the lockup reads top-to-bottom */}
-            <h1 className="font-display text-[clamp(2.25rem,4.6vw,3.5rem)] font-bold uppercase leading-[1.04] tracking-tight">
-              <span data-anim="mask" className="block text-ink-950">
-                Smart seating
-              </span>
-              <span data-anim="mask" className="block text-decart-600">
-                for every space.
-              </span>
-            </h1>
+          <div
+            className="min-w-0 pb-2 lg:pb-10"
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+            onFocusCapture={() => setPaused(true)}
+            onBlurCapture={() => setPaused(false)}
+          >
+            {/*
+              The rotating half. It is keyed on the slide so React remounts it and the entrance
+              animation replays — which also means it must not carry data-anim: those start at
+              opacity 0 and only the one-shot GSAP timeline clears them, so a remounted node
+              would stay invisible.
+            */}
+            <div key={hasBanners ? active?._id : 'static'} className={hasBanners ? 'animate-fade-up' : undefined}>
+              <h1 className="font-display text-[clamp(2.25rem,4.6vw,3.5rem)] font-bold uppercase leading-[1.04] tracking-tight">
+                <span {...(hasBanners ? {} : { 'data-anim': 'mask' })} className="block text-ink-950">
+                  {headline}
+                </span>
+                {accent ? (
+                  <span {...(hasBanners ? {} : { 'data-anim': 'mask' })} className="block text-decart-600">
+                    {accent}
+                  </span>
+                ) : null}
+              </h1>
 
-            <span aria-hidden data-anim="up" className="mt-5 block h-1 w-16 rounded-full bg-decart-500" />
+              <span
+                aria-hidden
+                {...(hasBanners ? {} : { 'data-anim': 'up' })}
+                className="mt-5 block h-1 w-16 rounded-full bg-decart-500"
+              />
 
-            <p data-anim="up" className="mt-5 max-w-lg text-lg leading-relaxed text-steel-600">
-              Ergonomic. Stylish. Built for comfort — 350+ models across seating, desking and institutional
-              furniture, manufactured in-house and delivered pan-India.
-            </p>
-
-            {/* full-width taps on a phone, inline pills from sm up */}
-            <div data-anim="up" className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-              <ButtonLink href="/products" size="lg" className="w-full sm:w-auto">
-                Explore products
-                <ArrowRight aria-hidden className="h-4 w-4" />
-              </ButtonLink>
-              <ButtonLink href="/quote" size="lg" variant="secondary" className="w-full sm:w-auto">
-                Get a quote
-              </ButtonLink>
-              <a
-                href={SITE.phoneHref}
-                data-call
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-btn px-4 font-mono text-sm text-ink-900 transition-colors hover:bg-paper sm:h-[52px] sm:justify-start"
+              <p
+                {...(hasBanners ? {} : { 'data-anim': 'up' })}
+                className="mt-5 max-w-lg text-lg leading-relaxed text-steel-600"
               >
-                <Phone aria-hidden className="h-4 w-4 text-decart-600" />
-                {SITE.phone}
-              </a>
+                {active?.subtitle ||
+                  'Ergonomic. Stylish. Built for comfort — 350+ models across seating, desking and institutional furniture, manufactured in-house and delivered pan-India.'}
+              </p>
+
+              {/* full-width taps on a phone, inline pills from sm up */}
+              <div
+                {...(hasBanners ? {} : { 'data-anim': 'up' })}
+                className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center"
+              >
+                <ButtonLink href={active?.href || '/products'} size="lg" className="w-full sm:w-auto">
+                  {active?.ctaLabel || 'Explore products'}
+                  <ArrowRight aria-hidden className="h-4 w-4" />
+                </ButtonLink>
+                <ButtonLink href="/quote" size="lg" variant="secondary" className="w-full sm:w-auto">
+                  Get a quote
+                </ButtonLink>
+                <a
+                  href={SITE.phoneHref}
+                  data-call
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-btn px-4 font-mono text-sm text-ink-900 transition-colors hover:bg-paper sm:h-[52px] sm:justify-start"
+                >
+                  <Phone aria-hidden className="h-4 w-4 text-decart-600" />
+                  {SITE.phone}
+                </a>
+              </div>
             </div>
+
+            {/* slide controls — arrows, a counter and dots, so the carousel is obviously one */}
+            {slides.length > 1 ? (
+              <div className="mt-8 flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => go(index - 1)}
+                    aria-label="Previous slide"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-paper/80 text-ink-900 backdrop-blur transition-colors hover:border-decart-300 hover:text-decart-700"
+                  >
+                    <ArrowLeft aria-hidden className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => go(index + 1)}
+                    aria-label="Next slide"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-paper/80 text-ink-900 backdrop-blur transition-colors hover:border-decart-300 hover:text-decart-700"
+                  >
+                    <ArrowRight aria-hidden className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <span className="font-mono text-xs tracking-[0.14em] text-steel-400">
+                  {String(index + 1).padStart(2, '0')}
+                  <span className="mx-1 text-line">/</span>
+                  {String(slides.length).padStart(2, '0')}
+                </span>
+
+                <div className="flex items-center gap-1.5">
+                  {slides.map((banner, i) => (
+                    <button
+                      key={banner._id}
+                      type="button"
+                      onClick={() => go(i)}
+                      aria-label={`Show slide ${i + 1}`}
+                      aria-current={i === index}
+                      className={cn(
+                        'h-1.5 rounded-full transition-all',
+                        i === index ? 'w-7 bg-decart-600' : 'w-1.5 bg-ink-950/20 hover:bg-ink-950/40',
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : null}
 
             {/* thin-line feature icons, straight off the banner — 2-up on a phone so the
                 labels get room to breathe, 4-up once there is width for them */}
@@ -169,19 +325,13 @@ export function Hero({
         </div>
       </div>
 
-      {/* the banner bar takes the foot of the hero when banners are running, so the tagline
-          only appears on the plain gradient version — otherwise the two overlap */}
-      {hasBanners ? (
-        <div aria-hidden className="h-[88px] md:h-[72px]" />
-      ) : (
-        <div className="relative border-t border-line bg-paper/70 backdrop-blur">
-          <div className="container-x py-4">
-            <p className="text-center font-mono text-[11px] uppercase tracking-[0.12em] text-steel-400 md:text-left">
-              Comfort that keeps you ahead
-            </p>
-          </div>
+      <div className="relative border-t border-line bg-paper/70 backdrop-blur">
+        <div className="container-x py-4">
+          <p className="text-center font-mono text-[11px] uppercase tracking-[0.12em] text-steel-400 md:text-left">
+            Comfort that keeps you ahead
+          </p>
         </div>
-      )}
+      </div>
     </section>
   );
 }

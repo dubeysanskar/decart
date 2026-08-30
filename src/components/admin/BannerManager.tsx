@@ -124,7 +124,12 @@ export function BannerManager({ banners }: { banners: BannerRow[] }) {
               hint="Wide artwork works best — around 1600×600."
             />
             <div className="grid gap-4 md:grid-cols-2">
-              <Input label="Title" value={draft.title} onChange={(e) => set('title', e.target.value)} />
+              <Input
+                label="Title"
+                value={draft.title}
+                onChange={(e) => set('title', e.target.value)}
+                hint="Becomes the hero headline. Put a | where you want the second line to start — it picks up the accent colour."
+              />
               <Input
                 label="Image alt text"
                 value={draft.imageAlt}

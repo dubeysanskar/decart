@@ -5,6 +5,7 @@ import { ProductImage } from '@/components/ui/ProductImage';
 import { EmptyState } from '@/components/ui/bits';
 import { ButtonLink } from '@/components/ui/Button';
 import { QuoteBand } from '@/components/home/sections';
+import { FeaturedSlider } from '@/components/blog/FeaturedSlider';
 import { getPublishedPosts } from '@/lib/blog';
 import { buildMetadata } from '@/lib/seo';
 import { formatDate } from '@/lib/utils';
@@ -20,6 +21,9 @@ export const metadata: Metadata = buildMetadata({
 
 export default async function BlogIndexPage() {
   const posts = await getPublishedPosts();
+  // the three newest carry the slider, the remainder fill the grid under it
+  const featured = posts.slice(0, 3);
+  const rest = posts.slice(3);
 
   return (
     <>
@@ -33,8 +37,18 @@ export default async function BlogIndexPage() {
       <section className="section bg-paper">
         <div className="container-x">
           {posts.length ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {posts.map((post) => (
+            <>
+              {/* the three newest run as a slider; the rest stay a grid below it */}
+              <FeaturedSlider posts={featured} />
+
+              {rest.length ? (
+                <h2 className="mt-16 font-mono text-[11px] uppercase tracking-[0.18em] text-steel-400">
+                  More from the workshop
+                </h2>
+              ) : null}
+
+              <div className={`grid gap-6 md:grid-cols-2 lg:grid-cols-3 ${rest.length ? 'mt-6' : 'mt-16'}`}>
+              {(rest.length ? rest : posts).map((post) => (
                 <Link
                   key={post.slug}
                   href={`/blog/${post.slug}`}
@@ -76,7 +90,8 @@ export default async function BlogIndexPage() {
                   </div>
                 </Link>
               ))}
-            </div>
+              </div>
+            </>
           ) : (
             <EmptyState
               title="The first post is being written"

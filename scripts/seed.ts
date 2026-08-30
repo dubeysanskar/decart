@@ -349,7 +349,7 @@ async function main() {
   if (bannerCount === 0) {
     const starters = [
       {
-        title: 'Workstations built for a full floor',
+        title: 'Workstations | built for a full floor',
         subtitle: 'Linear, cluster and cubicle systems made in Faridabad.',
         image: '/families/workstation.webp',
         alt: 'DecArt workstations installed across an office floor',
@@ -357,7 +357,7 @@ async function main() {
         cta: 'See workstations',
       },
       {
-        title: 'Reception desks that set the tone',
+        title: 'Reception desks | that set the tone',
         subtitle: 'The first thing a visitor leans on.',
         image: '/families/reception.webp',
         alt: 'DecArt reception desk in an office lobby',
@@ -365,7 +365,7 @@ async function main() {
         cta: 'See reception desks',
       },
       {
-        title: 'Conference tables, sized to the room',
+        title: 'Conference tables | sized to the room',
         subtitle: 'Six to twenty seats, with power routed in.',
         image: '/families/conference.webp',
         alt: 'DecArt conference table in a meeting room',
@@ -373,7 +373,7 @@ async function main() {
         cta: 'See conference tables',
       },
       {
-        title: 'Cabins that look the part',
+        title: 'Cabins | that look the part',
         subtitle: 'Executive and manager desks with matching storage.',
         image: '/families/table.webp',
         alt: 'DecArt executive desk in a manager cabin',
