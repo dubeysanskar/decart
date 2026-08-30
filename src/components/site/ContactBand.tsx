@@ -24,17 +24,22 @@ const DESK_ICON: Record<ContactDeskId, typeof Info> = {
 export function ContactBand({
   activeDesk,
   selectable = false,
+  stacked = false,
   className,
 }: {
   activeDesk?: ContactDeskId;
   /** On /contact the cards set ?desk= on the same page instead of navigating to it. */
   selectable?: boolean;
+  /** Sidebar form: one column, no band chrome, so it sits beside the form instead of above it. */
+  stacked?: boolean;
   className?: string;
 }) {
+  const Wrapper = stacked ? 'div' : 'section';
+
   return (
-    <section className={cn('border-y border-line bg-porcelain py-14 md:py-16', className)}>
-      <div className="container-x">
-        <div className="grid gap-4 lg:grid-cols-3" data-stagger="0.06">
+    <Wrapper className={cn(stacked ? 'min-w-0' : 'border-y border-line bg-porcelain py-14 md:py-16', className)}>
+      <div className={stacked ? 'min-w-0' : 'container-x'}>
+        <div className={cn('grid gap-4', stacked ? 'grid-cols-1' : 'lg:grid-cols-3')} data-stagger="0.06">
           {CONTACT_DESKS.map((desk) => {
             const Icon = DESK_ICON[desk.id];
             const active = selectable && desk.id === activeDesk;
@@ -119,7 +124,12 @@ export function ContactBand({
         </div>
 
         {/* one factory address, so it sits under the desks rather than competing with them */}
-        <div className="mt-4 grid gap-4 rounded-card border border-line bg-paper p-6 md:grid-cols-[1.4fr_1fr_auto] md:items-center">
+        <div
+          className={cn(
+            'mt-4 grid gap-4 rounded-card border border-line bg-paper p-6',
+            stacked ? '' : 'md:grid-cols-[1.4fr_1fr_auto] md:items-center',
+          )}
+        >
           <div className="flex min-w-0 items-start gap-2.5">
             <MapPin aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-decart-600" />
             <div className="min-w-0">
@@ -157,6 +167,6 @@ export function ContactBand({
           </ButtonLink>
         </div>
       </div>
-    </section>
+    </Wrapper>
   );
 }
