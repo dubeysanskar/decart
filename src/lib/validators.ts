@@ -154,6 +154,60 @@ export const familyContentSchema = z.object({
   seoDescription: z.string().trim().max(300).default(''),
 });
 
+/** Home banners, client logos and Latest Projects — all edited from /admin. */
+export const bannerSchema = z.object({
+  title: z.string().trim().max(120).default(''),
+  subtitle: z.string().trim().max(240).default(''),
+  image: z.string().trim().min(1, 'An image is required').max(600),
+  imageAlt: z.string().trim().max(300).default(''),
+  href: z.string().trim().max(300).default(''),
+  ctaLabel: z.string().trim().max(40).default(''),
+  status: z.enum(['published', 'draft']).default('published'),
+  order: z.coerce.number().int().default(0),
+});
+
+export const clientLogoSchema = z.object({
+  name: z.string().trim().min(1, 'Client name is required').max(120),
+  logo: z.string().trim().max(600).default(''),
+  website: z.string().trim().max(300).default(''),
+  sector: z.string().trim().max(80).default(''),
+  status: z.enum(['published', 'draft']).default('published'),
+  order: z.coerce.number().int().default(0),
+});
+
+export const projectSchema = z.object({
+  title: z.string().trim().min(2, 'Give the project a title').max(180),
+  slug: z.string().trim().min(1).max(180),
+  client: z.string().trim().max(160).default(''),
+  location: z.string().trim().max(160).default(''),
+  summary: z.string().trim().max(400).default(''),
+  bodyHtml: z.string().max(40000).default(''),
+  images: z
+    .array(z.object({ src: z.string().min(1).max(600), alt: z.string().max(300).default('') }))
+    .max(24)
+    .default([]),
+  scope: z.array(z.string().max(80)).max(20).default([]),
+  completedAt: z.string().trim().max(40).default(''),
+  featured: z.boolean().default(false),
+  status: z.enum(['published', 'draft']).default('published'),
+  order: z.coerce.number().int().default(0),
+  seoTitle: z.string().trim().max(120).default(''),
+  seoDescription: z.string().trim().max(300).default(''),
+});
+
+/** Admin-entered testimonial: no honeypot, and it publishes straight away. */
+export const testimonialSchema = z.object({
+  name: z.string().trim().min(2, 'Whose words are these?').max(80),
+  company: z.string().trim().max(120).default(''),
+  city: z.string().trim().max(80).default(''),
+  rating: z.coerce.number().int().min(1).max(5).default(5),
+  title: z.string().trim().max(140).default(''),
+  body: z.string().trim().min(10, 'A sentence or two, please').max(2000),
+  photo: z.string().trim().max(600).default(''),
+  productSlug: z.string().trim().max(120).default(''),
+  featured: z.boolean().default(true),
+});
+
 export const settingsSchema = z.object({
   phone: z.string().max(40).optional(),
   whatsapp: z.string().max(20).optional(),

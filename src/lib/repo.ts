@@ -11,13 +11,13 @@ import { getDb } from './db';
  * strings (which sort/compare correctly as text).
  */
 
-type Row = Record<string, unknown>;
-type Arg = string | number | null;
+export type Row = Record<string, unknown>;
+export type Arg = string | number | null;
 
-const now = () => new Date().toISOString();
-const newId = () => randomUUID();
-const J = (value: unknown) => JSON.stringify(value ?? null);
-const parse = <T>(value: unknown, fallback: T): T => {
+export const now = () => new Date().toISOString();
+export const newId = () => randomUUID();
+export const J = (value: unknown) => JSON.stringify(value ?? null);
+export const parse = <T>(value: unknown, fallback: T): T => {
   if (typeof value !== 'string' || !value) return fallback;
   try {
     return JSON.parse(value) as T;
@@ -25,20 +25,20 @@ const parse = <T>(value: unknown, fallback: T): T => {
     return fallback;
   }
 };
-const bool = (value: unknown) => Boolean(Number(value));
+export const bool = (value: unknown) => Boolean(Number(value));
 const likeArg = (q: string) => `%${q.replace(/[\\%_]/g, (m) => `\\${m}`)}%`;
 
-async function all(sql: string, args: Arg[] = []): Promise<Row[]> {
+export async function all(sql: string, args: Arg[] = []): Promise<Row[]> {
   const result = await getDb().execute({ sql, args });
   return result.rows as unknown as Row[];
 }
 
-async function one(sql: string, args: Arg[] = []): Promise<Row | null> {
+export async function one(sql: string, args: Arg[] = []): Promise<Row | null> {
   const rows = await all(sql, args);
   return rows[0] ?? null;
 }
 
-async function run(sql: string, args: Arg[] = []) {
+export async function run(sql: string, args: Arg[] = []) {
   return getDb().execute({ sql, args });
 }
 
@@ -605,6 +605,44 @@ export async function insertReview(data: {
     [id, data.productSlug, data.name, data.company, data.city, data.rating, data.title, data.body, data.photo, stamp, stamp],
   );
   return { ...(await one(`SELECT * FROM reviews WHERE id = ?`, [id]).then((r) => mapReview(r!))) };
+}
+
+/**
+ * A testimonial typed in by the client rather than submitted through the public form. It lands
+ * approved because an admin is the one entering it — there is nothing to moderate.
+ */
+export async function insertTestimonial(data: {
+  name: string;
+  company: string;
+  city: string;
+  rating: number;
+  title: string;
+  body: string;
+  photo: string;
+  productSlug: string | null;
+  featured: boolean;
+}): Promise<ReviewRecord> {
+  const id = newId();
+  const stamp = now();
+  await run(
+    `INSERT INTO reviews (id, productSlug, name, company, city, rating, title, body, photo, status, featured, createdAt, updatedAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'approved', ?, ?, ?)`,
+    [
+      id,
+      data.productSlug,
+      data.name,
+      data.company,
+      data.city,
+      data.rating,
+      data.title,
+      data.body,
+      data.photo,
+      data.featured ? 1 : 0,
+      stamp,
+      stamp,
+    ],
+  );
+  return mapReview((await one(`SELECT * FROM reviews WHERE id = ?`, [id]))!);
 }
 
 export async function approvedReviewsFor(productSlug: string): Promise<ReviewRecord[]> {

@@ -130,6 +130,64 @@ export const SCHEMA_STATEMENTS = [
     updatedAt TEXT NOT NULL
   )`,
 
+  /**
+   * Home-page banners: the campaign artwork the client swaps for seasons and offers.
+   * `image` is whatever the upload returns (a Cloudinary URL) or a /public path typed by hand.
+   */
+  `CREATE TABLE IF NOT EXISTS banners (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL DEFAULT '',
+    subtitle TEXT NOT NULL DEFAULT '',
+    image TEXT NOT NULL,
+    imageAlt TEXT NOT NULL DEFAULT '',
+    href TEXT NOT NULL DEFAULT '',
+    ctaLabel TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'published',
+    ord INTEGER NOT NULL DEFAULT 0,
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_banners_status ON banners (status, ord)`,
+
+  /** Client logo wall — replaces the file-system scan of /public/clients once rows exist. */
+  `CREATE TABLE IF NOT EXISTS clients (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    logo TEXT NOT NULL DEFAULT '',
+    website TEXT NOT NULL DEFAULT '',
+    sector TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'published',
+    ord INTEGER NOT NULL DEFAULT 0,
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_clients_status ON clients (status, ord)`,
+
+  /**
+   * Latest projects — the installations the client wants to publish as they finish them:
+   * a few photos plus the story. `images` is a JSON array of { src, alt }.
+   */
+  `CREATE TABLE IF NOT EXISTS projects (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    client TEXT NOT NULL DEFAULT '',
+    location TEXT NOT NULL DEFAULT '',
+    summary TEXT NOT NULL DEFAULT '',
+    bodyHtml TEXT NOT NULL DEFAULT '',
+    images TEXT NOT NULL DEFAULT '[]',
+    scope TEXT NOT NULL DEFAULT '[]',
+    completedAt TEXT NOT NULL DEFAULT '',
+    featured INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'published',
+    ord INTEGER NOT NULL DEFAULT 0,
+    seoTitle TEXT NOT NULL DEFAULT '',
+    seoDescription TEXT NOT NULL DEFAULT '',
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_projects_status ON projects (status, ord, completedAt DESC)`,
+
   `CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
     data TEXT NOT NULL DEFAULT '{}',

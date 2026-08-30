@@ -25,6 +25,7 @@ const ENQUIRE = [
 ];
 
 const RESOURCES = [
+  { href: '/projects', label: 'Latest projects' },
   { href: '/clients', label: 'Clients' },
   { href: '/gallery', label: 'Gallery' },
   { href: '/blog', label: 'Blog' },

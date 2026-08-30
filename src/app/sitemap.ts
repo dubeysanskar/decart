@@ -2,11 +2,17 @@ import type { MetadataRoute } from 'next';
 import { SITE } from '@/lib/site';
 import { getAllProducts, getNavFamilies } from '@/lib/catalogue';
 import { getPublishedPosts } from '@/lib/blog';
+import { getProjects } from '@/lib/content';
 
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [families, products, posts] = await Promise.all([getNavFamilies(), getAllProducts(), getPublishedPosts()]);
+  const [families, products, posts, projects] = await Promise.all([
+    getNavFamilies(),
+    getAllProducts(),
+    getPublishedPosts(),
+    getProjects(),
+  ]);
 
   const staticRoutes = [
     { path: '/', priority: 1 },
@@ -19,6 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: '/sustainability', priority: 0.6 },
     { path: '/certificates', priority: 0.6 },
     { path: '/career', priority: 0.6 },
+    { path: '/projects', priority: 0.7 },
     { path: '/clients', priority: 0.6 },
     { path: '/gallery', priority: 0.6 },
     { path: '/blog', priority: 0.6 },
@@ -48,6 +55,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: 'monthly' as const,
       priority: product.images?.length ? 0.7 : 0.5,
+    })),
+    ...projects.map((project) => ({
+      url: `${SITE.url}/projects/${project.slug}`,
+      lastModified: project.updatedAt ? new Date(project.updatedAt) : now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
     })),
     ...posts.map((post) => ({
       url: `${SITE.url}/blog/${post.slug}`,

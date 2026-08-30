@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Hero, MarketplaceStrip } from '@/components/home/Hero';
 import { CategoryDirectory } from '@/components/home/CategoryDirectory';
+import { BannerStrip, LatestProjects, ClientWall } from '@/components/home/ContentSections';
 import {
   TrustBar,
   FamilyGrid,
@@ -15,6 +16,7 @@ import { ColourStory, HowItWorks, HomeFaq, SegmentList } from '@/components/home
 import { SectionHeading } from '@/components/ui/typography';
 import { ButtonLink } from '@/components/ui/Button';
 import { getFeatured, getFamilyTiles, getFeaturedReviews, getProduct } from '@/lib/catalogue';
+import { getBanners, getHomeProjects, getClientLogos } from '@/lib/content';
 import { getPublishedPosts } from '@/lib/blog';
 import { formatDate } from '@/lib/utils';
 import { ProductImage } from '@/components/ui/ProductImage';
@@ -22,7 +24,7 @@ import { ProductImage } from '@/components/ui/ProductImage';
 export const revalidate = 3600;
 
 export default async function HomePage() {
-  const [families, bestsellers, reviews, posts, colourHero] = await Promise.all([
+  const [families, bestsellers, reviews, posts, colourHero, banners, projects, clientLogos] = await Promise.all([
     // every visible family, so the directory can show all three groups
     getFamilyTiles(),
     getFeatured(10),
@@ -30,6 +32,10 @@ export default async function HomePage() {
     getPublishedPosts(3),
     // the Bubble carries the widest standard colour range in the shoot
     getProduct('bubble-mb'),
+    // everything below is client-managed in /admin and simply absent until they add it
+    getBanners(),
+    getHomeProjects(3),
+    getClientLogos(),
   ]);
 
   // the slider leads with the families we hold real photography for
@@ -41,6 +47,7 @@ export default async function HomePage() {
   return (
     <>
       <Hero categories={heroCategories} />
+      <BannerStrip banners={banners} />
       <TrustBar />
       <FamilyGrid families={featuredFamilies} />
       <CategoryDirectory families={families} />
@@ -49,7 +56,8 @@ export default async function HomePage() {
       <ColourStory product={colourHero ?? undefined} />
       <HowItWorks />
       <SegmentList />
-      <ClientMarquee />
+      <LatestProjects projects={projects} />
+      {clientLogos.length ? <ClientWall clients={clientLogos} /> : <ClientMarquee />}
       <Testimonials reviews={reviews} />
       <ProjectStrip />
       <HomeFaq />

@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/form';
 import { useToast } from '@/components/ui/Toast';
 import { Stars } from '@/components/product/Reviews';
 import { formatDate, cn } from '@/lib/utils';
+import { TestimonialForm } from './TestimonialForm';
 
 export type ReviewRow = {
   _id: string;
@@ -80,11 +81,15 @@ export function ReviewQueue({
 
   return (
     <div className="flex flex-col gap-5">
-      <div>
-        <h1 className="font-display text-3xl text-ink-950">Reviews</h1>
-        <p className="mt-1 text-sm text-steel-600">
-          Approved reviews drive the product star rating; featured ones appear on the homepage.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="font-display text-3xl text-ink-950">Testimonials &amp; reviews</h1>
+          <p className="mt-1 text-sm text-steel-600">
+            Reviews submitted through the site land here for moderation. Words a client gave you
+            directly can be added straight away.
+          </p>
+        </div>
+        <TestimonialForm />
       </div>
 
       <div className="flex flex-wrap gap-2">

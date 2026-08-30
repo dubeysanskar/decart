@@ -4,7 +4,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import { useState } from 'react';
-import { LayoutDashboard, Inbox, Package, Layers, Star, FileText, Settings, LogOut, ExternalLink, Menu, X } from 'lucide-react';
+import {
+  LayoutDashboard, Inbox, Package, Layers, Star, FileText, Settings, LogOut, ExternalLink, Menu, X,
+  Images, Building2, HardHat,
+} from 'lucide-react';
 import { Logo } from '@/components/site/Logo';
 import { cn } from '@/lib/utils';
 
@@ -13,7 +16,10 @@ const NAV = [
   { href: '/admin/inbox', label: 'Inbox', icon: Inbox },
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/categories', label: 'Categories', icon: Layers },
-  { href: '/admin/reviews', label: 'Reviews', icon: Star },
+  { href: '/admin/projects', label: 'Projects', icon: HardHat },
+  { href: '/admin/banners', label: 'Banners', icon: Images },
+  { href: '/admin/clients', label: 'Clients', icon: Building2 },
+  { href: '/admin/reviews', label: 'Testimonials', icon: Star },
   { href: '/admin/blog', label: 'Blog', icon: FileText },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
