@@ -307,7 +307,8 @@ export function Hero({
 
           {/* ------------------------------------------------- category slider */}
           <div className="relative min-w-0">
-            <div data-anim="up" className="mb-4 flex items-baseline justify-between gap-4">
+            <HeroCategorySlider key={focus?.group ?? 'all'} categories={visibleCategories} />
+            <div data-anim="up" className="mt-4 flex items-baseline justify-between gap-4">
               <p className="min-w-0 truncate text-eyebrow font-semibold uppercase tracking-[0.14em] text-decart-700">
                 Shop by category
                 {focus?.label ? <span className="text-steel-400"> · {focus.label}</span> : null}
@@ -323,7 +324,6 @@ export function Hero({
                 />
               </Link>
             </div>
-            <HeroCategorySlider key={focus?.group ?? 'all'} categories={visibleCategories} />
           </div>
         </div>
       </div>

@@ -7,6 +7,8 @@ import { getFamilyProducts, getNavFamilies, familyBySlug, FAMILY_LEDE, getFamily
 import { FAMILIES } from '@/data/catalogue.seed';
 import { buildMetadata, breadcrumbLd } from '@/lib/seo';
 import { CategoryContent, categoryFaqLd } from '@/components/product/CategoryContent';
+import { ProductImage } from '@/components/ui/ProductImage';
+import { publicFileExists } from '@/lib/assets';
 
 export const revalidate = 3600;
 
@@ -42,6 +44,10 @@ export default async function FamilyPage({ params }: { params: { family: string 
 
   const tags = [...new Set(products.flatMap((p) => p.tags ?? []))].sort();
 
+  // the family's own artwork, by the /families/<slug>.webp convention
+  const artwork = `/families/${family.slug}.webp`;
+  const cover = publicFileExists(artwork) ? artwork : '';
+
   return (
     <>
       <PageHeader
@@ -57,7 +63,21 @@ export default async function FamilyPage({ params }: { params: { family: string 
           { name: 'Products', href: '/products' },
           { name: family.name },
         ]}
-      />
+      >
+        {/* the category's own photograph. Most products in the catalogue still have no shot of
+            their own, so without this a family page is a wall of text above a grid of plates. */}
+        {cover ? (
+          <div className="relative aspect-[21/9] w-full overflow-hidden rounded-img border border-line bg-paper md:aspect-[24/7]">
+            <ProductImage
+              src={cover}
+              alt={`DecArt ${family.name}`}
+              label={family.name}
+              fit="cover"
+              sizes="(max-width: 1024px) 100vw, 1200px"
+            />
+          </div>
+        ) : null}
+      </PageHeader>
 
       <FamilyBrowser products={products} familyName={family.name} tags={tags} />
 
