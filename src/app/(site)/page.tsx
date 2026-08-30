@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Hero, MarketplaceStrip } from '@/components/home/Hero';
 import { CategoryDirectory } from '@/components/home/CategoryDirectory';
-import { BannerStrip, LatestProjects, ClientWall } from '@/components/home/ContentSections';
+import { LatestProjects, ClientWall } from '@/components/home/ContentSections';
 import {
   TrustBar,
   FamilyGrid,
@@ -46,8 +46,8 @@ export default async function HomePage() {
 
   return (
     <>
-      <Hero categories={heroCategories} />
-      <BannerStrip banners={banners} />
+      {/* banners now sit behind the hero rather than in a strip under it */}
+      <Hero categories={heroCategories} banners={banners} />
       <TrustBar />
       <FamilyGrid families={featuredFamilies} />
       <CategoryDirectory families={families} />

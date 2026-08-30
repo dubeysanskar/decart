@@ -336,6 +336,67 @@ async function main() {
     `Categories: ${contentCreated} seeded · ${contentRefreshed} refreshed · ${contentKept} left as the client wrote them\n`,
   );
 
+  // ---------------------------------------------------------------- home banners
+  /**
+   * Four starter banners behind the hero, using the interior scenes lifted from the client's own
+   * catalogue. Only seeded when the table is empty — once the client adds or edits their own in
+   * /admin/banners, this never touches them again.
+   */
+  const bannerCount = Number(
+    (await db.execute(`SELECT COUNT(*) AS n FROM banners`)).rows[0]?.n ?? 0,
+  );
+
+  if (bannerCount === 0) {
+    const starters = [
+      {
+        title: 'Workstations built for a full floor',
+        subtitle: 'Linear, cluster and cubicle systems made in Faridabad.',
+        image: '/families/workstation.webp',
+        alt: 'DecArt workstations installed across an office floor',
+        href: '/products/workstation',
+        cta: 'See workstations',
+      },
+      {
+        title: 'Reception desks that set the tone',
+        subtitle: 'The first thing a visitor leans on.',
+        image: '/families/reception.webp',
+        alt: 'DecArt reception desk in an office lobby',
+        href: '/products/reception',
+        cta: 'See reception desks',
+      },
+      {
+        title: 'Conference tables, sized to the room',
+        subtitle: 'Six to twenty seats, with power routed in.',
+        image: '/families/conference.webp',
+        alt: 'DecArt conference table in a meeting room',
+        href: '/products/conference',
+        cta: 'See conference tables',
+      },
+      {
+        title: 'Cabins that look the part',
+        subtitle: 'Executive and manager desks with matching storage.',
+        image: '/families/table.webp',
+        alt: 'DecArt executive desk in a manager cabin',
+        href: '/products/table',
+        cta: 'See executive desks',
+      },
+    ];
+
+    for (const [i, banner] of starters.entries()) {
+      const stamp = now();
+      await db.execute({
+        sql: `INSERT INTO banners (id, title, subtitle, image, imageAlt, href, ctaLabel, status, ord, createdAt, updatedAt)
+              VALUES (?, ?, ?, ?, ?, ?, ?, 'published', ?, ?, ?)`,
+        args: [randomUUID(), banner.title, banner.subtitle, banner.image, banner.alt, banner.href, banner.cta, i, stamp, stamp],
+      });
+    }
+    console.log(`Banners: ${starters.length} seeded behind the hero
+`);
+  } else {
+    console.log(`Banners: ${bannerCount} already present, left alone
+`);
+  }
+
   db.close();
   console.log('Done.');
 }

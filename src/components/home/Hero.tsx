@@ -3,6 +3,7 @@ import { ArrowRight, PersonStanding, Wind, SlidersHorizontal, Gem, Phone } from 
 import { ButtonLink } from '@/components/ui/Button';
 import { SITE } from '@/lib/site';
 import { HeroCategorySlider, type HeroCategory } from './HeroCategorySlider';
+import { HeroBanners, type HeroBanner } from './HeroBanners';
 
 /**
  * "Smart seating" hero — the founder's campaign banner rebuilt as a live page.
@@ -19,32 +20,49 @@ const FEATURES = [
 
 const MARKETPLACES = ['GeM', 'Flipkart', 'Amazon', 'IndiaMART', 'TradeIndia'];
 
-export function Hero({ categories }: { categories: HeroCategory[] }) {
+export function Hero({
+  categories,
+  banners = [],
+}: {
+  categories: HeroCategory[];
+  banners?: HeroBanner[];
+}) {
+  const hasBanners = banners.some((banner) => banner.image);
+
   return (
     <section data-hero className="relative overflow-hidden pt-24 sm:pt-28">
-      {/* the stage: diagonal blue→white wash with soft glows, like the campaign banner */}
-      <div
-        aria-hidden
-        className="absolute inset-0"
-        style={{
-          background:
-            'linear-gradient(128deg, #D2E8F8 0%, #E8F4FB 40%, #FFFFFF 74%), radial-gradient(46% 44% at 84% 8%, rgb(61 159 224 / 0.22), transparent), radial-gradient(40% 36% at 4% 92%, rgb(61 159 224 / 0.14), transparent)',
-          backgroundBlendMode: 'multiply',
-        }}
-      />
-      {/* two drifting orbs give the flat wash some depth without competing with the product */}
-      <span
-        aria-hidden
-        data-float="14"
-        className="pointer-events-none absolute -right-24 top-10 h-72 w-72 rounded-full bg-decart-300/25 blur-3xl"
-      />
-      <span
-        aria-hidden
-        data-float="9"
-        className="pointer-events-none absolute right-1/3 top-1/2 h-52 w-52 rounded-full bg-decart-500/10 blur-3xl"
-      />
+      {/* banners from /admin/banners take the stage when the client has published any;
+          otherwise the campaign gradient stands in */}
+      {hasBanners ? (
+        <HeroBanners banners={banners} />
+      ) : (
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(128deg, #D2E8F8 0%, #E8F4FB 40%, #FFFFFF 74%), radial-gradient(46% 44% at 84% 8%, rgb(61 159 224 / 0.22), transparent), radial-gradient(40% 36% at 4% 92%, rgb(61 159 224 / 0.14), transparent)',
+            backgroundBlendMode: 'multiply',
+          }}
+        />
+      )}
+      {hasBanners ? null : (
+        <>
+          {/* the drifting orbs belong to the gradient treatment; over a photograph they muddy it */}
+          <span
+            aria-hidden
+            data-float="14"
+            className="pointer-events-none absolute -right-24 top-10 h-72 w-72 rounded-full bg-decart-300/25 blur-3xl"
+          />
+          <span
+            aria-hidden
+            data-float="9"
+            className="pointer-events-none absolute right-1/3 top-1/2 h-52 w-52 rounded-full bg-decart-500/10 blur-3xl"
+          />
+        </>
+      )}
 
-      <div className="container-x relative">
+      <div className="container-x relative z-10">
         <div className="grid items-center gap-10 lg:grid-cols-[1fr_1.05fr] lg:gap-8">
           {/* ---------------------------------------------------------- copy
               min-w-0: grid items default to min-width:auto and refuse to shrink below their
@@ -151,13 +169,19 @@ export function Hero({ categories }: { categories: HeroCategory[] }) {
         </div>
       </div>
 
-      <div className="relative border-t border-line bg-paper/70 backdrop-blur">
-        <div className="container-x py-4">
-          <p className="text-center font-mono text-[11px] uppercase tracking-[0.12em] text-steel-400 md:text-left">
-            Comfort that keeps you ahead
-          </p>
+      {/* the banner bar takes the foot of the hero when banners are running, so the tagline
+          only appears on the plain gradient version — otherwise the two overlap */}
+      {hasBanners ? (
+        <div aria-hidden className="h-[88px] md:h-[72px]" />
+      ) : (
+        <div className="relative border-t border-line bg-paper/70 backdrop-blur">
+          <div className="container-x py-4">
+            <p className="text-center font-mono text-[11px] uppercase tracking-[0.12em] text-steel-400 md:text-left">
+              Comfort that keeps you ahead
+            </p>
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 }
