@@ -3,7 +3,8 @@ import { Plus } from 'lucide-react';
 import { hasDb } from '@/lib/db';
 import { listProducts, countProducts, type ProductFilter } from '@/lib/repo';
 import { ProductsTable, type ProductRow } from '@/components/admin/ProductsTable';
-import { FAMILIES } from '@/data/catalogue.seed';
+import { ProductArranger, type ArrangeRow } from '@/components/admin/ProductArranger';
+import { FAMILIES, familyBySlug } from '@/data/catalogue.seed';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,6 +45,12 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
     hero: doc.images?.[0]?.src ?? '',
   }));
 
+  // arranging only makes sense within one category — that is what the client asked for
+  const arrangeFamily = searchParams.family ? familyBySlug(searchParams.family) : null;
+  const arrangeRows: ArrangeRow[] = arrangeFamily
+    ? docs.map((doc) => ({ slug: doc.slug, code: doc.code, name: doc.name, hero: doc.images?.[0]?.src ?? '' }))
+    : [];
+
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -60,6 +67,10 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           <Plus className="h-4 w-4" /> New product
         </Link>
       </div>
+
+      {arrangeFamily ? (
+        <ProductArranger family={arrangeFamily.slug} familyName={arrangeFamily.name} rows={arrangeRows} />
+      ) : null}
 
       <ProductsTable rows={rows} families={FAMILIES.map((f) => ({ slug: f.slug, name: f.name }))} />
     </div>

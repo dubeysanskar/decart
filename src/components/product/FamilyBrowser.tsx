@@ -9,7 +9,7 @@ import { COPY } from '@/lib/site';
 import { cn } from '@/lib/utils';
 import type { CatalogueProduct } from '@/lib/catalogue';
 
-type Sort = 'featured' | 'newest' | 'code';
+type Sort = 'arranged' | 'featured' | 'newest' | 'code';
 const PAGE = 24;
 
 /** Family listing with in-family search, tag filters and sort. Filters open as a bottom sheet on mobile (§11.3). */
@@ -24,7 +24,7 @@ export function FamilyBrowser({
 }) {
   const [query, setQuery] = useState('');
   const [activeTags, setActiveTags] = useState<string[]>([]);
-  const [sort, setSort] = useState<Sort>('featured');
+  const [sort, setSort] = useState<Sort>('arranged');
   const [sheetOpen, setSheetOpen] = useState(false);
   const [shown, setShown] = useState(PAGE);
 

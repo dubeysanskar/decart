@@ -268,6 +268,23 @@ export async function countProducts(filter: ProductFilter = {}): Promise<number>
   return count(`SELECT COUNT(*) AS n FROM products ${where}`, args);
 }
 
+/**
+ * Fix the running order of the products inside one family. The client arranges them in the
+ * admin and we write the positions back as 0,1,2… — one UPDATE per row rather than the
+ * read-modify-write that updateProductBySlug would do, because a family can hold 50+ models.
+ */
+export async function reorderProducts(family: string, slugs: string[]) {
+  const stamp = now();
+  for (const [index, slug] of slugs.entries()) {
+    await run(`UPDATE products SET ord = ?, updatedAt = ? WHERE slug = ? AND family = ?`, [
+      index,
+      stamp,
+      slug,
+      family,
+    ]);
+  }
+}
+
 export async function archiveProduct(slug: string) {
   await run(`UPDATE products SET status = 'archived', updatedAt = ? WHERE slug = ?`, [now(), slug]);
 }

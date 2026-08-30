@@ -1,5 +1,18 @@
 import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { extendTailwindMerge } from 'tailwind-merge';
+
+/**
+ * tailwind-merge has to be told about our custom font sizes. Without this it reads `text-h2`
+ * as a text COLOUR, so `cn('text-h2', 'text-ink-950')` silently dropped the size and every
+ * section heading rendered at the default 16px.
+ */
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      'font-size': [{ text: ['hero', 'h1', 'h2', 'h3', 'body', 'eyebrow'] }],
+    },
+  },
+});
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

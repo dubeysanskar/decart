@@ -41,8 +41,8 @@ export default async function HomePage() {
   // the slider leads with the families we hold real photography for
   const photographed = families.filter((family) => family.cover);
   const heroCategories = photographed.slice(0, 8);
-  // 9 tiles: one featured 2×2 stage + eight standard tiles fill the 4-column grid exactly
-  const featuredFamilies = (photographed.length >= 4 ? photographed : families).slice(0, 9);
+  // eight tiles, two even rows
+  const featuredFamilies = (photographed.length >= 4 ? photographed : families).slice(0, 8);
 
   return (
     <>

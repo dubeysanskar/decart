@@ -70,7 +70,9 @@ export type FamilyTile = { slug: string; name: string; count: number; lede: stri
 
 export function FamilyGrid({ families }: { families: FamilyTile[] }) {
   if (!families.length) return null;
-  const [featured, ...rest] = families;
+  // eight tiles: two tidy rows that fit one screen. The full 30 live in the directory below,
+  // so this band is a shortcut, not a second catalogue.
+  const tiles = families.slice(0, 8);
 
   return (
     <section className="section bg-porcelain">
@@ -88,73 +90,32 @@ export function FamilyGrid({ families }: { families: FamilyTile[] }) {
           }
         />
 
-        {/* asymmetric editorial grid: the lead family gets a 2×2 stage, the rest file in behind it */}
-        <div className="mt-12 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5" data-stagger>
-          {/*
-            White, not a blue gradient. The studio shots are cut out on white, so a coloured
-            stage turned every photo into a hard white rectangle — a box inside a box. The
-            colour now lives in the label and the arrow instead.
-          */}
-          <Link
-            href={`/products/${featured.slug}`}
-            data-anim="up"
-            className="group relative col-span-2 row-span-2 flex flex-col overflow-hidden rounded-card bg-paper shadow-[0_0_0_1px_rgb(227_231_236)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_0_1px_rgb(15_19_23/0.14),0_28px_44px_-24px_rgb(15_19_23/0.35)]"
-          >
-            <span
-              aria-hidden
-              className="absolute inset-x-0 top-0 h-1 bg-decart-600"
-            />
-            <div className="relative aspect-[4/3] md:aspect-auto md:flex-1">
-              <ProductImage
-                src={featured.cover}
-                alt={`DecArt ${featured.name}`}
-                label={featured.name}
-                sizes="(max-width: 768px) 100vw, 50vw"
-                imgClassName="p-8 transition-transform duration-500 ease-out group-hover:scale-[1.04]"
-              />
-            </div>
-            <div className="relative flex items-end justify-between gap-4 border-t border-line p-6 md:p-7">
-              <div className="min-w-0">
-                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-decart-700">
-                  01 · {featured.count} {featured.count === 1 ? 'model' : 'models'}
-                </p>
-                <h3 className="mt-2 font-display text-2xl font-semibold text-ink-950 md:text-3xl">
-                  {featured.name}
-                </h3>
-                <p className="mt-1.5 line-clamp-2 max-w-md text-sm text-steel-600">{featured.lede}</p>
-              </div>
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-line text-decart-700 transition-colors group-hover:border-decart-700 group-hover:bg-decart-700 group-hover:text-white">
-                <ArrowRight aria-hidden className="h-4 w-4" />
-              </span>
-            </div>
-          </Link>
-
-          {rest.map((family, i) => (
+        {/* one uniform card, repeated — the old 2x2 hero tile pushed the section off screen */}
+        <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-5" data-stagger="0.06">
+          {tiles.map((family, i) => (
             <Link
               key={family.slug}
               href={`/products/${family.slug}`}
-              data-anim="up"
-              className="group relative flex flex-col overflow-hidden rounded-card bg-paper shadow-[0_0_0_1px_rgb(227_231_236)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_0_1px_rgb(15_19_23/0.14),0_24px_40px_-24px_rgb(15_19_23/0.35)]"
+              data-anim="rise"
+              className="group flex min-w-0 flex-col overflow-hidden rounded-card bg-paper shadow-[0_0_0_1px_rgb(227_231_236)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_0_1px_rgb(15_19_23/0.14),0_20px_32px_-20px_rgb(15_19_23/0.32)]"
             >
-              <div className="relative aspect-[3/4] overflow-hidden bg-paper">
+              <div className="relative aspect-[4/3] overflow-hidden bg-paper">
                 <ProductImage
                   src={family.cover}
                   alt={`DecArt ${family.name}`}
                   label={family.name}
-                  sizes="(max-width: 768px) 50vw, 25vw"
-                  imgClassName="p-4 transition-transform duration-500 ease-out group-hover:scale-[1.06]"
+                  sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 22vw"
+                  imgClassName="p-3 transition-transform duration-500 ease-out group-hover:scale-[1.06]"
                 />
               </div>
-              {/* the index and count used to float over a tinted well; on white they need a
-                  line of their own rather than hanging in the whitespace */}
-              <div className="flex flex-1 flex-col gap-1.5 border-t border-line p-4">
+              <div className="flex flex-1 flex-col gap-1 border-t border-line p-4">
                 <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-decart-700">
-                  {String(i + 2).padStart(2, '0')} · {family.count} {family.count === 1 ? 'model' : 'models'}
+                  {String(i + 1).padStart(2, '0')} · {family.count} {family.count === 1 ? 'model' : 'models'}
                 </p>
                 <h3 className="text-[0.9375rem] font-semibold leading-snug text-ink-950 transition-colors group-hover:text-decart-700">
                   {family.name}
                 </h3>
-                <p className="line-clamp-2 text-[0.8125rem] leading-snug text-steel-600">{family.lede}</p>
+                <p className="line-clamp-1 text-[0.8125rem] leading-snug text-steel-600">{family.lede}</p>
               </div>
             </Link>
           ))}
