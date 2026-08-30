@@ -950,6 +950,10 @@ export type AdminRecord = {
   passwordHash: string;
   name: string;
   role: string;
+  phone: string;
+  designation: string;
+  office: string;
+  active: boolean;
 };
 
 export async function adminByEmail(email: string): Promise<AdminRecord | null> {
@@ -961,6 +965,10 @@ export async function adminByEmail(email: string): Promise<AdminRecord | null> {
     passwordHash: String(row.passwordHash),
     name: String(row.name),
     role: String(row.role),
+    phone: String(row.phone ?? ''),
+    designation: String(row.designation ?? ''),
+    office: String(row.office ?? ''),
+    active: row.active === undefined ? true : Boolean(Number(row.active)),
   };
 }
 

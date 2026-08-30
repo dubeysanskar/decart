@@ -247,3 +247,50 @@ export function fieldErrors(error: z.ZodError) {
   }
   return out;
 }
+
+/* ------------------------------------------------------------------ Quote Master */
+
+export const quoteClientSchema = z.object({
+  company: z.string().trim().min(2, 'Company name is required').max(160),
+  contactPerson: z.string().trim().max(120).optional().default(''),
+  email: z.union([z.literal(''), z.string().trim().email('Enter a valid email')]).optional().default(''),
+  phone: z.string().trim().max(40).optional().default(''),
+  address: z.string().trim().max(400).optional().default(''),
+  city: z.string().trim().max(80).optional().default(''),
+  state: z.string().trim().max(80).optional().default(''),
+  pincode: z.string().trim().max(12).optional().default(''),
+  // 15 characters, the standard GSTIN shape; blank is allowed for an unregistered buyer
+  gstin: z
+    .union([z.literal(''), z.string().trim().regex(/^[0-9A-Z]{15}$/i, 'GSTIN is 15 characters')])
+    .optional()
+    .default(''),
+  pan: z
+    .union([z.literal(''), z.string().trim().regex(/^[A-Z]{5}[0-9]{4}[A-Z]$/i, 'PAN looks wrong')])
+    .optional()
+    .default(''),
+  notes: z.string().trim().max(2000).optional().default(''),
+});
+
+export const quoteItemSchema = z.object({
+  productId: z.string().trim().max(80).optional().default(''),
+  code: z.string().trim().max(60).optional().default(''),
+  name: z.string().trim().min(1, 'Item name is required').max(200),
+  family: z.string().trim().max(80).optional().default(''),
+  image: z.string().trim().max(500).optional().default(''),
+  mrp: z.number().min(0).max(100_000_000).optional().default(0),
+  mode: z.enum(['price', 'discount']).optional().default('price'),
+  discountPct: z.number().min(0).max(100).optional().default(0),
+  unitPrice: z.number().min(0).max(100_000_000).optional().default(0),
+  qty: z.number().int().min(1).max(1_000_000).optional().default(1),
+  note: z.string().trim().max(300).optional().default(''),
+});
+
+export const quotationSchema = z.object({
+  clientId: z.string().trim().min(1, 'Pick a client'),
+  title: z.string().trim().max(160).optional().default(''),
+  notes: z.string().trim().max(4000).optional().default(''),
+  terms: z.string().trim().max(4000).optional().default(''),
+  taxRate: z.number().min(0).max(100).optional().default(18),
+  validUntil: z.string().trim().max(40).optional().default(''),
+  items: z.array(quoteItemSchema).min(1, 'Add at least one item').max(200),
+});
