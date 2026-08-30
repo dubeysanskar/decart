@@ -81,7 +81,6 @@ export function HeroCategorySlider({ categories }: { categories: HeroCategory[] 
         ref={railRef}
         role="region"
         aria-label="Product categories"
-        data-stagger="0.08"
         className="no-scrollbar -mx-4 flex snap-x snap-mandatory items-stretch overflow-x-auto px-4 pb-2 md:-mx-7 md:px-7 lg:mx-0 lg:px-0"
       >
         {categories.map((category, i) => (
@@ -89,8 +88,8 @@ export function HeroCategorySlider({ categories }: { categories: HeroCategory[] 
             key={category.slug}
             href={`/products/${category.slug}`}
             aria-label={`${category.name} — ${category.count} models`}
-            data-anim="rise"
-            className="group flex w-1/2 shrink-0 snap-start flex-col px-1 sm:w-1/3 lg:w-1/4"
+            className="group flex w-1/2 shrink-0 animate-fade-up snap-start flex-col px-1 sm:w-1/3 lg:w-1/4"
+            style={{ animationDelay: `${Math.min(i, 7) * 70}ms` }}
           >
             {/*
               One continuous white card. The studio photography is shot on white, so a separate
