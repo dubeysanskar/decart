@@ -9,6 +9,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "seed": "tsx scripts/seed.ts",
+    "seed-blog": "tsx scripts/seed-blog.ts",
     "check-images": "tsx scripts/check-images.ts",
     "ingest-images": "tsx scripts/ingest-images.ts",
     "optimise-images": "tsx scripts/optimise-images.ts",

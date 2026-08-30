@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { SectionHeading } from '@/components/ui/typography';
 import { ButtonLink } from '@/components/ui/Button';
 import { ProductImage } from '@/components/ui/ProductImage';
@@ -16,8 +16,12 @@ export type DirectoryFamily = {
 
 /**
  * The full category directory (client brief: "multiple category display and sub display at home
- * page", "category ke saath inki images bhi add kar do"). Each of the three groups is a row, and
- * every family inside it is a picture tile that links straight to its category page.
+ * page", "category ke saath inki images bhi add kar do").
+ *
+ * The products are cut out on white, so the staging has to come from the card rather than a
+ * tinted well: a soft spotlight that fades out before it reaches an edge, a ground shadow under
+ * the product, and a hover state that lifts the card and slides an arrow in. No hard rectangle
+ * anywhere — that was the "box inside a box" problem.
  */
 export function CategoryDirectory({ families }: { families: DirectoryFamily[] }) {
   if (!families.length) return null;
@@ -30,7 +34,7 @@ export function CategoryDirectory({ families }: { families: DirectoryFamily[] })
   if (!rows.length) return null;
 
   return (
-    <section className="section bg-paper">
+    <section className="bg-paper pt-16 md:pt-24">
       <div className="container-x">
         <SectionHeading
           eyebrow="Every range"
@@ -45,50 +49,91 @@ export function CategoryDirectory({ families }: { families: DirectoryFamily[] })
           }
         />
 
-        <div className="mt-12 flex flex-col gap-12">
-          {rows.map((row) => (
-            <div key={row.slug} className="min-w-0">
-              <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-line pb-4">
-                <h3 className="font-display text-xl font-semibold text-ink-950 md:text-2xl">{row.name}</h3>
-                <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-steel-400">
-                  {row.families.length} categories
-                </span>
+      </div>
+
+      {/* each group is its own band; alternating grounds give the run some rhythm instead of
+          one uninterrupted wall of white cards */}
+      <div className="mt-12 flex flex-col">
+        {rows.map((row, rowIndex) => (
+          <div
+            key={row.slug}
+            className={rowIndex % 2 === 1 ? 'bg-porcelain py-14 md:py-16' : 'bg-paper py-14 md:py-16'}
+          >
+            <div className="container-x min-w-0">
+              <div className="flex flex-wrap items-end justify-between gap-4">
+                <div className="flex min-w-0 items-baseline gap-4">
+                  <span className="font-display text-4xl font-semibold leading-none text-decart-600/25 md:text-5xl">
+                    {String(rowIndex + 1).padStart(2, '0')}
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="font-display text-2xl font-semibold text-ink-950 md:text-3xl">{row.name}</h3>
+                    <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-steel-400">
+                      {row.families.length} categories ·{' '}
+                      {row.families.reduce((sum, family) => sum + family.count, 0)} models
+                    </p>
+                  </div>
+                </div>
+                <span aria-hidden className="hidden h-px flex-1 bg-line md:block" />
               </div>
 
               <div
-                className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 lg:gap-5"
-                data-stagger
+                className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 lg:gap-5"
+                data-stagger="0.05"
               >
                 {row.families.map((family) => (
                   <Link
                     key={family.slug}
                     href={`/products/${family.slug}`}
-                    data-anim="up"
-                    className="group flex min-w-0 flex-col overflow-hidden rounded-card bg-paper shadow-[0_0_0_1px_rgb(227_231_236)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_0_1px_rgb(15_19_23/0.14),0_20px_32px_-20px_rgb(15_19_23/0.32)]"
+                    data-anim="rise"
+                    className="group relative flex min-w-0 flex-col overflow-hidden rounded-card bg-paper ring-1 ring-line transition-all duration-300 hover:-translate-y-1.5 hover:ring-decart-300 hover:shadow-[0_22px_38px_-22px_rgb(15_19_23/0.35)]"
                   >
-                    <div className="relative aspect-[4/3] overflow-hidden bg-paper">
+                    {/* a spotlight that fades to nothing before the card edge — stages the
+                        cut-out without drawing a second box around it */}
+                    <div className="relative aspect-[4/3] overflow-hidden">
+                      <span
+                        aria-hidden
+                        className="absolute inset-0 transition-opacity duration-300 group-hover:opacity-100"
+                        style={{
+                          background:
+                            'radial-gradient(60% 55% at 50% 45%, rgb(88 181 224 / 0.10), transparent 70%)',
+                        }}
+                      />
                       <ProductImage
                         src={family.cover}
                         alt={`DecArt ${family.name}`}
                         label={family.name}
                         sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 18vw"
-                        imgClassName="p-3 transition-transform duration-500 ease-out group-hover:scale-[1.06]"
+                        imgClassName="p-4 transition-transform duration-500 ease-out group-hover:-translate-y-1 group-hover:scale-[1.05]"
+                      />
+                      {/* ground shadow so the product sits on something */}
+                      <span
+                        aria-hidden
+                        className="absolute bottom-4 left-1/2 h-2 w-1/2 -translate-x-1/2 rounded-[100%] bg-ink-950/10 blur-md transition-all duration-500 group-hover:w-[56%] group-hover:bg-ink-950/[0.14]"
                       />
                     </div>
-                    <div className="flex flex-1 flex-col gap-1 p-3.5">
-                      <h4 className="line-clamp-2 text-[0.875rem] font-semibold leading-snug text-ink-950 transition-colors group-hover:text-decart-700">
-                        {family.name}
-                      </h4>
-                      <span className="mt-auto font-mono text-[10px] tracking-[0.08em] text-steel-400">
-                        {family.count} {family.count === 1 ? 'model' : 'models'}
+
+                    <div className="flex flex-1 items-end justify-between gap-2 border-t border-line p-4">
+                      <div className="min-w-0">
+                        <h4 className="line-clamp-2 text-[0.875rem] font-semibold leading-snug text-ink-950 transition-colors group-hover:text-decart-700">
+                          {family.name}
+                        </h4>
+                        <span className="mt-1 block font-mono text-[10px] tracking-[0.08em] text-steel-400">
+                          {family.count} {family.count === 1 ? 'model' : 'models'}
+                        </span>
+                      </div>
+                      <span
+                        aria-hidden
+                        className="flex h-7 w-7 shrink-0 translate-x-1 items-center justify-center rounded-full bg-decart-50 text-decart-700 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100"
+                      >
+                        <ArrowUpRight className="h-3.5 w-3.5" />
                       </span>
                     </div>
                   </Link>
                 ))}
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </section>
   );
