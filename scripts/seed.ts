@@ -349,36 +349,36 @@ async function main() {
   if (bannerCount === 0) {
     const starters = [
       {
-        title: 'Workstations | built for a full floor',
-        subtitle: 'Linear, cluster and cubicle systems made in Faridabad.',
-        image: '/families/workstation.webp',
-        alt: 'DecArt workstations installed across an office floor',
-        href: '/products/workstation',
-        cta: 'See workstations',
-      },
-      {
-        title: 'Reception desks | that set the tone',
-        subtitle: 'The first thing a visitor leans on.',
-        image: '/families/reception.webp',
-        alt: 'DecArt reception desk in an office lobby',
-        href: '/products/reception',
-        cta: 'See reception desks',
-      },
-      {
-        title: 'Conference tables | sized to the room',
-        subtitle: 'Six to twenty seats, with power routed in.',
-        image: '/families/conference.webp',
-        alt: 'DecArt conference table in a meeting room',
-        href: '/products/conference',
-        cta: 'See conference tables',
-      },
-      {
         title: 'Cabins | that look the part',
-        subtitle: 'Executive and manager desks with matching storage.',
-        image: '/families/table.webp',
-        alt: 'DecArt executive desk in a manager cabin',
+        subtitle: 'Executive desks, storage and seating in one language.',
+        image: '/scenes/executive-cabin.webp',
+        alt: 'Executive cabin with desk, storage and leather seating',
         href: '/products/table',
         cta: 'See executive desks',
+      },
+      {
+        title: 'Lounge seating | that holds a room',
+        subtitle: 'Sofas and armchairs for lobbies and waiting areas.',
+        image: '/scenes/lounge-lobby.webp',
+        alt: 'Hotel lobby lounge with sofas and armchairs',
+        href: '/products/lounge',
+        cta: 'See lounge seating',
+      },
+      {
+        title: 'Cafe chairs | built for turnover',
+        subtitle: 'Tables and chairs that survive a busy canteen.',
+        image: '/scenes/cafe-dining.webp',
+        alt: 'Dining table with upholstered wooden chairs',
+        href: '/products/cafe',
+        cta: 'See cafe seating',
+      },
+      {
+        title: 'Campus furniture | that takes a beating',
+        subtitle: 'Seating, tables and storage for schools and hostels.',
+        image: '/scenes/school-atrium.webp',
+        alt: 'School atrium with modular seating and tables',
+        href: '/products/school',
+        cta: 'See school furniture',
       },
     ];
 

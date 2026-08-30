@@ -118,8 +118,7 @@ export function ContactBand({
                 </dl>
 
                 <Link
-                  href={`/contact?desk=${desk.id}`}
-                  scroll={!selectable}
+                  href={selectable ? `/contact?desk=${desk.id}#enquiry` : `/contact?desk=${desk.id}`}
                   aria-current={active ? 'true' : undefined}
                   className={cn(
                     'group mt-4 inline-flex items-center gap-1.5 self-start rounded-btn px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] transition-colors',
