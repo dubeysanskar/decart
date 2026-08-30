@@ -51,16 +51,8 @@ export function Hero({ categories }: { categories: HeroCategory[] }) {
               content, so without this the rail beside it drags this whole column past the
               viewport and the headline, copy and buttons get clipped on a phone. */}
           <div className="min-w-0 pb-2 lg:pb-10">
-            <p
-              data-anim="up"
-              className="inline-flex items-center gap-2 rounded-full border border-line bg-paper/85 px-4 py-2 text-xs font-medium text-ink-900 shadow-card backdrop-blur"
-            >
-              <span aria-hidden className="h-1.5 w-1.5 animate-pulse rounded-full bg-decart-500" />
-              DecArt Industries · Faridabad · Since {SITE.established}
-            </p>
-
             {/* each line wipes in on its own, so the lockup reads top-to-bottom */}
-            <h1 className="mt-7 font-display text-[clamp(2.25rem,4.6vw,3.5rem)] font-bold uppercase leading-[1.04] tracking-tight">
+            <h1 className="font-display text-[clamp(2.25rem,4.6vw,3.5rem)] font-bold uppercase leading-[1.04] tracking-tight">
               <span data-anim="mask" className="block text-ink-950">
                 Smart seating
               </span>

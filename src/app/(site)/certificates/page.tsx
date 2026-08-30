@@ -79,7 +79,7 @@ export default function CertificatesPage() {
                           alt={`DecArt ${name} certificate`}
                           fill
                           sizes="(max-width: 768px) 45vw, 22vw"
-                          className="object-contain p-3"
+                          className="rounded-[14px] object-contain p-3"
                         />
                       </span>
                       <span className="border-t border-line p-3 text-sm font-medium capitalize text-ink-950">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
+import { CheckCircle2 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Input, Select, Textarea, Honeypot } from '@/components/ui/form';
@@ -138,7 +139,10 @@ export function LeadForm({
   if (state === 'sent') {
     return (
       <div className="rounded-card border border-success/25 bg-success/5 p-6">
-        <h2 className="font-display text-xl text-ink-950">Query received</h2>
+        <div className="flex items-center gap-2.5">
+          <CheckCircle2 aria-hidden className="h-5 w-5 shrink-0 text-success" />
+          <h2 className="font-display text-xl text-ink-950">Thanks — we have it.</h2>
+        </div>
         <p className="mt-3 text-[0.9375rem] leading-relaxed text-steel-600">{COPY.success}</p>
         <div className="mt-5 flex flex-wrap gap-3">
           <ButtonLink href={waFallback} variant="whatsapp" data-wa="form-success">

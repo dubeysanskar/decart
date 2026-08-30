@@ -99,7 +99,9 @@ export function ProductImage({
             onError={() => setFailed(true)}
             onLoad={() => setLoaded(true)}
             className={cn(
-              fit === 'contain' ? 'object-contain' : 'object-cover',
+              // contain shots sit inset on a tinted well, so the photo needs its own radius —
+              // the card's rounding does not reach it
+              fit === 'contain' ? 'object-contain rounded-[14px]' : 'object-cover',
               'transition-[transform,opacity] duration-500 ease-out',
               loaded ? 'opacity-100' : 'opacity-0',
               imgClassName,

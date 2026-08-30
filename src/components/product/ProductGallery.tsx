@@ -73,7 +73,7 @@ export function ProductGallery({
               fill
               priority
               sizes="(max-width: 1024px) 100vw, 560px"
-              className="object-contain p-6"
+              className="rounded-[18px] object-contain p-6"
             />
             <button
               type="button"
@@ -103,7 +103,7 @@ export function ProductGallery({
                 i === index ? 'border-ink-900' : 'border-line hover:border-steel-400',
               )}
             >
-              <Image src={src} alt="" fill sizes="72px" className="object-contain p-1.5" />
+              <Image src={src} alt="" fill sizes="72px" className="rounded-lg object-contain p-1.5" />
             </button>
           ))}
         </div>

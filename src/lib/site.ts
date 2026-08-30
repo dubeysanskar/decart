@@ -98,7 +98,9 @@ export type Disposition = (typeof DISPOSITIONS)[number];
 export const COPY = {
   formHelper: 'Fields marked * are required. We reply within one working day (Mon–Sat, 9:30–6).',
   success:
-    'Query received. Our sales desk will call you within one working day. In a hurry? Continue on WhatsApp — your details are already in the message.',
+    `Your enquiry is with our sales desk. Expect a call from ${SITE.phone} within one working day ` +
+    `(${SITE.hours}) with pricing and lead time. Need it sooner? Continue on WhatsApp — everything ` +
+    `you just typed is already in the message.`,
   error: 'That didn’t go through. Nothing is lost — send it on WhatsApp instead, or call +91 93119 42001.',
   reviewThanks: 'Thanks — your review is with our team and appears after a quick check.',
   emptyFamily: 'No models match those filters. Tell us what you need — custom builds are our daily work.',

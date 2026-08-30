@@ -104,7 +104,7 @@ export function HeroCategorySlider({ categories }: { categories: HeroCategory[] 
                     priority={i < 2}
                     loading={i < 2 ? undefined : 'lazy'}
                     sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 200px"
-                    className="object-contain p-3 transition-transform duration-500 ease-out group-hover:scale-[1.05]"
+                    className="rounded-[14px] object-contain p-3 transition-transform duration-500 ease-out group-hover:scale-[1.05]"
                   />
                 ) : (
                   <span className="flex h-full w-full items-center justify-center bg-porcelain px-2 text-center font-mono text-[10px] uppercase tracking-[0.12em] text-steel-400">
