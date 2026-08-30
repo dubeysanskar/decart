@@ -16,7 +16,7 @@ import { HomeSeo } from '@/components/home/HomeSeo';
 import { ContactBand } from '@/components/site/ContactBand';
 import { SectionHeading } from '@/components/ui/typography';
 import { ButtonLink } from '@/components/ui/Button';
-import { getFeatured, getFamilyTiles, getFeaturedReviews, getProduct, GROUPS } from '@/lib/catalogue';
+import { getFeatured, getFamilyTiles, getFeaturedReviews, getProduct } from '@/lib/catalogue';
 import { getBanners, getHomeProjects, getClientLogos } from '@/lib/content';
 import { getPublishedPosts } from '@/lib/blog';
 import { formatDate } from '@/lib/utils';
@@ -39,31 +39,12 @@ export default async function HomePage() {
     getClientLogos(),
   ]);
 
-  // the slider leads with the families we hold real photography for
-  const photographed = families.filter((family) => family.cover);
 
-  /**
-   * Each banner links at a category page, so the slug in its href tells us what the slide is
-   * about. That resolves to a product group, which is what the hero rail re-filters to as the
-   * banner rotates (client: "ye slider ki category ke hisab se change ho sakte hai kya").
-   * Worked out here rather than in the hero so the catalogue never reaches the client bundle.
-   */
-  const bannerFocus: Record<string, { group: string; label: string; lead: string }> = {};
-  for (const banner of banners) {
-    const slug = /^\/products\/([a-z0-9-]+)/.exec(banner.href ?? '')?.[1];
-    const family = slug ? families.find((f) => f.slug === slug) : undefined;
-    if (!family) continue;
-    bannerFocus[banner._id] = {
-      group: family.group,
-      label: GROUPS.find((g) => g.slug === family.group)?.name ?? '',
-      lead: family.slug,
-    };
-  }
 
   return (
     <>
       {/* banners now sit behind the hero rather than in a strip under it */}
-      <Hero categories={photographed} banners={banners} bannerFocus={bannerFocus} />
+      <Hero banners={banners} />
       <TrustBar />
       <CategoryDirectory families={families} />
       <BestsellerRail products={bestsellers} />

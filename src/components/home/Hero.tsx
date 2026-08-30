@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ArrowRight,
   ArrowLeft,
@@ -13,9 +13,9 @@ import {
   Phone,
 } from 'lucide-react';
 import { ButtonLink } from '@/components/ui/Button';
+import { LeadForm } from '@/components/forms/LeadForm';
 import { SITE } from '@/lib/site';
 import { cn } from '@/lib/utils';
-import { HeroCategorySlider, type HeroCategory } from './HeroCategorySlider';
 
 export type HeroBanner = {
   _id: string;
@@ -57,16 +57,7 @@ function splitTitle(title: string): [string, string] {
   return [title, ''];
 }
 
-export function Hero({
-  categories,
-  banners = [],
-  bannerFocus = {},
-}: {
-  categories: HeroCategory[];
-  banners?: HeroBanner[];
-  /** banner id -> the product group that banner is about, resolved on the server */
-  bannerFocus?: Record<string, { group: string; label: string; lead: string }>;
-}) {
+export function Hero({ banners = [] }: { banners?: HeroBanner[] }) {
   const slides = banners.filter((banner) => banner.image && banner.title);
   const hasBanners = slides.length > 0;
 
@@ -88,21 +79,6 @@ export function Hero({
   const active = hasBanners ? slides[index] : null;
   const [headline, accent] = active ? splitTitle(active.title) : ['Smart seating', 'for every space.'];
 
-  /**
-   * The rail follows the slide: a banner about reception desks shows the desking group, led by
-   * reception itself. Banners that do not point at a category (or point at one we hold no
-   * photography for) fall back to the default eight, so the rail is never empty.
-   */
-  const focus = active ? bannerFocus[active._id] : undefined;
-  const visibleCategories = useMemo(() => {
-    if (!focus) return categories.slice(0, 8);
-    const inGroup = categories.filter((category) => category.group === focus.group);
-    if (!inGroup.length) return categories.slice(0, 8);
-    return [
-      ...inGroup.filter((category) => category.slug === focus.lead),
-      ...inGroup.filter((category) => category.slug !== focus.lead),
-    ].slice(0, 8);
-  }, [categories, focus]);
 
   return (
     <section data-hero className="relative overflow-hidden pt-24 sm:pt-28">
@@ -305,24 +281,22 @@ export function Hero({
 
           </div>
 
-          {/* ------------------------------------------------- category slider */}
+          {/* the category rail lived here; the client asked for an enquiry card instead, so the
+              hero now captures a lead rather than sending people off to browse */}
           <div className="relative min-w-0">
-            <HeroCategorySlider key={focus?.group ?? 'all'} categories={visibleCategories} />
-            <div data-anim="up" className="mt-4 flex items-baseline justify-between gap-4">
-              <p className="min-w-0 truncate text-eyebrow font-semibold uppercase tracking-[0.14em] text-decart-700">
-                Shop by category
-                {focus?.label ? <span className="text-steel-400"> · {focus.label}</span> : null}
+            <div className="rounded-card border border-line bg-paper/95 p-5 shadow-lift backdrop-blur md:p-6">
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-decart-700">
+                Tell us what you need
               </p>
-              <Link
-                href="/products"
-                className="group inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 transition-colors hover:text-decart-700"
-              >
-                All 30 categories
-                <ArrowRight
-                  aria-hidden
-                  className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
-                />
-              </Link>
+              <h2 className="mt-2 font-display text-xl text-ink-950 md:text-2xl">Get a quote today</h2>
+              <p className="mt-1.5 text-sm leading-relaxed text-steel-600">
+                Your name, a number and what you are furnishing. We reply the same working day —
+                {' '}{SITE.hours}.
+              </p>
+
+              <div className="mt-5">
+                <LeadForm type="quote" short compact />
+              </div>
             </div>
           </div>
         </div>

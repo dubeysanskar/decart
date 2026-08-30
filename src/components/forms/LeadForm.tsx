@@ -35,6 +35,7 @@ export function LeadForm({
   subjects = [],
   subjectLabel = 'Subject',
   alwaysAskCompany = false,
+  short = false,
 }: {
   type: LeadType;
   productSlug?: string;
@@ -46,6 +47,8 @@ export function LeadForm({
   subjects?: readonly string[];
   subjectLabel?: string;
   alwaysAskCompany?: boolean;
+  /** Hero card: name, phone and one line only — everything else is asked for later. */
+  short?: boolean;
 }) {
   const pathname = usePathname();
   const startedAt = useRef(Date.now());
@@ -192,7 +195,32 @@ export function LeadForm({
    * pairing closes up rather than leaving an empty cell.
    */
   const identityFields = (
-    [
+    short
+      ? [
+          <Input
+            key="name"
+            label="Name"
+            name="name"
+            required
+            value={values.name}
+            onChange={set('name')}
+            error={errors.name}
+            autoComplete="name"
+          />,
+          <Input
+            key="phone"
+            label="Phone / WhatsApp"
+            name="phone"
+            required
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            value={values.phone}
+            onChange={set('phone')}
+            error={errors.phone}
+          />,
+        ]
+      : [
       <Input key="name" label="Name" name="name" required value={values.name} onChange={set('name')} error={errors.name} autoComplete="name" />,
       needsCompany ? (
         <Input
@@ -269,7 +297,7 @@ export function LeadForm({
           autoComplete="address-level2"
         />
       ) : null,
-    ] as (ReactNode | null)[]
+    ]
   ).filter(Boolean) as ReactNode[];
 
   return (
@@ -297,7 +325,7 @@ export function LeadForm({
         </div>
       ))}
 
-      {subjects.length ? (
+      {subjects.length && !short ? (
         <Select label={subjectLabel} name="subject" value={values.subject} onChange={set('subject')}>
           <option value="">Select an option</option>
           {subjects.map((subject) => (
@@ -308,7 +336,7 @@ export function LeadForm({
         </Select>
       ) : null}
 
-      {families.length && (type === 'bulk' || type === 'custom') ? (
+      {!short && families.length && (type === 'bulk' || type === 'custom') ? (
         <Select label={type === 'custom' ? 'Base family' : 'Product family'} name="family" value={values.family} onChange={set('family')}>
           <option value="">Select a family</option>
           {families.map((family) => (
@@ -319,7 +347,7 @@ export function LeadForm({
         </Select>
       ) : null}
 
-      {needsQuantity ? (
+      {!short && needsQuantity ? (
         <div className={compact ? 'grid gap-3' : 'grid gap-3 md:grid-cols-2'}>
           <Input
             label="Quantity"
@@ -352,7 +380,7 @@ export function LeadForm({
         />
       ) : null}
 
-      {type === 'oem' ? (
+      {!short && type === 'oem' ? (
         <Input
           label="Monthly volume"
           name="monthlyVolume"
@@ -362,7 +390,7 @@ export function LeadForm({
         />
       ) : null}
 
-      {type === 'custom' ? (
+      {!short && type === 'custom' ? (
         <fieldset className="rounded-card border border-line p-4">
           <legend className="px-1 text-sm font-medium text-ink-900">Build options</legend>
           <div className="grid gap-3 md:grid-cols-2">
@@ -387,7 +415,7 @@ export function LeadForm({
         label={type === 'oem' ? 'Requirement details' : type === 'custom' ? 'Reference notes' : 'Message'}
         name="message"
         required={type === 'contact' || type === 'oem'}
-        rows={compact ? 3 : 4}
+        rows={short ? 2 : compact ? 3 : 4}
         value={values.message}
         onChange={set('message')}
         error={errors.message}
