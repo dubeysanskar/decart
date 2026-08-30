@@ -41,13 +41,27 @@ export default async function BlogIndexPage() {
                   data-reveal
                   className="group overflow-hidden rounded-card border border-line bg-paper transition-shadow hover:shadow-lift"
                 >
-                  <div className="relative aspect-[16/10] bg-ink-900">
+                  {/* same reason as the home grid: these are cut-outs, and an ink well behind a
+                      white-background cut-out reads as a broken image */}
+                  <div className="relative aspect-[16/10] overflow-hidden bg-paper">
+                    <span
+                      aria-hidden
+                      className="absolute inset-0"
+                      style={{
+                        background:
+                          'radial-gradient(78% 70% at 50% 45%, transparent 55%, rgb(243 248 252 / 0.9) 100%)',
+                      }}
+                    />
                     <ProductImage
                       src={post.cover?.src}
                       alt={post.cover?.alt || post.title}
                       label="Cover image"
-                      fit="cover"
                       sizes="(max-width: 768px) 100vw, 380px"
+                      imgClassName="p-6 transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                    />
+                    <span
+                      aria-hidden
+                      className="absolute bottom-5 left-1/2 h-2 w-2/5 -translate-x-1/2 rounded-[100%] bg-ink-950/10 blur-md"
                     />
                   </div>
                   <div className="p-5">

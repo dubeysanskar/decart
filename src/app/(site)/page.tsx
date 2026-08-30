@@ -83,13 +83,28 @@ export default async function HomePage() {
                   data-anim="up"
                   className="group overflow-hidden rounded-card bg-paper shadow-[0_0_0_1px_rgb(231_231_228)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_0_1px_rgb(10_12_14/0.14),0_24px_40px_-24px_rgb(10_12_14/0.3)]"
                 >
-                  <div className="relative aspect-[16/10] bg-porcelain">
+                  {/* blog covers are product cut-outs, not editorial photography — "cover"
+                      cropped the chairs off the edges of the frame, so they sit contained on a
+                      soft well with the same ground shadow as the category cards */}
+                  <div className="relative aspect-[16/10] overflow-hidden bg-paper">
+                    <span
+                      aria-hidden
+                      className="absolute inset-0"
+                      style={{
+                        background:
+                          'radial-gradient(78% 70% at 50% 45%, transparent 55%, rgb(243 248 252 / 0.9) 100%)',
+                      }}
+                    />
                     <ProductImage
                       src={post.cover?.src}
                       alt={post.cover?.alt || post.title}
                       label="Cover image"
-                      fit="cover"
                       sizes="(max-width: 768px) 100vw, 380px"
+                      imgClassName="p-6 transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                    />
+                    <span
+                      aria-hidden
+                      className="absolute bottom-5 left-1/2 h-2 w-2/5 -translate-x-1/2 rounded-[100%] bg-ink-950/10 blur-md"
                     />
                   </div>
                   <div className="p-6">

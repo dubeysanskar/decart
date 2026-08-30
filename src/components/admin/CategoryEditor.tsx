@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Trash2, ExternalLink } from 'lucide-react';
+import { Plus, Trash2, ExternalLink, Layers, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input, Textarea } from '@/components/ui/form';
 import { useToast } from '@/components/ui/Toast';
@@ -26,6 +26,11 @@ export type CategoryDraft = {
  * Per-category editorial content: the copy that sits under the listing and the category FAQ.
  * Client brief — "har category ka FAQ section bhi rakhna hai, uska content backend se aaye".
  */
+/** The pseudo-category that writes to every family at once. */
+const ALL = '__all__';
+
+type BulkPayload = Partial<Pick<CategoryDraft, 'heading' | 'intro' | 'bodyHtml' | 'faq' | 'seoTitle' | 'seoDescription'>>;
+
 export function CategoryEditor({ categories }: { categories: CategoryDraft[] }) {
   const router = useRouter();
   const toast = useToast();
@@ -34,11 +39,28 @@ export function CategoryEditor({ categories }: { categories: CategoryDraft[] }) 
     Object.fromEntries(categories.map((c) => [c.slug, c])),
   );
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState('');
 
-  const draft = drafts[active];
+  const totalModels = categories.reduce((sum, c) => sum + c.count, 0);
+  const [bulk, setBulk] = useState<CategoryDraft>({
+    slug: ALL,
+    name: 'All categories',
+    count: totalModels,
+    heading: '',
+    intro: '',
+    bodyHtml: '',
+    faq: [],
+    seoTitle: '',
+    seoDescription: '',
+  });
+
+  const isAll = active === ALL;
+  const draft = isAll ? bulk : drafts[active];
 
   const set = <K extends keyof CategoryDraft>(key: K, value: CategoryDraft[K]) =>
-    setDrafts((all) => ({ ...all, [active]: { ...all[active], [key]: value } }));
+    isAll
+      ? setBulk((b) => ({ ...b, [key]: value }))
+      : setDrafts((all) => ({ ...all, [active]: { ...all[active], [key]: value } }));
 
   const setFaq = (index: number, key: keyof FaqDraft, value: string) =>
     set(
@@ -46,7 +68,74 @@ export function CategoryEditor({ categories }: { categories: CategoryDraft[] }) 
       draft.faq.map((item, i) => (i === index ? { ...item, [key]: value } : item)),
     );
 
+  /**
+   * Writes only the fields that were actually filled in, so a blank box means "leave every
+   * category's own value alone" rather than wiping thirty descriptions at once.
+   */
+  async function saveAll() {
+    const faq = bulk.faq.filter((item) => item.q.trim() && item.a.trim());
+    const payload: BulkPayload = {};
+    if (bulk.heading.trim()) payload.heading = bulk.heading;
+    if (bulk.intro.trim()) payload.intro = bulk.intro;
+    if (bulk.bodyHtml.trim()) payload.bodyHtml = bulk.bodyHtml;
+    if (bulk.seoTitle.trim()) payload.seoTitle = bulk.seoTitle;
+    if (bulk.seoDescription.trim()) payload.seoDescription = bulk.seoDescription;
+    if (faq.length) payload.faq = faq;
+
+    const fields = Object.keys(payload);
+    if (!fields.length) {
+      toast.push('Nothing to apply — fill at least one field first.', 'error');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Apply ${fields.join(', ')} to all ${categories.length} categories?
+
+` +
+        'This replaces those fields on every category. Anything you left blank stays as it is.',
+    );
+    if (!confirmed) return;
+
+    setBusy(true);
+    const queue = [...categories];
+    const failed: string[] = [];
+    let done = 0;
+
+    // four at a time — thirty parallel writes would hammer the DB and the revalidation queue
+    await Promise.all(
+      Array.from({ length: 4 }, async () => {
+        for (let next = queue.shift(); next; next = queue.shift()) {
+          const category = next;
+          const res = await fetch(`/api/categories/${category.slug}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          }).catch(() => null);
+
+          if (res?.ok) {
+            done += 1;
+            setDrafts((all) => ({ ...all, [category.slug]: { ...all[category.slug], ...payload } }));
+          } else {
+            failed.push(category.name);
+          }
+          setProgress(`${done + failed.length} of ${categories.length}`);
+        }
+      }),
+    );
+
+    setBusy(false);
+    setProgress('');
+    toast.push(
+      failed.length
+        ? `Applied to ${done} of ${categories.length}. Failed: ${failed.slice(0, 3).join(', ')}${failed.length > 3 ? '…' : ''}`
+        : `Applied ${fields.join(', ')} to all ${done} categories.`,
+      failed.length ? 'error' : 'success',
+    );
+    if (done) router.refresh();
+  }
+
   async function save() {
+    if (isAll) return saveAll();
     setBusy(true);
     const res = await fetch(`/api/categories/${active}`, {
       method: 'PATCH',
@@ -95,6 +184,7 @@ export function CategoryEditor({ categories }: { categories: CategoryDraft[] }) 
             onChange={(e) => setActive(e.target.value)}
             className="h-12 w-full rounded-btn border border-line bg-paper px-3 text-sm lg:hidden"
           >
+            <option value={ALL}>All categories ({categories.length})</option>
             {categories.map((c) => (
               <option key={c.slug} value={c.slug}>
                 {c.name} ({c.count})
@@ -103,6 +193,23 @@ export function CategoryEditor({ categories }: { categories: CategoryDraft[] }) 
           </select>
 
           <ul className="hidden max-h-[70vh] flex-col gap-0.5 overflow-y-auto rounded-card border border-line bg-paper p-2 lg:flex">
+            {/* write once, apply to every family — pinned above the list so it is never lost in
+                a scroll of thirty */}
+            <li className="mb-1 border-b border-line pb-1">
+              <button
+                type="button"
+                onClick={() => setActive(ALL)}
+                className={`flex w-full items-center gap-2 rounded-btn px-3 py-2 text-left text-sm ${
+                  isAll ? 'bg-ink-900 font-semibold text-porcelain' : 'text-steel-600 hover:bg-porcelain'
+                }`}
+              >
+                <Layers className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">All categories</span>
+                <span className={`ml-auto font-mono text-[10px] ${isAll ? 'text-steel-400' : 'text-steel-400'}`}>
+                  {categories.length}
+                </span>
+              </button>
+            </li>
             {categories.map((c) => {
               const filled = Boolean(drafts[c.slug]?.intro || drafts[c.slug]?.bodyHtml || drafts[c.slug]?.faq.length);
               return (
@@ -131,16 +238,36 @@ export function CategoryEditor({ categories }: { categories: CategoryDraft[] }) 
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-line bg-paper p-4">
             <div className="min-w-0">
               <p className="font-semibold text-ink-950">{draft.name}</p>
-              <p className="font-mono text-[11px] text-steel-400">/products/{draft.slug} · {draft.count} models</p>
+              <p className="font-mono text-[11px] text-steel-400">
+                {isAll
+                  ? `${categories.length} categories · ${totalModels} models`
+                  : `/products/${draft.slug} · ${draft.count} models`}
+              </p>
             </div>
-            <Link
-              href={`/products/${draft.slug}`}
-              target="_blank"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-decart-700 hover:underline"
-            >
-              View page <ExternalLink className="h-3.5 w-3.5" />
-            </Link>
+            {isAll ? null : (
+              <Link
+                href={`/products/${draft.slug}`}
+                target="_blank"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-decart-700 hover:underline"
+              >
+                View page <ExternalLink className="h-3.5 w-3.5" />
+              </Link>
+            )}
           </div>
+
+          {isAll ? (
+            <div className="flex gap-3 rounded-card border border-warning/30 bg-warning/5 p-4">
+              <AlertTriangle aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+              <div className="text-sm text-steel-600">
+                <p className="font-semibold text-ink-950">Writing to all {categories.length} categories</p>
+                <p className="mt-1">
+                  Whatever you fill in below replaces that field on every category. <strong>Leave a box
+                  blank and it is left alone</strong> — so you can push one FAQ everywhere without
+                  touching the individual descriptions.
+                </p>
+              </div>
+            </div>
+          ) : null}
 
           <section className="rounded-card border border-line bg-paper p-5">
             <h2 className="text-lg font-semibold text-ink-950">Description</h2>
@@ -150,7 +277,7 @@ export function CategoryEditor({ categories }: { categories: CategoryDraft[] }) 
                 label="Heading"
                 value={draft.heading}
                 onChange={(e) => set('heading', e.target.value)}
-                placeholder={`About ${draft.name.toLowerCase()}`}
+                placeholder={isAll ? 'Applied to every category' : `About ${draft.name.toLowerCase()}`}
               />
               <Textarea
                 label="Intro paragraph"
@@ -225,7 +352,7 @@ export function CategoryEditor({ categories }: { categories: CategoryDraft[] }) 
               </ol>
             ) : (
               <p className="mt-4 rounded-card border border-dashed border-line p-6 text-center text-sm text-steel-600">
-                No questions yet. Add the ones buyers actually ask about {draft.name.toLowerCase()}.
+                No questions yet. Add the ones buyers actually ask about {isAll ? 'every range' : draft.name.toLowerCase()}.
               </p>
             )}
           </section>
@@ -250,9 +377,12 @@ export function CategoryEditor({ categories }: { categories: CategoryDraft[] }) 
           </section>
 
           <div className="sticky bottom-0 flex justify-end gap-3 border-t border-line bg-porcelain/95 py-4 backdrop-blur">
+            {busy && progress ? (
+              <span className="self-center font-mono text-xs text-steel-600">{progress}</span>
+            ) : null}
             <Button onClick={save} disabled={busy}>
               {busy ? <HexSpinner /> : null}
-              Save {draft.name}
+              {isAll ? `Apply to all ${categories.length} categories` : `Save ${draft.name}`}
             </Button>
           </div>
         </div>

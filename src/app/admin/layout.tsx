@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { AdminShell } from '@/components/admin/AdminShell';
+import { AutoRefresh } from '@/components/admin/AutoRefresh';
 import { ToastProvider } from '@/components/ui/Toast';
 import { auth } from '@/lib/auth';
 
@@ -20,6 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <ToastProvider>
+      <AutoRefresh />
       <AdminShell user={{ name: session.user.name ?? 'Admin', email: session.user.email ?? '' }}>
         {children}
       </AdminShell>

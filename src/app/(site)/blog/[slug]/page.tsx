@@ -63,14 +63,28 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
         {post.cover?.src ? (
           <div className="container-x -mt-2 pt-10">
-            <div className="hex-frame relative aspect-[16/9] overflow-hidden rounded-img bg-ink-900">
+            {/* the covers are product cut-outs on white, so an ink well and a hard crop both
+                read as a broken image — contain them on a light ground instead */}
+            <div className="relative aspect-[16/9] overflow-hidden rounded-img border border-line bg-paper">
+              <span
+                aria-hidden
+                className="absolute inset-0"
+                style={{
+                  background:
+                    'radial-gradient(72% 70% at 50% 45%, transparent 55%, rgb(243 248 252 / 0.9) 100%)',
+                }}
+              />
               <Image
                 src={post.cover.src}
                 alt={post.cover.alt || post.title}
                 fill
                 priority
                 sizes="(max-width: 1200px) 100vw, 1200px"
-                className="object-cover"
+                className="object-contain p-8 md:p-12"
+              />
+              <span
+                aria-hidden
+                className="absolute bottom-8 left-1/2 h-3 w-1/3 -translate-x-1/2 rounded-[100%] bg-ink-950/10 blur-lg"
               />
             </div>
           </div>
