@@ -208,7 +208,23 @@ export const testimonialSchema = z.object({
   featured: z.boolean().default(true),
 });
 
+/**
+ * SMTP the client can set themselves. `pass` is write-only: the API never returns it, and the
+ * sentinel below means "leave the stored password alone" so saving the form does not wipe it.
+ */
+export const SMTP_UNCHANGED = '__unchanged__';
+
+export const smtpSchema = z.object({
+  host: z.string().trim().max(200).optional().default(''),
+  port: z.coerce.number().int().min(1).max(65535).optional().default(587),
+  user: z.string().trim().max(200).optional().default(''),
+  pass: z.string().max(400).optional().default(''),
+  fromName: z.string().trim().max(120).optional().default(''),
+  fromEmail: z.union([z.literal(''), z.string().trim().email('Enter a valid address')]).optional().default(''),
+});
+
 export const settingsSchema = z.object({
+  smtp: smtpSchema.optional(),
   phone: z.string().max(40).optional(),
   whatsapp: z.string().max(20).optional(),
   emailPrimary: z.union([z.literal(''), z.string().email()]).optional(),

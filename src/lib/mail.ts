@@ -3,25 +3,70 @@ import nodemailer from 'nodemailer';
 import { SITE, LEAD_TYPE_LABEL, type LeadType } from './site';
 import { waLink, WA } from './whatsapp';
 import { formatDateTime } from './utils';
+import { getSettings } from './repo';
 
 /** §10.3 — SMTP transport, routing map and the two branded templates. */
 
-let transport: nodemailer.Transporter | null = null;
+export type MailConfig = {
+  host: string;
+  port: number;
+  user: string;
+  pass: string;
+  fromName: string;
+  fromEmail: string;
+};
 
-export function mailConfigured() {
-  return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+/**
+ * SMTP comes from the Settings screen first and the environment second.
+ *
+ * The environment cannot be edited on a deployed host without a redeploy, which is why the
+ * client can set this themselves. Anything they leave blank falls back to the env value, so an
+ * existing deployment keeps working untouched.
+ */
+export async function mailConfig(): Promise<MailConfig> {
+  let saved: Partial<MailConfig> = {};
+  try {
+    const doc = (await getSettings()) as { smtp?: Partial<MailConfig> } | null;
+    saved = doc?.smtp ?? {};
+  } catch {
+    // settings unreadable (no database yet) — the environment still stands on its own
+  }
+
+  const port = Number(saved.port || process.env.SMTP_PORT || 587);
+  return {
+    host: saved.host || process.env.SMTP_HOST || '',
+    port,
+    user: saved.user || process.env.SMTP_USER || '',
+    pass: saved.pass || process.env.SMTP_PASS || '',
+    fromName: saved.fromName || process.env.SMTP_FROM_NAME || SITE.shortName,
+    fromEmail: saved.fromEmail || process.env.SMTP_FROM || process.env.SMTP_USER || SITE.emailPrimary,
+  };
 }
 
-export function getTransport() {
-  if (!mailConfigured()) throw new Error('SMTP is not configured');
-  if (!transport) {
-    const port = Number(process.env.SMTP_PORT || 465);
+export async function mailConfigured() {
+  const c = await mailConfig();
+  return Boolean(c.host && c.user && c.pass);
+}
+
+// cached per configuration, so saving new settings builds a fresh transport instead of
+// silently reusing a connection pointed at the old server
+let transport: nodemailer.Transporter | null = null;
+let transportKey = '';
+
+export async function getTransport() {
+  const c = await mailConfig();
+  if (!c.host || !c.user || !c.pass) throw new Error('SMTP is not configured');
+
+  const key = `${c.host}:${c.port}:${c.user}:${c.pass.length}`;
+  if (!transport || transportKey !== key) {
     transport = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port,
-      secure: port === 465,
-      auth: { user: process.env.SMTP_USER!, pass: process.env.SMTP_PASS! },
+      host: c.host,
+      port: c.port,
+      // 465 is implicit TLS; 587 upgrades with STARTTLS
+      secure: c.port === 465,
+      auth: { user: c.user, pass: c.pass },
     });
+    transportKey = key;
   }
   return transport;
 }
@@ -42,8 +87,8 @@ export function recipientsFor(type: string, routing = mailRouting()) {
   return routing[type]?.length ? routing[type] : routing.default;
 }
 
+// kept for the env-only path; mailConfig() is what actually decides the from line now
 const fromName = () => process.env.MAIL_FROM_NAME || SITE.shortName;
-const fromAddress = () => process.env.SMTP_USER || SITE.emailPrimary;
 
 // ---------------------------------------------------------------- templates
 
@@ -220,7 +265,9 @@ export function replyHtml(bodyHtml: string, signature: string) {
 // ---------------------------------------------------------------- senders
 
 async function send(opts: nodemailer.SendMailOptions) {
-  const info = await getTransport().sendMail({ ...opts, from: `${fromName()} <${fromAddress()}>` });
+  const [tx, config] = await Promise.all([getTransport(), mailConfig()]);
+  const name = config.fromName || fromName();
+  const info = await tx.sendMail({ ...opts, from: `${name} <${config.fromEmail}>` });
   return info.messageId as string;
 }
 

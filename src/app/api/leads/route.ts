@@ -125,7 +125,7 @@ export async function POST(req: Request) {
 
   const mailStatus = { admin: '', ack: '' };
 
-  if (mailConfigured()) {
+  if (await mailConfigured()) {
     try {
       await sendAdminNotify(mailData);
       mailStatus.admin = 'sent';

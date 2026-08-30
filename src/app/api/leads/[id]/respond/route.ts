@@ -14,7 +14,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   const denied = await requireAdmin();
   if (denied) return denied;
 
-  if (!mailConfigured()) {
+  if (!(await mailConfigured())) {
     return NextResponse.json({ ok: false, error: 'SMTP is not configured on this deployment.' }, { status: 503 });
   }
 

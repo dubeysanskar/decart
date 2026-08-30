@@ -40,7 +40,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     if (!to) {
       return NextResponse.json({ ok: false, error: 'This client has no email address' }, { status: 400 });
     }
-    if (!mailConfigured()) {
+    if (!(await mailConfigured())) {
       return NextResponse.json({ ok: false, error: 'SMTP is not configured' }, { status: 503 });
     }
 

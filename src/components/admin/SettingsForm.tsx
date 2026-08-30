@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Input, Textarea } from '@/components/ui/form';
 import { useToast } from '@/components/ui/Toast';
 import { HexSpinner } from '@/components/ui/bits';
+import { SMTP_UNCHANGED } from '@/lib/validators';
 
 export type SettingsDraft = {
   phone: string;
@@ -21,6 +22,16 @@ export type SettingsDraft = {
   counters: { years: number; models: number; families: number; clients: number };
   announcement: string;
   replySignature: string;
+  /** hasPassword tells the form one is stored without the password ever reaching the browser */
+  smtp: {
+    host: string;
+    port: number;
+    user: string;
+    pass: string;
+    fromName: string;
+    fromEmail: string;
+    hasPassword?: boolean;
+  };
 };
 
 export function SettingsForm({ initial }: { initial: SettingsDraft }) {
@@ -28,6 +39,8 @@ export function SettingsForm({ initial }: { initial: SettingsDraft }) {
   const toast = useToast();
   const [draft, setDraft] = useState(initial);
   const [busy, setBusy] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testTo, setTestTo] = useState('');
   const [jsonError, setJsonError] = useState('');
 
   const set = <K extends keyof SettingsDraft>(key: K, value: SettingsDraft[K]) =>
@@ -48,12 +61,35 @@ export function SettingsForm({ initial }: { initial: SettingsDraft }) {
     const res = await fetch('/api/settings', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...rest, mailRouting }),
+      body: JSON.stringify({
+        ...rest,
+        mailRouting,
+        // an empty box means "leave the stored password alone", never "clear it"
+        smtp: { ...draft.smtp, pass: draft.smtp.pass || SMTP_UNCHANGED },
+      }),
     });
     setBusy(false);
 
     toast.push(res.ok ? 'Settings saved and pages revalidated.' : 'Could not save settings.', res.ok ? 'success' : 'error');
     if (res.ok) router.refresh();
+  }
+
+  const setSmtp = <K extends keyof SettingsDraft['smtp']>(key: K, value: SettingsDraft['smtp'][K]) =>
+    setDraft((d) => ({ ...d, smtp: { ...d.smtp, [key]: value } }));
+
+  async function sendTest() {
+    setTesting(true);
+    const res = await fetch('/api/settings/test-mail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: testTo }),
+    });
+    const json = await res.json().catch(() => null);
+    setTesting(false);
+    toast.push(
+      res.ok ? `Test sent to ${json?.data?.to}. Check the inbox.` : json?.error ?? 'The test send failed.',
+      res.ok ? 'success' : 'error',
+    );
   }
 
   return (
@@ -158,6 +194,83 @@ export function SettingsForm({ initial }: { initial: SettingsDraft }) {
             />
           ))}
         </div>
+      </section>
+
+      {/* Outgoing email. Kept in Settings because the environment cannot be edited on a
+          deployed host without a redeploy — anything left blank falls back to the env value. */}
+      <section className="rounded-card border border-line bg-paper p-5">
+        <h2 className="text-lg font-semibold text-ink-950">Outgoing email (SMTP)</h2>
+        <p className="mt-1 text-sm text-steel-600">
+          Where enquiry alerts, customer acknowledgements and quotations are sent from. Leave a field
+          empty to keep using the server&rsquo;s own setting.
+        </p>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <Input
+            label="SMTP host"
+            value={draft.smtp.host}
+            onChange={(e) => setSmtp('host', e.target.value.trim())}
+            placeholder="smtp.gmail.com"
+          />
+          <Input
+            label="Port"
+            type="number"
+            value={String(draft.smtp.port)}
+            onChange={(e) => setSmtp('port', Number(e.target.value))}
+            hint="587 for STARTTLS, 465 for implicit TLS"
+          />
+          <Input
+            label="Username"
+            value={draft.smtp.user}
+            onChange={(e) => setSmtp('user', e.target.value.trim())}
+            autoComplete="off"
+          />
+          <Input
+            label="Password"
+            type="password"
+            value={draft.smtp.pass}
+            onChange={(e) => setSmtp('pass', e.target.value)}
+            autoComplete="new-password"
+            placeholder={draft.smtp.hasPassword ? 'Stored — type to replace it' : 'App password'}
+            hint={
+              draft.smtp.hasPassword
+                ? 'A password is saved. Leave this empty to keep it.'
+                : 'Gmail needs an app password, not the account password.'
+            }
+          />
+          <Input
+            label="From name"
+            value={draft.smtp.fromName}
+            onChange={(e) => setSmtp('fromName', e.target.value)}
+            placeholder="DecArt Industries"
+          />
+          <Input
+            label="From address"
+            type="email"
+            value={draft.smtp.fromEmail}
+            onChange={(e) => setSmtp('fromEmail', e.target.value.trim())}
+            hint="Defaults to the username"
+          />
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-end gap-3 border-t border-line pt-4">
+          <Input
+            label="Send a test to"
+            type="email"
+            wrapperClassName="min-w-0 flex-1"
+            value={testTo}
+            onChange={(e) => setTestTo(e.target.value.trim())}
+            placeholder={draft.smtp.user || 'you@example.com'}
+          />
+          <Button type="button" variant="secondary" onClick={sendTest} disabled={testing || busy}>
+            {testing ? <HexSpinner /> : null}
+            Send test email
+          </Button>
+        </div>
+        <p className="mt-2 text-xs text-steel-600">
+          Save first — the test uses the stored settings, and reports the mail server&rsquo;s own error
+          if it fails.
+        </p>
       </section>
     </div>
   );

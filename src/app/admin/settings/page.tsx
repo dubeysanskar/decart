@@ -18,6 +18,8 @@ const defaults: SettingsDraft = {
   social: { instagram: '', linkedin: '', facebook: '', x: '' },
   counters: { years: 10, models: 350, families: 30, clients: 40 },
   announcement: '',
+  // blank means "fall back to the environment", which is how an existing deployment keeps working
+  smtp: { host: '', port: 587, user: '', pass: '', fromName: '', fromEmail: '', hasPassword: false },
   replySignature: `${SITE.legalName}\n${SITE.addressFactory}\n${SITE.phone} · ${SITE.emailPrimary}\nTrust is our Sign.`,
 };
 
@@ -42,6 +44,13 @@ export default async function AdminSettingsPage() {
         ...JSON.parse(JSON.stringify(doc)),
         mailRoutingJson: JSON.stringify(doc.mailRouting ?? { default: [SITE.emailPrimary] }, null, 2),
         social: { ...defaults.social, ...((doc.social as SettingsDraft['social']) ?? {}) },
+        smtp: {
+          ...defaults.smtp,
+          ...((doc.smtp as SettingsDraft['smtp']) ?? {}),
+          // the browser is told a password exists, never what it is
+          pass: '',
+          hasPassword: Boolean((doc.smtp as { pass?: string } | undefined)?.pass),
+        },
         counters: { ...defaults.counters, ...((doc.counters as SettingsDraft['counters']) ?? {}) },
       }
     : defaults;
