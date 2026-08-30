@@ -17,6 +17,9 @@ export const SITE = {
       so nothing is ever sent to a mailbox that does not exist yet. */
   emailSales: process.env.NEXT_PUBLIC_EMAIL_SALES || 'info@decartseatings.in',
   emailSupport: process.env.NEXT_PUBLIC_EMAIL_SUPPORT || 'info@decartseatings.in',
+  /** Desk numbers, same fallback rule as the addresses above. */
+  phoneSales: process.env.NEXT_PUBLIC_PHONE_SALES || '+91 93119 42001',
+  phoneSupport: process.env.NEXT_PUBLIC_PHONE_SUPPORT || '+91 93119 42001',
 
   addressFactory: 'Plot no-230 C, Indra Complex, Industrial Area, Dwa Factory Wali Gali, Sector 87, Faridabad, Haryana 121002',
   addressLines: [
@@ -104,7 +107,7 @@ export const CONTACT_DESKS = [
     title: 'Sales Enquiry',
     blurb: 'Pricing, bulk floors, dealers and OEM.',
     email: SITE.emailSales,
-    phones: [SITE.phone],
+    phones: [SITE.phoneSales],
   },
   {
     id: 'support',
@@ -112,11 +115,23 @@ export const CONTACT_DESKS = [
     title: 'Support Enquiry',
     blurb: 'Spares, warranty and after-sales on a delivered order.',
     email: SITE.emailSupport,
-    phones: [SITE.phone],
+    phones: [SITE.phoneSupport],
   },
 ] as const;
 
 export type ContactDeskId = (typeof CONTACT_DESKS)[number]['id'];
+
+/** Subject options on the contact form. Stored on the lead as extra.subject. */
+export const CONTACT_SUBJECTS = [
+  'New enquiry or quotation',
+  'Bulk or project requirement',
+  'Dealer or distributor',
+  'OEM manufacturing',
+  'An existing order or delivery',
+  'Spares, warranty or service',
+  'Careers',
+  'Something else',
+] as const;
 
 export const LEAD_STATUSES = ['new', 'contacted', 'quoted', 'negotiation', 'won', 'lost', 'junk'] as const;
 export type LeadStatus = (typeof LEAD_STATUSES)[number];

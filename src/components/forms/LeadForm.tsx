@@ -8,6 +8,7 @@ import { Input, Select, Textarea, Honeypot } from '@/components/ui/form';
 import { HexSpinner } from '@/components/ui/bits';
 import { leadSchema, fieldErrors, type LeadInput } from '@/lib/validators';
 import { COPY, LEAD_TYPE_LABEL, SITE, type LeadType } from '@/lib/site';
+import { INDIA_STATES, OTHER_CITY, citiesFor } from '@/data/india-locations';
 import { waLink, WA } from '@/lib/whatsapp';
 import { BUILD_OPTIONS } from '@/data/specs';
 
@@ -22,6 +23,8 @@ export function LeadForm({
   productName = '',
   families = [],
   compact = false,
+  subjects = [],
+  alwaysAskCompany = false,
 }: {
   type: LeadType;
   productSlug?: string;
@@ -29,6 +32,9 @@ export function LeadForm({
   productName?: string;
   families?: { slug: string; name: string }[];
   compact?: boolean;
+  /** When given, the form asks what the enquiry is about and files it under extra.subject. */
+  subjects?: readonly string[];
+  alwaysAskCompany?: boolean;
 }) {
   const pathname = usePathname();
   const startedAt = useRef(Date.now());
@@ -37,7 +43,10 @@ export function LeadForm({
     company: '',
     email: '',
     phone: '',
+    state: '',
     city: '',
+    cityOther: '',
+    subject: '',
     message: '',
     quantity: '',
     targetDate: '',
@@ -57,6 +66,12 @@ export function LeadForm({
   const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setValues((current) => ({ ...current, [key]: e.target.value }));
 
+  const onStateChange = (e: React.ChangeEvent<HTMLSelectElement>) =>
+    setValues((current) => ({ ...current, state: e.target.value, city: '', cityOther: '' }));
+
+  // the typed-in name wins when the buyer's town is not on our list
+  const cityValue = values.city === OTHER_CITY ? values.cityOther.trim() : values.city;
+
   const waFallback = useMemo(
     () =>
       waLink(
@@ -66,7 +81,7 @@ export function LeadForm({
           product: productName,
           code: productCode,
           quantity: values.quantity,
-          city: values.city,
+          city: cityValue,
           message: values.message,
         }),
       ),
@@ -84,6 +99,8 @@ export function LeadForm({
       if (values.family) extra.baseFamily = values.family;
     }
     if (type === 'bulk' && values.family) extra.family = values.family;
+    if (values.subject) extra.subject = values.subject;
+    if (values.state) extra.state = values.state;
 
     return {
       type,
@@ -91,7 +108,7 @@ export function LeadForm({
       company: values.company,
       email: values.email,
       phone: values.phone,
-      city: values.city,
+      city: cityValue,
       message: values.message,
       productSlug,
       productCode,
@@ -157,7 +174,7 @@ export function LeadForm({
   }
 
   const needsQuantity = type === 'bulk' || type === 'quote' || type === 'custom';
-  const needsCompany = type === 'dealer' || type === 'oem' || type === 'bulk';
+  const needsCompany = alwaysAskCompany || type === 'dealer' || type === 'oem' || type === 'bulk';
 
   return (
     <form onSubmit={onSubmit} className="relative flex flex-col gap-4" noValidate>
@@ -199,8 +216,59 @@ export function LeadForm({
           error={errors.email}
           hint="So we can send the quotation"
         />
-        <Input label="City" name="city" required={type === 'dealer'} value={values.city} onChange={set('city')} error={errors.city} />
+        <Select label="State" name="state" value={values.state} onChange={onStateChange}>
+          <option value="">Select a state</option>
+          {INDIA_STATES.map((record) => (
+            <option key={record.name} value={record.name}>
+              {record.name}
+            </option>
+          ))}
+        </Select>
       </div>
+
+      {/* city depends on the state above it — pick Haryana and you get Haryana's cities */}
+      <div className={compact ? 'grid gap-4' : 'grid gap-4 md:grid-cols-2'}>
+        <Select
+          label="City"
+          name="city"
+          required={type === 'dealer'}
+          value={values.city}
+          onChange={set('city')}
+          error={errors.city}
+          disabled={!values.state}
+          hint={values.state ? undefined : 'Choose a state first'}
+        >
+          <option value="">{values.state ? 'Select a city' : '—'}</option>
+          {citiesFor(values.state).map((city) => (
+            <option key={city} value={city}>
+              {city}
+            </option>
+          ))}
+          {values.state ? <option value={OTHER_CITY}>{OTHER_CITY} (type it in)</option> : null}
+        </Select>
+
+        {values.city === OTHER_CITY ? (
+          <Input
+            label="Which city?"
+            name="cityOther"
+            required={type === 'dealer'}
+            value={values.cityOther}
+            onChange={set('cityOther')}
+            autoComplete="address-level2"
+          />
+        ) : null}
+      </div>
+
+      {subjects.length ? (
+        <Select label="Subject" name="subject" value={values.subject} onChange={set('subject')}>
+          <option value="">Select a subject</option>
+          {subjects.map((subject) => (
+            <option key={subject} value={subject}>
+              {subject}
+            </option>
+          ))}
+        </Select>
+      ) : null}
 
       {needsCompany ? (
         <Input
