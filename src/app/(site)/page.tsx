@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 import { Hero, MarketplaceStrip } from '@/components/home/Hero';
 import { CategoryDirectory } from '@/components/home/CategoryDirectory';
 import { LatestProjects, ClientWall } from '@/components/home/ContentSections';
@@ -13,6 +14,7 @@ import {
 } from '@/components/home/sections';
 import { ColourStory, HomeFaq, SegmentList } from '@/components/home/extra-sections';
 import { HomeSeo } from '@/components/home/HomeSeo';
+import { HeroCategorySlider } from '@/components/home/HeroCategorySlider';
 import { ContactBand } from '@/components/site/ContactBand';
 import { SectionHeading } from '@/components/ui/typography';
 import { ButtonLink } from '@/components/ui/Button';
@@ -41,11 +43,35 @@ export default async function HomePage() {
 
 
 
+  // the rail leads with the families that actually have artwork
+  const photographed = families.filter((family) => family.cover);
+
   return (
     <>
       {/* banners now sit behind the hero rather than in a strip under it */}
       <Hero banners={banners} />
       <TrustBar />
+
+      {/* the category rail, back by client request — under the counters now rather than inside
+          the hero, where the enquiry card took its place */}
+      <section className="border-b border-line bg-paper py-10 md:py-12">
+        <div className="container-x min-w-0">
+          <HeroCategorySlider categories={photographed} />
+          <div className="mt-4 flex flex-wrap items-baseline justify-between gap-4">
+            <p className="text-eyebrow font-semibold uppercase tracking-[0.14em] text-decart-700">
+              Shop by category
+            </p>
+            <Link
+              href="/products"
+              className="group inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 transition-colors hover:text-decart-700"
+            >
+              All 30 categories
+              <ArrowRight aria-hidden className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <CategoryDirectory families={families} />
       <BestsellerRail products={bestsellers} />
       <WhyDecArt />

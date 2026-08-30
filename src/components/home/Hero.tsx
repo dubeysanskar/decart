@@ -289,7 +289,7 @@ export function Hero({ banners = [] }: { banners?: HeroBanner[] }) {
                 Tell us what you need
               </p>
               <h2 className="mt-2 font-display text-xl text-ink-950 md:text-2xl">Get a quote today</h2>
-              <p className="mt-1.5 text-sm leading-relaxed text-steel-600">
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-800">
                 Your name, a number and what you are furnishing. We reply the same working day —
                 {' '}{SITE.hours}.
               </p>

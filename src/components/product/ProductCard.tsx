@@ -52,7 +52,12 @@ export function ProductCard({
    * the range it belongs to — and ProductImage still drops to the branded plate if even that
    * file is missing.
    */
-  const fallback = `/families/${product.family}.webp`;
+  // Families with no artwork file in /public/families. Pointing the fallback at a missing file
+  // made the image optimiser answer 400 on every card in these families — a console error per
+  // card. This is a client component, so it cannot check the filesystem; remove a slug from here
+  // when its artwork lands.
+  const NO_FAMILY_ART = ['mesh', 'special-luxury-mesh', 'auditorium', 'computer-table', 'storage'];
+  const fallback = NO_FAMILY_ART.includes(product.family) ? undefined : `/families/${product.family}.webp`;
   const colourways = product.colourways ?? [];
 
   return (
