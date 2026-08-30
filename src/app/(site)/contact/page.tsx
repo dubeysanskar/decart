@@ -28,6 +28,7 @@ export default function ContactPage({ searchParams }: { searchParams: Search }) 
         title="Talk to the people who build it"
         lede="Three desks, one factory. Pick the one that fits and you reach it directly — no call-centre routing."
         breadcrumbs={[{ name: 'Home', href: '/' }, { name: 'Contact' }]}
+        size="compact"
       />
 
       {/*

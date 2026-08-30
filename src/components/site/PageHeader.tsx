@@ -13,6 +13,7 @@ export function PageHeader({
   lede,
   breadcrumbs,
   tone = 'light',
+  size = 'default',
   children,
   className,
 }: {
@@ -21,15 +22,23 @@ export function PageHeader({
   lede?: ReactNode;
   breadcrumbs?: { name: string; href?: string }[];
   tone?: 'light' | 'dark';
+  /**
+   * `compact` drops the opener to text-h2 and trims the padding. text-h1 clamps up to 68px,
+   * which is right for a landing page but swallows the first screen on a working page like
+   * /contact where the form matters more than the title.
+   */
+  size?: 'default' | 'compact';
   children?: ReactNode;
   className?: string;
 }) {
   const dark = tone === 'dark';
+  const compact = size === 'compact';
 
   return (
     <section
       className={cn(
-        'relative overflow-hidden pb-10 pt-28 md:pb-14 md:pt-36',
+        'relative overflow-hidden',
+        compact ? 'pb-8 pt-24 md:pb-10 md:pt-28' : 'pb-10 pt-28 md:pb-14 md:pt-36',
         dark ? 'dark-section bg-ink-950 text-porcelain' : 'border-b border-line bg-porcelain',
         className,
       )}
@@ -44,14 +53,21 @@ export function PageHeader({
         ) : null}
         <h1
           className={cn(
-            'mt-3 max-w-3xl font-display text-h1',
+            'mt-3 max-w-3xl font-display',
+            compact ? 'text-h2' : 'text-h1',
             dark ? 'text-porcelain' : 'text-ink-950',
           )}
         >
           {title}
         </h1>
         {lede ? (
-          <p className={cn('mt-5 max-w-2xl text-lg leading-relaxed', dark ? 'text-steel-400' : 'text-steel-600')}>
+          <p
+            className={cn(
+              'mt-4 max-w-2xl leading-relaxed',
+              compact ? 'text-[0.9375rem]' : 'mt-5 text-lg',
+              dark ? 'text-steel-400' : 'text-steel-600',
+            )}
+          >
             {lede}
           </p>
         ) : null}
