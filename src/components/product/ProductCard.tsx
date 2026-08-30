@@ -60,7 +60,9 @@ export function ProductCard({
       )}
     >
       {/* image well — a recessed porcelain stage, not a bordered box */}
-      <div className="relative aspect-[4/5] overflow-hidden bg-porcelain">
+      {/* white, not porcelain: the studio shots are on white, so a tinted well frames each photo
+          as a visible rectangle instead of letting the product sit on the card */}
+      <div className="relative aspect-[4/5] overflow-hidden bg-paper">
         <ProductImage
           src={hero?.src}
           alt={hero?.alt || `DecArt ${product.name} (${product.code})`}

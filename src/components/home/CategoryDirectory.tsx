@@ -66,7 +66,7 @@ export function CategoryDirectory({ families }: { families: DirectoryFamily[] })
                     data-anim="up"
                     className="group flex min-w-0 flex-col overflow-hidden rounded-card bg-paper shadow-[0_0_0_1px_rgb(227_231_236)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_0_1px_rgb(15_19_23/0.14),0_20px_32px_-20px_rgb(15_19_23/0.32)]"
                   >
-                    <div className="relative aspect-[4/3] overflow-hidden bg-porcelain">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-paper">
                       <ProductImage
                         src={family.cover}
                         alt={`DecArt ${family.name}`}

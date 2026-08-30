@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { SectionHeading } from '@/components/ui/typography';
+import { ColourPicker } from './ColourPicker';
 import { ButtonLink } from '@/components/ui/Button';
 import { Accordion } from '@/components/ui/Accordion';
 import { ProductImage } from '@/components/ui/ProductImage';
@@ -14,33 +15,10 @@ import type { CatalogueProduct } from '@/lib/catalogue';
 
 // ---------------------------------------------------------------- colour story
 
-const SWATCH: Record<string, string> = {
-  black: '#1B1B1B',
-  grey: '#8E969D',
-  white: '#F2F3F4',
-  blue: '#2E6FC7',
-  green: '#2E9E63',
-  red: '#C93A3A',
-  orange: '#E07B23',
-  silver: '#B9BDC1',
-};
-
-function swatch(slug: string) {
-  const [base, accent] = slug.split('-with-');
-  const pick = (value?: string) => {
-    if (!value) return null;
-    const key = Object.keys(SWATCH).find((k) => value.includes(k));
-    return key ? SWATCH[key] : null;
-  };
-  return { base: pick(base) ?? '#5C6670', accent: pick(accent) ?? pick(base) ?? '#5C6670' };
-}
-
 /** Real colourway data from the shoot — proof that "choose your finish" is not marketing. */
 export function ColourStory({ product }: { product?: CatalogueProduct }) {
   const colourways = product?.colourways ?? [];
   if (!product || colourways.length < 4) return null;
-
-  const hero = colourways[0]?.images?.[0];
 
   return (
     <section
@@ -61,39 +39,11 @@ export function ColourStory({ product }: { product?: CatalogueProduct }) {
           }
         />
 
-        <div className="mt-12 grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
-          <div
-            className="relative mx-auto aspect-square w-full max-w-[460px] overflow-hidden rounded-card bg-paper shadow-podium"
-            data-anim="scale"
-          >
-            <ProductImage
-              src={hero}
-              alt={`DecArt ${product.name} colourways`}
-              label={product.code}
-              sizes="(max-width: 1024px) 90vw, 460px"
-              imgClassName="p-6"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3" data-stagger>
-            {colourways.slice(0, 12).map((colour) => {
-              const { base, accent } = swatch(colour.slug);
-              return (
-                <div
-                  key={colour.slug}
-                  data-anim="up"
-                  className="flex items-center gap-3 rounded-2xl border border-line bg-paper p-3 shadow-card transition-all hover:-translate-y-0.5 hover:border-decart-300"
-                >
-                  <span className="flex h-8 w-8 shrink-0 overflow-hidden rounded-full ring-1 ring-line">
-                    <span className="h-full w-1/2" style={{ background: base }} />
-                    <span className="h-full w-1/2" style={{ background: accent }} />
-                  </span>
-                  <span className="text-xs leading-tight text-steel-600">{colour.label}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <ColourPicker
+          colourways={colourways}
+          productName={product.name}
+          productCode={product.code}
+        />
       </div>
     </section>
   );
