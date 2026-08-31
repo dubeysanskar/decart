@@ -132,10 +132,10 @@ export default function ContactPage({
 
       {/* --------------------------------------------------- form beside the desks */}
       <section className="bg-paper py-8 md:py-10">
-        <div className="container-x grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
+        <div className="container-x grid gap-8 lg:grid-cols-[minmax(0,22rem)_1fr] lg:gap-12">
           <div
             id="enquiry"
-            className="min-w-0 scroll-mt-24 rounded-card border border-line bg-paper p-5 md:p-7"
+            className="min-w-0 scroll-mt-24 rounded-card border border-line bg-paper p-5 md:max-w-lg md:p-6 lg:max-w-none"
           >
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-steel-400">
               Get in touch
@@ -148,7 +148,7 @@ export default function ContactPage({
               <strong className="font-semibold text-ink-950">
                 {desk.title.toLowerCase()}
               </strong>{" "}
-              desk — pick another card to send it elsewhere.
+              desk — use a button on the right to send it elsewhere.
             </p>
 
             <div className="mt-6">
@@ -166,9 +166,9 @@ export default function ContactPage({
 
           <div className="min-w-0">
             <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.18em] text-steel-400">
-              Connect with our team
+              Connect with the right team
             </p>
-            <ContactBand activeDesk={desk.id} selectable stacked />
+            <ContactBand stacked />
           </div>
         </div>
       </section>

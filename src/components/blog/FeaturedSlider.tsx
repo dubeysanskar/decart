@@ -52,9 +52,9 @@ export function FeaturedSlider({ posts }: { posts: FeaturedPost[] }) {
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
     >
-      <div className="grid md:grid-cols-2">
+      <div className="grid md:grid-cols-[1.25fr_1fr]">
         {/* the artwork stack — every cover stays mounted so slides crossfade instead of flashing */}
-        <div className="relative order-1 aspect-[16/11] min-w-0 overflow-hidden bg-paper md:order-2 md:aspect-auto md:min-h-[340px]">
+        <div className="relative order-1 aspect-[16/9] min-w-0 overflow-hidden bg-paper md:order-2 md:aspect-auto md:h-[300px] md:self-center">
           <span
             aria-hidden
             className="absolute inset-0"
@@ -77,8 +77,8 @@ export function FeaturedSlider({ posts }: { posts: FeaturedPost[] }) {
                 alt={post.cover?.alt || post.title}
                 label="Cover image"
                 priority={i === 0}
-                sizes="(max-width: 768px) 100vw, 50vw"
-                imgClassName="p-8"
+                sizes="(max-width: 768px) 100vw, 40vw"
+                imgClassName="p-8 md:p-10"
               />
             </div>
           ))}
@@ -88,7 +88,7 @@ export function FeaturedSlider({ posts }: { posts: FeaturedPost[] }) {
           />
         </div>
 
-        <div className="order-2 flex min-w-0 flex-col justify-center p-6 md:order-1 md:p-10">
+        <div className="order-2 flex min-w-0 flex-col justify-center p-6 md:order-1 md:p-8">
           <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-decart-700">
             Latest from the workshop
           </p>

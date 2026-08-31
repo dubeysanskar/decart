@@ -25,7 +25,6 @@ const COMPANY = [
 
 const LINKS = [
   { href: '/projects', label: 'Projects' },
-  { href: '/clients', label: 'Clients' },
   { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
 ];

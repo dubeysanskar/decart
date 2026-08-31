@@ -65,7 +65,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
           <div className="container-x -mt-2 pt-10">
             {/* the covers are product cut-outs on white, so an ink well and a hard crop both
                 read as a broken image — contain them on a light ground instead */}
-            <div className="relative aspect-[16/9] overflow-hidden rounded-img border border-line bg-paper">
+            <div className="relative mx-auto aspect-[16/9] max-w-3xl overflow-hidden rounded-img border border-line bg-paper">
               <span
                 aria-hidden
                 className="absolute inset-0"
@@ -79,8 +79,8 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                 alt={post.cover.alt || post.title}
                 fill
                 priority
-                sizes="(max-width: 1200px) 100vw, 1200px"
-                className="object-contain p-8 md:p-12"
+                sizes="(max-width: 768px) 100vw, 768px"
+                className="object-contain p-8 md:p-10"
               />
               <span
                 aria-hidden

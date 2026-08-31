@@ -57,7 +57,7 @@ export default async function BlogIndexPage() {
                 >
                   {/* same reason as the home grid: these are cut-outs, and an ink well behind a
                       white-background cut-out reads as a broken image */}
-                  <div className="relative aspect-[16/10] overflow-hidden bg-paper">
+                  <div className="relative aspect-[16/9] overflow-hidden bg-paper">
                     <span
                       aria-hidden
                       className="absolute inset-0"
@@ -71,7 +71,7 @@ export default async function BlogIndexPage() {
                       alt={post.cover?.alt || post.title}
                       label="Cover image"
                       sizes="(max-width: 768px) 100vw, 380px"
-                      imgClassName="p-6 transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                      imgClassName="p-8 transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                     />
                     <span
                       aria-hidden
