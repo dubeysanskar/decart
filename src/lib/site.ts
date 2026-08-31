@@ -132,12 +132,13 @@ export type ContactDeskId = (typeof CONTACT_DESKS)[number]['id'];
 
 /** Subject options on the contact form. Stored on the lead as extra.subject. */
 export const CONTACT_SUBJECTS = [
+  'General enquiry',
   'New enquiry or quotation',
   'Bulk or project requirement',
   'Dealer or distributor',
   'OEM manufacturing',
   'An existing order or delivery',
-  'Spares, warranty or service',
+  'Service Support',
   'Careers',
   'Something else',
 ] as const;
