@@ -114,6 +114,19 @@ export function Header({ groups }: { groups: NavGroup[] }) {
 
         {/* desktop nav */}
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
+          {/* exact match, not startsWith: "/" is a prefix of every route, so the usual test
+              would light Home up on every page */}
+          <Link
+            href="/"
+            className={cn(
+              'rounded-btn px-3 py-2 text-sm font-medium transition-colors',
+              onDark ? 'text-porcelain hover:bg-white/10' : 'text-ink-900 hover:bg-porcelain',
+              pathname === '/' && (onDark ? 'bg-white/10' : 'bg-porcelain'),
+            )}
+          >
+            Home
+          </Link>
+
           <button
             type="button"
             onMouseEnter={openMega}
@@ -299,6 +312,10 @@ export function Header({ groups }: { groups: NavGroup[] }) {
           </div>
 
           <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4">
+            <Link href="/" className="block border-b border-line py-4 text-base font-semibold text-ink-950">
+              Home
+            </Link>
+
             {groups.map((group) => {
               const open = openGroup === group.slug;
               return (

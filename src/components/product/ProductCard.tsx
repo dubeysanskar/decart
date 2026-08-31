@@ -47,17 +47,17 @@ export function ProductCard({
 }) {
   const hero = product.images?.[0];
   /**
-   * Most of the catalogue has no photograph of its own yet, which left every grid a wall of
-   * empty plates. A product without a shot falls back to its family's artwork — a picture of
-   * the range it belongs to — and ProductImage still drops to the branded plate if even that
-   * file is missing.
+   * A card shows this product's own photograph or nothing.
+   *
+   * It used to fall back to the family's artwork, which filled the grids — but every card in a
+   * family then carried the identical picture, so /products/conference read as forty copies of
+   * one table and told a buyer nothing about CONFERENCE-05. One photo standing in for forty
+   * different models is worse than an honest blank: the branded plate carries the model code,
+   * so the cards at least differ from each other and say what is missing.
+   *
+   * The family artwork is still right where it means "this range" — the category cover and the
+   * home rail — and that is where it stays.
    */
-  // Families with no artwork file in /public/families. Pointing the fallback at a missing file
-  // made the image optimiser answer 400 on every card in these families — a console error per
-  // card. This is a client component, so it cannot check the filesystem; remove a slug from here
-  // when its artwork lands.
-  const NO_FAMILY_ART = ['mesh', 'special-luxury-mesh', 'auditorium', 'computer-table', 'storage'];
-  const fallback = NO_FAMILY_ART.includes(product.family) ? undefined : `/families/${product.family}.webp`;
   const colourways = product.colourways ?? [];
 
   return (
@@ -76,9 +76,9 @@ export function ProductCard({
           as a visible rectangle instead of letting the product sit on the card */}
       <div className="relative aspect-[4/5] overflow-hidden bg-paper">
         <ProductImage
-          src={hero?.src || fallback}
+          src={hero?.src}
           alt={hero?.alt || `DecArt ${product.name} (${product.code})`}
-          label={product.code}
+          label="Photo on request"
           priority={priority}
           sizes={sizes}
           imgClassName="p-4 transition-transform duration-500 ease-out group-hover:scale-[1.06]"

@@ -46,8 +46,14 @@ export default function ContactPage({
   const desk =
     CONTACT_DESKS.find((option) => option.id === searchParams.desk) ??
     CONTACT_DESKS[0];
-  // no factory photography in /public yet, so this falls back to the branded plate
-  const factory = listPublic("factory")[0];
+  /**
+   * No factory photography in /public yet, so the band showed an empty plate. Until a real
+   * floor shot arrives it borrows a finished-interior photograph — the alt text describes it
+   * as installed work rather than claiming it is the factory floor. Drop any image into
+   * /public/factory and it takes over automatically.
+   */
+  const factoryShot = listPublic("factory")[0];
+  const factory = factoryShot ?? "/scenes/lounge-lobby.webp";
 
   return (
     <>
@@ -202,7 +208,11 @@ export default function ContactPage({
           <div className="relative aspect-[16/10] min-w-0 overflow-hidden rounded-img border border-line bg-paper">
             <ProductImage
               src={factory}
-              alt="DecArt Industries manufacturing facility in Faridabad"
+              alt={
+                factoryShot
+                  ? "DecArt Industries manufacturing facility in Faridabad"
+                  : "A reception and lounge furnished by DecArt Industries"
+              }
               label="Factory photography"
               fit="cover"
               sizes="(max-width: 1024px) 100vw, 460px"
