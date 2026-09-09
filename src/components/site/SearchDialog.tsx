@@ -179,7 +179,9 @@ export function SearchDialog({ onDark = false, className }: { onDark?: boolean; 
             type="button"
             aria-label="Close search"
             onClick={close}
-            className="absolute inset-0 cursor-default bg-ink-950/50 backdrop-blur-[3px]"
+            /* a light frost, not a black curtain: half-opaque ink over a bright page made the
+               whole top of the site look switched off */
+            className="absolute inset-0 cursor-default bg-ink-950/[0.14] backdrop-blur-[5px]"
           />
 
           <div

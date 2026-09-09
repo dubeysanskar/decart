@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { Hero, MarketplaceStrip } from '@/components/home/Hero';
+import { Hero } from '@/components/home/Hero';
 import { CategoryDirectory } from '@/components/home/CategoryDirectory';
 import { LatestProjects, ClientWall } from '@/components/home/ContentSections';
 import {
@@ -48,8 +48,22 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* banners now sit behind the hero rather than in a strip under it */}
-      <Hero banners={banners} />
+      {/*
+        The campaign hero: the banner copy and its scene photograph, with real photographed
+        models standing on the stage in front of it.
+      */}
+      <Hero
+        banners={banners}
+        lineup={bestsellers
+          .filter((product) => product.images?.[0]?.src)
+          .map((product) => ({
+            slug: product.slug,
+            family: product.family,
+            name: product.name,
+            code: product.code,
+            image: product.images[0].src,
+          }))}
+      />
       <TrustBar />
 
       {/* the category rail, back by client request — under the counters now rather than inside
@@ -152,7 +166,6 @@ export default async function HomePage() {
       <HomeSeo />
 
       {/* the client asked for the marketplace strip at the foot of the page */}
-      <MarketplaceStrip />
 
       <QuoteBand />
     </>
