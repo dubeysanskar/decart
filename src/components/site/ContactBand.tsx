@@ -46,15 +46,15 @@ export function ContactBand({
     <Wrapper className={cn(stacked ? 'min-w-0' : 'border-y border-line bg-porcelain py-14 md:py-16', className)}>
       <div className={stacked ? 'min-w-0' : 'container-x'}>
         {/* the mockup's rule-and-caps label, on both variants so they read as the same block */}
-        <p className="flex items-center gap-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-cognac-600">
-          <span aria-hidden className="h-px w-6 bg-cognac-500" />
+        <p className="flex items-center gap-3 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-cognac-600">
+          <span aria-hidden className="h-px w-7 bg-cognac-500" />
           Connect with the right team
         </p>
         {!stacked ? (
           <h2 className="mt-3 font-display text-h3 text-ink-950">Talk to the desk that can act on it</h2>
         ) : null}
 
-        <div className={cn('mt-4 grid gap-3', stacked ? 'grid-cols-1' : 'lg:grid-cols-3')} data-stagger="0.06">
+        <div className={cn('mt-5 grid gap-4', stacked ? 'grid-cols-1' : 'lg:grid-cols-3')} data-stagger="0.06">
           {desks.map((desk) => {
             const Icon = DESK_ICON[desk.id];
             return (
@@ -62,21 +62,23 @@ export function ContactBand({
                 key={desk.id}
                 data-anim="up"
                 className={cn(
-                  'flex min-w-0 gap-4 rounded-card border border-line bg-paper p-5 shadow-[0_1px_2px_rgb(15_19_23/0.04),0_8px_24px_-18px_rgb(15_19_23/0.28)] transition-shadow hover:shadow-lift',
+                  'flex min-w-0 gap-5 rounded-card border border-line bg-paper p-6 shadow-[0_1px_2px_rgb(15_19_23/0.04),0_10px_28px_-20px_rgb(15_19_23/0.3)] transition-shadow hover:shadow-lift',
                   stacked ? 'items-center' : 'flex-col',
                 )}
               >
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-cognac-500/10 text-cognac-600">
-                  <Icon aria-hidden className="h-5 w-5" strokeWidth={1.6} />
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-cognac-500/[0.13] text-cognac-700">
+                  <Icon aria-hidden className="h-6 w-6" strokeWidth={1.5} />
                 </span>
 
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-sm font-bold uppercase tracking-[0.06em] text-ink-950">{SHORT[desk.id]}</h3>
-                  <p className="mt-0.5 text-xs text-steel-600">{desk.blurb}</p>
+                  <h3 className="text-[0.9375rem] font-bold uppercase tracking-[0.05em] text-ink-950">
+                    {SHORT[desk.id]}
+                  </h3>
+                  <p className="mt-1 text-[0.8125rem] text-steel-600">{desk.blurb}</p>
 
-                  <dl className="mt-2.5 flex flex-col gap-1.5 text-[0.8125rem]">
+                  <dl className="mt-3 flex flex-col gap-2 text-sm">
                     <div className="flex min-w-0 items-center gap-2">
-                      <Phone aria-hidden className="h-3.5 w-3.5 shrink-0 text-steel-400" />
+                      <Phone aria-hidden className="h-4 w-4 shrink-0 text-steel-400" />
                       <dt className="sr-only">Phone</dt>
                       <dd className="flex min-w-0 flex-wrap gap-x-2">
                         {desk.phones.map((phone) => (
@@ -91,7 +93,7 @@ export function ContactBand({
                       </dd>
                     </div>
                     <div className="flex min-w-0 items-center gap-2">
-                      <Mail aria-hidden className="h-3.5 w-3.5 shrink-0 text-steel-400" />
+                      <Mail aria-hidden className="h-4 w-4 shrink-0 text-steel-400" />
                       <dt className="sr-only">Email</dt>
                       <dd className="min-w-0">
                         <a href={`mailto:${desk.email}`} className="break-words text-steel-600 hover:text-cognac-600">
@@ -106,7 +108,7 @@ export function ContactBand({
                 <Link
                   href={`/contact?desk=${desk.id}#enquiry`}
                   className={cn(
-                    'group inline-flex shrink-0 items-center gap-2 rounded-btn border border-cognac-500 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-cognac-600 transition-colors hover:bg-cognac-500 hover:text-white',
+                    'group inline-flex shrink-0 items-center justify-center gap-2 rounded-[10px] border border-cognac-500 px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-cognac-700 transition-colors hover:bg-cognac-500 hover:text-white sm:min-w-[11rem]',
                     stacked ? 'self-center' : 'mt-auto self-start',
                   )}
                 >
