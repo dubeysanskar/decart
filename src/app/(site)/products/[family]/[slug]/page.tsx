@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Phone, Download, ArrowRight } from 'lucide-react';
 import { ProductGallery } from '@/components/product/ProductGallery';
+import { AddToEnquiryButton } from '@/components/enquiry/AddToEnquiry';
 import { ProductCard } from '@/components/product/ProductCard';
 import { StickyActionBar } from '@/components/product/StickyActionBar';
 import { ReviewsBlock, Stars } from '@/components/product/Reviews';
@@ -186,7 +187,24 @@ export default async function ProductPage({ params }: { params: { family: string
                 </p>
               </div>
 
-              <div className="mt-6 flex flex-wrap gap-3">
+              {/* quantity first, then the list: a B2B enquiry is a number of chairs, not a chair */}
+              <div className="mt-6">
+                <AddToEnquiryButton
+                  item={{
+                    slug: product.slug,
+                    family: product.family,
+                    code: product.code,
+                    name: product.name,
+                    price: product.price?.show ? product.price.amount : undefined,
+                    image: product.images?.[0]?.src,
+                  }}
+                />
+                <p className="mt-2 text-xs text-steel-600">
+                  Collect several models, then send them as one enquiry — we quote the whole floor together.
+                </p>
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-3">
                 <ButtonLink href={quoteHref} size="lg">
                   Get a quote
                 </ButtonLink>

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ProductImage } from '@/components/ui/ProductImage';
+import { AddToEnquiryIcon } from '@/components/enquiry/AddToEnquiry';
 import { SpecPlate } from '@/components/ui/SpecPlate';
 import { cn } from '@/lib/utils';
 import type { CatalogueProduct } from '@/lib/catalogue';
@@ -82,6 +83,18 @@ export function ProductCard({
           priority={priority}
           sizes={sizes}
           imgClassName="p-4 transition-transform duration-500 ease-out group-hover:scale-[1.06]"
+        />
+
+        {/* collect models across the grid, then send them as one enquiry from /enquiry */}
+        <AddToEnquiryIcon
+          item={{
+            slug: product.slug,
+            family: product.family,
+            code: product.code,
+            name: product.name,
+            price: product.price?.show ? product.price.amount : undefined,
+            image: hero?.src,
+          }}
         />
 
         {product.bestSeller ? (

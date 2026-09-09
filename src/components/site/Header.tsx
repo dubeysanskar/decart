@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { Menu, Phone, X, ChevronDown, Download } from 'lucide-react';
+import { Menu, Phone, X, ChevronDown, Download, Search } from 'lucide-react';
 import { Logo } from './Logo';
 import { ButtonLink } from '@/components/ui/Button';
+import { SearchDialog } from './SearchDialog';
+import { EnquiryBadge, EnquiryDrawerLink } from '@/components/enquiry/EnquiryBadge';
 import { SITE } from '@/lib/site';
 import { waLink, WA } from '@/lib/whatsapp';
 import { cn } from '@/lib/utils';
@@ -109,7 +111,12 @@ export function Header({ groups }: { groups: NavGroup[] }) {
       )}
       onMouseLeave={closeMega}
     >
-      <div className={cn('container-x flex items-center justify-between gap-4', scrolled ? 'h-16' : 'h-20')}>
+      <div
+        className={cn(
+          'container-x flex items-center justify-between gap-4 xl:max-w-none',
+          scrolled ? 'h-16' : 'h-20',
+        )}
+      >
         <Logo onDark={onDark} width={scrolled ? 150 : 170} />
 
         {/* desktop nav */}
@@ -119,7 +126,7 @@ export function Header({ groups }: { groups: NavGroup[] }) {
           <Link
             href="/"
             className={cn(
-              'rounded-btn px-3 py-2 text-sm font-medium transition-colors',
+              'rounded-btn px-2.5 py-2 text-sm font-medium transition-colors',
               onDark ? 'text-porcelain hover:bg-white/10' : 'text-ink-900 hover:bg-porcelain',
               pathname === '/' && (onDark ? 'bg-white/10' : 'bg-porcelain'),
             )}
@@ -134,7 +141,7 @@ export function Header({ groups }: { groups: NavGroup[] }) {
             onClick={() => setMegaOpen((v) => !v)}
             aria-expanded={megaOpen}
             className={cn(
-              'flex items-center gap-1 rounded-btn px-3 py-2 text-sm font-medium transition-colors',
+              'flex items-center gap-1 rounded-btn px-2.5 py-2 text-sm font-medium transition-colors',
               onDark ? 'text-porcelain hover:bg-white/10' : 'text-ink-900 hover:bg-porcelain',
               pathname.startsWith('/products') && (onDark ? 'bg-white/10' : 'bg-porcelain'),
             )}
@@ -151,7 +158,7 @@ export function Header({ groups }: { groups: NavGroup[] }) {
               onClick={() => setCompanyOpen((v) => !v)}
               aria-expanded={companyOpen}
               className={cn(
-                'flex items-center gap-1 rounded-btn px-3 py-2 text-sm font-medium transition-colors',
+                'flex items-center gap-1 rounded-btn px-2.5 py-2 text-sm font-medium transition-colors',
                 onDark ? 'text-porcelain hover:bg-white/10' : 'text-ink-900 hover:bg-porcelain',
                 companyActive && (onDark ? 'bg-white/10' : 'bg-porcelain'),
               )}
@@ -181,7 +188,7 @@ export function Header({ groups }: { groups: NavGroup[] }) {
               key={link.href}
               href={link.href}
               className={cn(
-                'rounded-btn px-3 py-2 text-sm font-medium transition-colors',
+                'rounded-btn px-2.5 py-2 text-sm font-medium transition-colors',
                 onDark ? 'text-porcelain hover:bg-white/10' : 'text-ink-900 hover:bg-porcelain',
                 pathname.startsWith(link.href) && (onDark ? 'bg-white/10' : 'bg-porcelain'),
               )}
@@ -192,11 +199,20 @@ export function Header({ groups }: { groups: NavGroup[] }) {
         </nav>
 
         <div className="flex items-center gap-2">
+          {/*
+            Both of these are drawer items on a phone. The bar already carries the logo, the
+            quote CTA, tap-to-call and the menu at 390px, and two more 44px targets pushed it
+            69px past the viewport — so above sm they sit here, below it the drawer has them
+            (search at the top, the list with its count under Home).
+          */}
+          <SearchDialog onDark={onDark} className="hidden shrink-0 sm:flex" />
+          <EnquiryBadge onDark={onDark} className="hidden shrink-0 sm:flex" />
+
           <a
             href={SITE.phoneHref}
             data-call
             className={cn(
-              'hidden items-center gap-2 rounded-btn px-3 py-2 font-mono text-xs tracking-[0.06em] transition-colors md:inline-flex',
+              'hidden shrink-0 items-center gap-2 whitespace-nowrap rounded-btn px-3 py-2 font-mono text-xs tracking-[0.06em] transition-colors xl:inline-flex',
               onDark ? 'text-porcelain hover:bg-white/10' : 'text-ink-900 hover:bg-porcelain',
             )}
           >
@@ -211,7 +227,7 @@ export function Header({ groups }: { groups: NavGroup[] }) {
             size="sm"
             variant="secondary"
             external
-            className="hidden lg:inline-flex"
+            className="hidden shrink-0 xl:inline-flex"
           >
             <Download aria-hidden className="h-4 w-4" />
             Brochure
@@ -220,7 +236,7 @@ export function Header({ groups }: { groups: NavGroup[] }) {
           {/* the quote CTA used to be hidden below 640px, which left phone visitors with no way
               to reach /quote except the drawer. It stays on-screen now, with a shorter label
               where the bar is tightest. */}
-          <ButtonLink href="/quote" size="sm" onDark={onDark} className="px-3 sm:px-4">
+          <ButtonLink href="/quote" size="sm" onDark={onDark} className="shrink-0 px-3 sm:px-4">
             <span className="sm:hidden">Quote</span>
             <span className="hidden sm:inline">Get a Quote</span>
           </ButtonLink>
@@ -229,7 +245,7 @@ export function Header({ groups }: { groups: NavGroup[] }) {
             href={SITE.phoneHref}
             aria-label={`Call ${SITE.phone}`}
             className={cn(
-              'flex h-11 w-11 items-center justify-center rounded-btn md:hidden',
+              'flex h-11 w-11 shrink-0 items-center justify-center rounded-btn xl:hidden',
               onDark ? 'text-porcelain hover:bg-white/10' : 'text-ink-900 hover:bg-porcelain',
             )}
           >
@@ -312,9 +328,19 @@ export function Header({ groups }: { groups: NavGroup[] }) {
           </div>
 
           <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4">
+            <Link
+              href="/search"
+              className="mb-1 flex items-center gap-2 rounded-btn border border-line bg-porcelain px-4 py-3 text-[0.9375rem] font-semibold text-ink-950"
+            >
+              <Search aria-hidden className="h-4 w-4 text-steel-600" />
+              Search the catalogue
+            </Link>
+
             <Link href="/" className="block border-b border-line py-4 text-base font-semibold text-ink-950">
               Home
             </Link>
+
+            <EnquiryDrawerLink onClick={() => setDrawerOpen(false)} />
 
             {groups.map((group) => {
               const open = openGroup === group.slug;

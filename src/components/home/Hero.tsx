@@ -116,7 +116,7 @@ export function Hero({ banners = [] }: { banners?: HeroBanner[] }) {
             className="absolute inset-0 hidden md:block"
             style={{
               background:
-                'linear-gradient(100deg, rgb(255 255 255 / 0.96) 0%, rgb(255 255 255 / 0.92) 33%, rgb(255 255 255 / 0.48) 50%, rgb(255 255 255 / 0.14) 72%, rgb(255 255 255 / 0.04) 100%)',
+                'linear-gradient(100deg, rgb(255 255 255 / 0.96) 0%, rgb(255 255 255 / 0.90) 30%, rgb(255 255 255 / 0.40) 47%, rgb(255 255 255 / 0.10) 68%, rgb(255 255 255 / 0.02) 100%)',
             }}
           />
         </div>
@@ -221,7 +221,7 @@ export function Hero({ banners = [] }: { banners?: HeroBanner[] }) {
                     type="button"
                     onClick={() => go(index - 1)}
                     aria-label="Previous slide"
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-paper/80 text-ink-900 backdrop-blur transition-colors hover:border-decart-300 hover:text-decart-700"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-paper text-ink-900 shadow-sm transition-colors hover:border-decart-300 hover:text-decart-700"
                   >
                     <ArrowLeft aria-hidden className="h-4 w-4" />
                   </button>
@@ -229,7 +229,7 @@ export function Hero({ banners = [] }: { banners?: HeroBanner[] }) {
                     type="button"
                     onClick={() => go(index + 1)}
                     aria-label="Next slide"
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-paper/80 text-ink-900 backdrop-blur transition-colors hover:border-decart-300 hover:text-decart-700"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-paper text-ink-900 shadow-sm transition-colors hover:border-decart-300 hover:text-decart-700"
                   >
                     <ArrowRight aria-hidden className="h-4 w-4" />
                   </button>
@@ -271,7 +271,7 @@ export function Hero({ banners = [] }: { banners?: HeroBanner[] }) {
                   data-anim="rise"
                   className="group flex flex-col items-center gap-2.5 text-center"
                 >
-                  <span className="flex h-12 w-12 items-center justify-center rounded-full border-[1.5px] border-decart-300 bg-paper/70 text-decart-600 transition-all duration-300 group-hover:-translate-y-1 group-hover:border-decart-500 group-hover:bg-paper group-hover:shadow-pop sm:h-14 sm:w-14">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full border-[1.5px] border-decart-300 bg-paper text-decart-600 transition-all duration-300 group-hover:-translate-y-1 group-hover:border-decart-500 group-hover:bg-paper group-hover:shadow-pop sm:h-14 sm:w-14">
                     <feature.icon aria-hidden className="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={1.5} />
                   </span>
                   <span className="text-xs leading-snug text-steel-600">{feature.label}</span>
@@ -284,17 +284,17 @@ export function Hero({ banners = [] }: { banners?: HeroBanner[] }) {
           {/* the category rail lived here; the client asked for an enquiry card instead, so the
               hero now captures a lead rather than sending people off to browse */}
           <div className="relative min-w-0">
-            <div className="rounded-card border border-white/60 bg-paper/55 p-5 shadow-lift backdrop-blur-md md:p-6">
+            <div className="rounded-card border border-line bg-paper p-5 shadow-lift md:p-6">
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-decart-700">
                 Tell us what you need
               </p>
               <h2 className="mt-2 font-display text-xl text-ink-950 md:text-2xl">Get a quote today</h2>
-              <p className="mt-1.5 text-sm leading-relaxed text-ink-800">
+              <p className="mt-1.5 text-sm leading-relaxed text-steel-600">
                 Your name, a number and what you are furnishing. We reply the same working day —
                 {' '}{SITE.hours}.
               </p>
 
-              <div className="glass-form mt-5">
+              <div className="mt-5">
                 <LeadForm type="quote" short compact />
               </div>
             </div>
@@ -302,7 +302,7 @@ export function Hero({ banners = [] }: { banners?: HeroBanner[] }) {
         </div>
       </div>
 
-      <div className="relative border-t border-line bg-paper/70 backdrop-blur">
+      <div className="relative border-t border-line bg-paper">
         <div className="container-x py-4">
           <p className="text-center font-mono text-[11px] uppercase tracking-[0.12em] text-steel-400 md:text-left">
             Comfort that keeps you ahead

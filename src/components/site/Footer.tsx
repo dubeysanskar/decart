@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowUpRight, Mail, MapPin, Phone, Clock, Lock, Instagram, Linkedin, Facebook } from 'lucide-react';
 import { Logo } from './Logo';
 import { ButtonLink } from '@/components/ui/Button';
+import { PriceListSignup } from './PriceListSignup';
 import { SITE } from '@/lib/site';
 import { waLink, WA } from '@/lib/whatsapp';
 import type { NavFamily } from './Header';
@@ -17,6 +18,7 @@ const COMPANY = [
 
 const ENQUIRE = [
   { href: '/quote?type=quote', label: 'Request a quote' },
+  { href: '/enquiry', label: 'Your enquiry list' },
   { href: '/quote?type=bulk', label: 'Bulk orders' },
   { href: '/quote?type=dealer', label: 'Become a dealer' },
   { href: '/quote?type=oem', label: 'OEM manufacturing' },
@@ -25,6 +27,7 @@ const ENQUIRE = [
 ];
 
 const RESOURCES = [
+  { href: '/search', label: 'Search the catalogue' },
   { href: '/projects', label: 'Latest projects' },
   { href: '/clients', label: 'Clients' },
   { href: '/gallery', label: 'Gallery' },
@@ -66,6 +69,13 @@ export function Footer({ families }: { families: NavFamily[] }) {
               WhatsApp us
             </ButtonLink>
           </div>
+        </div>
+      </div>
+
+      {/* ---- the one thing a dealer cannot simply download ---- */}
+      <div className="border-b border-white/10">
+        <div className="container-x py-10">
+          <PriceListSignup />
         </div>
       </div>
 

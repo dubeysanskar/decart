@@ -11,6 +11,7 @@ import { COPY, LEAD_TYPE_LABEL, SITE, type LeadType } from '@/lib/site';
 import { INDIA_STATES, OTHER_CITY, citiesFor } from '@/data/india-locations';
 import { waLink, WA } from '@/lib/whatsapp';
 import { BUILD_OPTIONS } from '@/data/specs';
+import { itemsAsText, summarise, type EnquiryItem } from '@/lib/enquiry';
 
 /**
  * One form powers all six lead types (§10.2). A lead is never lost: on any failure the
@@ -36,6 +37,8 @@ export function LeadForm({
   subjectLabel = 'Subject',
   alwaysAskCompany = false,
   short = false,
+  items,
+  onSent,
 }: {
   type: LeadType;
   productSlug?: string;
@@ -49,6 +52,13 @@ export function LeadForm({
   alwaysAskCompany?: boolean;
   /** Hero card: name, phone and one line only — everything else is asked for later. */
   short?: boolean;
+  /**
+   * An enquiry list riding along with the message: the models and quantities the buyer
+   * collected. When present it replaces the quantity field, because the list *is* the quantity.
+   */
+  items?: EnquiryItem[];
+  /** Called once the lead is accepted — the enquiry page uses it to empty the list. */
+  onSent?: () => void;
 }) {
   const pathname = usePathname();
   const startedAt = useRef(Date.now());
@@ -86,21 +96,29 @@ export function LeadForm({
   // the typed-in name wins when the buyer's town is not on our list
   const cityValue = values.city === OTHER_CITY ? values.cityOther.trim() : values.city;
 
-  const waFallback = useMemo(
-    () =>
-      waLink(
-        WA.form({
-          name: values.name,
-          type: LEAD_TYPE_LABEL[type],
-          product: productName,
-          code: productCode,
-          quantity: values.quantity,
-          city: cityValue,
-          message: values.message,
-        }),
-      ),
-    [values, type, productName, productCode],
-  );
+  const waFallback = useMemo(() => {
+    /*
+      The fallback has to carry the same floor the form would have sent, or a failed submit
+      costs the buyer their list. A long list would blow the URL, so past a dozen lines it
+      travels as a count and the desk asks for the detail.
+    */
+    const list = items?.length
+      ? items.length <= 12
+        ? itemsAsText(items)
+        : `Enquiry list: ${summarise(items).lines} models, ${summarise(items).units} units`
+      : '';
+    return waLink(
+      WA.form({
+        name: values.name,
+        type: LEAD_TYPE_LABEL[type],
+        product: productName,
+        code: productCode,
+        quantity: items?.length ? String(summarise(items).units) : values.quantity,
+        city: cityValue,
+        message: [list, values.message].filter(Boolean).join('\n\n'),
+      }),
+    );
+  }, [values, type, productName, productCode, cityValue, items]);
 
   function buildPayload(): LeadInput {
     const extra: Record<string, string> = {};
@@ -116,6 +134,15 @@ export function LeadForm({
     if (values.subject) extra.subject = values.subject;
     if (values.state) extra.state = values.state;
 
+    /*
+      The list goes into the message body rather than into `extra`: the message is what the
+      notification email prints and what the inbox shows first, so whoever picks the lead up
+      reads the floor without opening anything else. `extra` keeps the totals for filtering.
+    */
+    const listText = items?.length ? itemsAsText(items) : '';
+    const totals = items?.length ? summarise(items) : null;
+    if (totals) extra.enquiryList = `${totals.lines} models · ${totals.units} units`;
+
     return {
       type,
       name: values.name,
@@ -123,10 +150,10 @@ export function LeadForm({
       email: values.email,
       phone: values.phone,
       city: cityValue,
-      message: values.message,
+      message: [listText, values.message].filter(Boolean).join('\n\n').slice(0, 4000),
       productSlug,
       productCode,
-      quantity: values.quantity,
+      quantity: totals ? String(totals.units) : values.quantity,
       targetDate: values.targetDate,
       extra,
       page: pathname,
@@ -162,6 +189,7 @@ export function LeadForm({
         return;
       }
       setState('sent');
+      onSent?.();
     } catch {
       setState('error');
     }
@@ -187,7 +215,8 @@ export function LeadForm({
     );
   }
 
-  const needsQuantity = type === 'bulk' || type === 'quote' || type === 'custom';
+  // an enquiry list already states the quantities, line by line
+  const needsQuantity = !items?.length && (type === 'bulk' || type === 'quote' || type === 'custom');
   const needsCompany = alwaysAskCompany || type === 'dealer' || type === 'oem' || type === 'bulk';
 
   /**

@@ -171,9 +171,6 @@ export default function ContactPage({
           </div>
 
           <div className="min-w-0">
-            <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.18em] text-steel-400">
-              Connect with the right team
-            </p>
             <ContactBand stacked />
           </div>
         </div>
