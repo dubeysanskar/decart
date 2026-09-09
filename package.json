@@ -14,6 +14,7 @@
     "ingest-images": "tsx scripts/ingest-images.ts",
     "optimise-images": "tsx scripts/optimise-images.ts",
     "mobile-audit": "node scripts/mobile-audit.mjs",
+    "hero-crops": "node scripts/hero-cutouts.mjs",
     "brand": "tsx scripts/brand-assets.ts"
   },
   "dependencies": {

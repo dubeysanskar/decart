@@ -21,6 +21,7 @@ import { ButtonLink } from '@/components/ui/Button';
 import { getFeatured, getFamilyTiles, getFeaturedReviews, getProduct } from '@/lib/catalogue';
 import { getBanners, getHomeProjects, getClientLogos } from '@/lib/content';
 import { getPublishedPosts } from '@/lib/blog';
+import { HERO_CROPS } from '@/data/hero-cutouts.generated';
 import { formatDate } from '@/lib/utils';
 import { ProductImage } from '@/components/ui/ProductImage';
 
@@ -61,7 +62,9 @@ export default async function HomePage() {
             family: product.family,
             name: product.name,
             code: product.code,
-            image: product.images[0].src,
+            // the cropped version where we have one: the masters carry a third of a frame of
+            // white sweep, which staged the chair as a stamp inside its own card
+            image: HERO_CROPS[product.slug] ?? product.images[0].src,
           }))}
       />
       <TrustBar />

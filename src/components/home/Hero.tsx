@@ -283,42 +283,86 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
                 </div>
               ) : null}
 
-              <div className="relative grid grid-cols-3 gap-2 sm:gap-3">
-                {(trio.length ? trio : [null, null, null]).map((model, i) => (
-                  <div key={model?.slug ?? `empty-${i}`} className="min-w-0">
-                    {model ? (
-                      <Link
-                        href={`/products/${model.family}/${model.slug}`}
-                        title={`${model.name} (${model.code})`}
-                        className="group relative block animate-fade-up rounded-[14px] bg-paper p-1.5 ring-1 ring-white transition-all duration-300 hover:-translate-y-1 hover:shadow-podium sm:p-2"
-                        style={{ animationDelay: `${i * 90}ms` }}
-                      >
-                        <div className="relative aspect-[4/5]">
-                          <Image
-                            src={model.image}
-                            alt={`${model.name} — ${model.code}`}
-                            fill
-                            priority={i < 3}
-                            sizes="(max-width: 640px) 30vw, 240px"
-                            className="object-contain transition-transform duration-500 ease-out group-hover:scale-[1.04]"
-                          />
-                        </div>
+              {/*
+                One model leads, two support it.
+                Three equal cards gave every chair a third of the width and none of them any
+                presence — the client's word for it was that it needed to be better. A hero has
+                to have a subject, so the first model of the slide takes the big card with its
+                name on it and the other two sit beside it as the range it belongs to.
+              */}
+              <div className="relative grid gap-2.5 sm:grid-cols-[1.55fr_1fr] sm:gap-3">
+                {trio[0] ? (
+                  <Link
+                    key={trio[0].slug}
+                    href={`/products/${trio[0].family}/${trio[0].slug}`}
+                    title={`${trio[0].name} (${trio[0].code})`}
+                    className="group relative flex animate-fade-up flex-col rounded-[16px] bg-paper p-2.5 ring-1 ring-white transition-all duration-300 hover:-translate-y-1 hover:shadow-podium sm:p-3"
+                  >
+                    <div className="relative aspect-[5/4] sm:aspect-[4/5]">
+                      <Image
+                        src={trio[0].image}
+                        alt={`${trio[0].name} — ${trio[0].code}`}
+                        fill
+                        priority
+                        sizes="(max-width: 640px) 92vw, 340px"
+                        className="object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+                      />
+                    </div>
 
-                        <div className="mt-1 flex items-center justify-between gap-1 border-t border-line/70 pt-2">
-                          <span className="truncate font-mono text-[9px] uppercase tracking-[0.1em] text-steel-600">
-                            {model.code}
-                          </span>
-                          <ArrowUpRight
-                            aria-hidden
-                            className="h-3 w-3 shrink-0 text-steel-400 transition-colors group-hover:text-decart-600"
-                          />
-                        </div>
-                      </Link>
-                    ) : (
-                      <div className="aspect-[4/5] rounded-[14px] bg-paper/70" />
-                    )}
-                  </div>
-                ))}
+                    <div className="mt-2 flex items-end justify-between gap-3 border-t border-line/70 pt-2.5">
+                      <span className="min-w-0">
+                        <span className="block truncate text-[0.9375rem] font-semibold leading-tight text-ink-950">
+                          {trio[0].name}
+                        </span>
+                        <span className="mt-0.5 block font-mono text-[10px] uppercase tracking-[0.1em] text-steel-400">
+                          {trio[0].code}
+                        </span>
+                      </span>
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-line text-ink-900 transition-colors group-hover:border-decart-500 group-hover:bg-decart-600 group-hover:text-white">
+                        <ArrowUpRight aria-hidden className="h-4 w-4" />
+                      </span>
+                    </div>
+                  </Link>
+                ) : (
+                  <div className="aspect-[4/5] rounded-[16px] bg-paper/70" />
+                )}
+
+                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-1 sm:gap-3">
+                  {(trio.length ? trio.slice(1) : [null, null]).map((model, i) => (
+                    <div key={model?.slug ?? `empty-${i}`} className="min-w-0">
+                      {model ? (
+                        <Link
+                          href={`/products/${model.family}/${model.slug}`}
+                          title={`${model.name} (${model.code})`}
+                          className="group relative flex h-full animate-fade-up flex-col rounded-[14px] bg-paper p-2 ring-1 ring-white transition-all duration-300 hover:-translate-y-1 hover:shadow-podium"
+                          style={{ animationDelay: `${(i + 1) * 90}ms` }}
+                        >
+                          <div className="relative aspect-[4/3] flex-1 sm:aspect-auto sm:min-h-[6.5rem]">
+                            <Image
+                              src={model.image}
+                              alt={`${model.name} — ${model.code}`}
+                              fill
+                              sizes="(max-width: 640px) 45vw, 190px"
+                              className="object-contain transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                            />
+                          </div>
+
+                          <div className="mt-1.5 flex items-center justify-between gap-1 border-t border-line/70 pt-1.5">
+                            <span className="truncate font-mono text-[9px] uppercase tracking-[0.1em] text-steel-600">
+                              {model.code}
+                            </span>
+                            <ArrowUpRight
+                              aria-hidden
+                              className="h-3 w-3 shrink-0 text-steel-400 transition-colors group-hover:text-decart-600"
+                            />
+                          </div>
+                        </Link>
+                      ) : (
+                        <div className="aspect-[4/3] rounded-[14px] bg-paper/70" />
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div className="relative mt-3.5 flex flex-wrap items-center justify-between gap-3">
