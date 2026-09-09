@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   ArrowRight,
   ArrowLeft,
+  ArrowUpRight,
   PersonStanding,
   Wind,
   SlidersHorizontal,
@@ -13,6 +14,7 @@ import {
   Phone,
   Mail,
   Clock,
+  MapPin,
   Instagram,
   Linkedin,
   Facebook,
@@ -145,14 +147,24 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
       />
 
       <div className="container-x relative z-10">
-        <div className="grid items-center gap-8 pb-8 lg:grid-cols-[0.92fr_1.08fr] lg:gap-10 lg:pb-10">
+        <div className="grid items-center gap-9 pb-9 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12 lg:pb-12">
           {/* ------------------------------------------------------------------ copy */}
           <div className="min-w-0">
+            <p
+              data-anim="up"
+              className="inline-flex items-center gap-2 rounded-full border border-white bg-paper/80 py-1.5 pl-2.5 pr-3.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-steel-600 shadow-[0_1px_2px_rgb(15_19_23/0.04)]"
+            >
+              <MapPin aria-hidden className="h-3.5 w-3.5 text-decart-600" />
+              Own factory, Faridabad
+              <span aria-hidden className="h-1 w-1 rounded-full bg-steel-400" />
+              Since {SITE.established}
+            </p>
+
             {/* keyed on the slide so the copy animates in with the stage. It must not carry
                 data-anim: those start at opacity 0 and only the one-shot GSAP timeline clears
                 them, so a remounted node would stay invisible for good. */}
             <div key={hasBanners ? active?._id : 'static'} className={hasBanners ? 'animate-fade-up' : undefined}>
-              <h1 className="font-display text-[clamp(2.1rem,4.4vw,3.4rem)] font-bold uppercase leading-[1.04] tracking-tight">
+              <h1 className="mt-5 font-display text-[clamp(2.15rem,4.5vw,3.5rem)] font-bold uppercase leading-[1.02] tracking-[-0.02em]">
                 <span {...(hasBanners ? {} : { 'data-anim': 'mask' })} className="block text-ink-950">
                   {headline}
                 </span>
@@ -166,30 +178,30 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
               <span
                 aria-hidden
                 {...(hasBanners ? {} : { 'data-anim': 'up' })}
-                className="mt-4 block h-1 w-16 rounded-full bg-decart-500"
+                className="mt-5 block h-1 w-14 rounded-full bg-decart-500"
               />
 
               <p
                 {...(hasBanners ? {} : { 'data-anim': 'up' })}
-                className="mt-4 max-w-lg text-[1.0625rem] leading-relaxed text-steel-600"
+                className="mt-5 max-w-md text-[1.0625rem] leading-relaxed text-steel-600"
               >
                 {active?.subtitle || 'Ergonomic. Stylish. Built for comfort.'}
               </p>
             </div>
 
             {/* the four thin-line badges, straight off the banner */}
-            <ul className="mt-6 grid max-w-md grid-cols-2 gap-3 sm:grid-cols-4" data-stagger="0.09">
+            <ul className="mt-7 grid max-w-md grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-4" data-stagger="0.09">
               {FEATURES.map((feature) => (
                 <li key={feature.label} data-anim="rise" className="group flex flex-col items-center gap-2 text-center">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-full border-[1.5px] border-decart-300 bg-paper text-decart-600 transition-all duration-300 group-hover:-translate-y-1 group-hover:border-decart-500 group-hover:shadow-pop">
-                    <feature.icon aria-hidden className="h-5 w-5" strokeWidth={1.5} />
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full border-[1.5px] border-decart-300 bg-paper text-decart-600 shadow-[0_1px_2px_rgb(15_19_23/0.04)] transition-all duration-300 group-hover:-translate-y-1 group-hover:border-decart-500 group-hover:shadow-pop">
+                    <feature.icon aria-hidden className="h-[18px] w-[18px]" strokeWidth={1.5} />
                   </span>
-                  <span className="text-[11px] leading-snug text-steel-600">{feature.label}</span>
+                  <span className="text-[10.5px] font-medium leading-snug text-steel-600">{feature.label}</span>
                 </li>
               ))}
             </ul>
 
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
               <ButtonLink href={active?.href || '/products'} size="lg" className="w-full sm:w-auto">
                 {active?.ctaLabel || 'Explore products'}
                 <ArrowRight aria-hidden className="h-4 w-4" />
@@ -199,16 +211,16 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
               </ButtonLink>
             </div>
 
-            {/* AVAILABLE ON — the banner's own badge row, with the listings linked where we have
-                them. It replaces the separate strip that used to repeat these five names lower
-                down the page. */}
-            <div className="mt-7 max-w-md rounded-card border border-white/70 bg-paper/80 p-3.5 shadow-[0_1px_2px_rgb(15_19_23/0.05)]">
-              <p className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-decart-700">
-                Available on
-              </p>
-              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+            {/* AVAILABLE ON — the banner's own badge row. It replaces the strip that used to
+                repeat these five names lower down the page. */}
+            <div className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2">
+              <p className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-steel-400">Available on</p>
+              <div className="flex flex-wrap items-center gap-1.5">
                 {MARKETPLACES.map((name) => (
-                  <span key={name} className="text-sm font-semibold text-steel-600">
+                  <span
+                    key={name}
+                    className="rounded-full border border-white bg-paper/80 px-2.5 py-1 text-[11px] font-semibold text-steel-600 shadow-[0_1px_2px_rgb(15_19_23/0.04)]"
+                  >
                     {name}
                   </span>
                 ))}
@@ -217,8 +229,7 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
 
             {/* only rendered once the client supplies a handle — never a dead icon */}
             {socials.length ? (
-              <div className="mt-4 flex items-center gap-2.5">
-                <p className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-steel-400">Follow</p>
+              <div className="mt-4 flex items-center gap-2">
                 {socials.map(({ key, label, Icon, href }) => (
                   <a
                     key={key}
@@ -237,32 +248,50 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
 
           {/* ------------------------------------------------------- the showroom stage */}
           <div className="relative min-w-0">
-            <div className="relative overflow-hidden rounded-card border border-white bg-white shadow-[0_24px_60px_-30px_rgb(15_19_23/0.35)]">
+            <div className="relative overflow-hidden rounded-card p-3.5 shadow-[0_30px_70px_-34px_rgb(21_101_166/0.45)] ring-1 ring-white/70 sm:p-5">
               {/*
-                A white stage, deliberately.
+                A blue stage, with each chair on its own white card.
                 The studio shots are cut-outs on a white ground rather than transparent PNGs, so
-                anything behind them prints as a white box round each chair. Multiplying them
-                instead solved the box but erased the pale models — a white chair over a light
-                backdrop disappears. On white, the cut-outs simply meet the stage and every
-                colourway stays visible, which is also how their own artwork stages them.
+                any tint behind them prints the edge of the photo as a white box round the chair.
+                Making that box a deliberate product card turns the constraint into the design,
+                and lets the campaign's blue back in. Multiplying the shots to remove the box
+                erased the pale models instead — a white chair over a light wash disappears.
               */}
-              {/*
-                Nothing tinted behind the chairs, for the same reason: the cut-outs carry their
-                own white ground, so a blue wash or an angled flash under them would print the
-                edge of each photo as a visible box. The campaign's blue comes from the page
-                the stage sits on instead.
-              */}
-              {/* the floor the podiums stand on */}
-              <span aria-hidden className="absolute inset-x-0 bottom-12 h-px bg-ink-950/[0.06]" />
+              <span
+                aria-hidden
+                className="absolute inset-0"
+                style={{
+                  background:
+                    'linear-gradient(150deg, #C4DFF5 0%, #DCEDFA 44%, #F3FAFE 100%), radial-gradient(58% 48% at 84% 0%, rgb(255 255 255 / 0.55), transparent)',
+                }}
+              />
+              {/* the angled flash off the campaign artwork */}
+              <span
+                aria-hidden
+                className="absolute -left-16 -top-16 h-52 w-72 bg-white/35"
+                style={{ clipPath: 'polygon(0 0, 100% 0, 0 100%)' }}
+              />
 
-              <div className="relative grid grid-cols-3 gap-2 px-3 pb-5 pt-6 sm:gap-4 sm:px-6 sm:pb-7 sm:pt-8">
+              {/* autoplay meter: it shows the slide running out, and holds while you hover */}
+              {slides.length > 1 ? (
+                <div aria-hidden className="absolute inset-x-0 top-0 h-[3px] bg-white/45">
+                  <span
+                    key={`${index}-${paused}`}
+                    className="block h-full origin-left animate-hero-progress bg-decart-500/70"
+                    style={{ animationPlayState: paused ? 'paused' : 'running' }}
+                  />
+                </div>
+              ) : null}
+
+              <div className="relative grid grid-cols-3 gap-2 sm:gap-3">
                 {(trio.length ? trio : [null, null, null]).map((model, i) => (
                   <div key={model?.slug ?? `empty-${i}`} className="min-w-0">
                     {model ? (
                       <Link
                         href={`/products/${model.family}/${model.slug}`}
-                        className="group block"
                         title={`${model.name} (${model.code})`}
+                        className="group relative block animate-fade-up rounded-[14px] bg-paper p-1.5 ring-1 ring-white transition-all duration-300 hover:-translate-y-1 hover:shadow-podium sm:p-2"
+                        style={{ animationDelay: `${i * 90}ms` }}
                       >
                         <div className="relative aspect-[4/5]">
                           <Image
@@ -271,37 +300,66 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
                             fill
                             priority={i < 3}
                             sizes="(max-width: 640px) 30vw, 240px"
-                            className="object-contain transition-transform duration-500 ease-out group-hover:-translate-y-1.5"
+                            className="object-contain transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                           />
                         </div>
-                        {/* the artwork stands each chair on a short white cylinder: an ellipse of
-                            contact shadow, then the lit face of the podium under it */}
-                        <div className="relative h-2">
-                          <span
+
+                        <div className="mt-1 flex items-center justify-between gap-1 border-t border-line/70 pt-2">
+                          <span className="truncate font-mono text-[9px] uppercase tracking-[0.1em] text-steel-600">
+                            {model.code}
+                          </span>
+                          <ArrowUpRight
                             aria-hidden
-                            className="absolute left-1/2 top-0 h-2 w-[66%] -translate-x-1/2 rounded-[100%] bg-ink-950/15 blur-[3px]"
+                            className="h-3 w-3 shrink-0 text-steel-400 transition-colors group-hover:text-decart-600"
                           />
                         </div>
-                        <div className="mx-auto h-4 w-[72%] rounded-[4px] border border-line/60 bg-gradient-to-b from-white via-white to-[#E7EFF6] shadow-[0_3px_6px_-2px_rgb(15_19_23/0.16)]" />
-                        <p className="mt-2 truncate text-center font-mono text-[9px] uppercase tracking-[0.1em] text-steel-600 transition-colors group-hover:text-decart-700">
-                          {model.code}
-                        </p>
                       </Link>
                     ) : (
-                      <div className="aspect-[4/5] rounded-card bg-porcelain" />
+                      <div className="aspect-[4/5] rounded-[14px] bg-paper/70" />
                     )}
                   </div>
                 ))}
               </div>
 
-              <p className="relative border-t border-line/70 bg-porcelain px-4 py-2.5 text-center font-mono text-[10px] uppercase tracking-[0.14em] text-steel-600">
-                Comfort that keeps you ahead
-              </p>
+              <div className="relative mt-3.5 flex flex-wrap items-center justify-between gap-3">
+                <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-decart-700">
+                  Comfort that keeps you ahead
+                </p>
+                <Link
+                  href="/products"
+                  className="group inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-900 hover:text-decart-700"
+                >
+                  All models
+                  <ArrowRight aria-hidden className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                </Link>
+              </div>
             </div>
 
-            {/* slide controls — arrows, a counter and dots, so the carousel is obviously one */}
+            {/* slide controls — dots, a counter and arrows, tucked under the stage's edge */}
             {slides.length > 1 ? (
-              <div className="mt-4 flex items-center justify-center gap-4 lg:justify-start">
+              <div className="mt-4 flex items-center justify-center gap-4 lg:justify-end">
+                <div className="flex items-center gap-1.5">
+                  {slides.map((banner, i) => (
+                    <button
+                      key={banner._id}
+                      type="button"
+                      onClick={() => go(i)}
+                      aria-label={`Show slide ${i + 1}`}
+                      aria-current={i === index}
+                      className={cn(
+                        'h-1.5 rounded-full transition-all',
+                        i === index ? 'w-7 bg-decart-600' : 'w-1.5 bg-ink-950/20 hover:bg-ink-950/40',
+                      )}
+                    />
+                  ))}
+                </div>
+
+                <span className="font-mono text-xs tracking-[0.14em] text-steel-400">
+                  {String(index + 1).padStart(2, '0')}
+                  <span className="mx-1 text-line">/</span>
+                  {String(slides.length).padStart(2, '0')}
+                </span>
+
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -319,28 +377,6 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
                   >
                     <ArrowRight aria-hidden className="h-4 w-4" />
                   </button>
-                </div>
-
-                <span className="font-mono text-xs tracking-[0.14em] text-steel-400">
-                  {String(index + 1).padStart(2, '0')}
-                  <span className="mx-1 text-line">/</span>
-                  {String(slides.length).padStart(2, '0')}
-                </span>
-
-                <div className="flex items-center gap-1.5">
-                  {slides.map((banner, i) => (
-                    <button
-                      key={banner._id}
-                      type="button"
-                      onClick={() => go(i)}
-                      aria-label={`Show slide ${i + 1}`}
-                      aria-current={i === index}
-                      className={cn(
-                        'h-1.5 rounded-full transition-all',
-                        i === index ? 'w-7 bg-decart-600' : 'w-1.5 bg-ink-950/20 hover:bg-ink-950/40',
-                      )}
-                    />
-                  ))}
                 </div>
               </div>
             ) : null}

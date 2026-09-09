@@ -57,12 +57,15 @@ const config: Config = {
           '45%': { boxShadow: '0 0 0 14px rgb(37 211 102 / 0)' },
         },
         'hex-spin': { to: { transform: 'rotate(360deg)' } },
+        /* the hero's autoplay meter: a bar that empties as the slide runs out */
+        'hero-progress': { from: { transform: 'scaleX(0)' }, to: { transform: 'scaleX(1)' } },
       },
       animation: {
         'fade-up': 'fade-up .7s cubic-bezier(.16,1,.3,1) both',
         marquee: 'marquee 40s linear infinite',
         'wa-pulse': 'wa-pulse 8s ease-out infinite',
         'hex-spin': 'hex-spin 1.1s linear infinite',
+        'hero-progress': 'hero-progress 6500ms linear forwards',
       },
     },
   },
