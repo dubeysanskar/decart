@@ -143,6 +143,12 @@ export const blogSchema = z.object({
 
 /** Category (family) editorial content — §10.5 companion, edited at /admin/categories. */
 export const familyContentSchema = z.object({
+  /** Renames a seed family, or names a category the seed does not have. */
+  name: z.string().trim().max(80).default(''),
+  groupSlug: z.string().trim().max(40).default(''),
+  cover: z.string().trim().max(600).default(''),
+  order: z.coerce.number().int().min(0).max(999).default(0),
+  status: z.enum(['published', 'hidden']).default('published'),
   heading: z.string().trim().max(160).default(''),
   intro: z.string().trim().max(600).default(''),
   bodyHtml: z.string().max(40000).default(''),

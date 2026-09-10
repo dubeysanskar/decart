@@ -9,6 +9,8 @@ export type DirectoryFamily = {
   slug: string;
   name: string;
   group: string;
+  /** The client's own numbering from /admin/categories; 0 means unplaced. */
+  order?: number;
   count: number;
   lede: string;
   cover: string;
@@ -26,9 +28,16 @@ export type DirectoryFamily = {
 export function CategoryDirectory({ families }: { families: DirectoryFamily[] }) {
   if (!families.length) return null;
 
+  /*
+    Within a group the client's own numbering wins — their spreadsheet is the order they think
+    of the catalogue in. Anything they did not number (order 0) keeps its catalogue position at
+    the end rather than jumping to the front.
+  */
   const rows = GROUPS.map((group) => ({
     ...group,
-    families: families.filter((family) => family.group === group.slug),
+    families: families
+      .filter((family) => family.group === group.slug)
+      .sort((a, b) => (a.order || 999) - (b.order || 999)),
   })).filter((row) => row.families.length);
 
   if (!rows.length) return null;

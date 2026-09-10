@@ -853,6 +853,14 @@ export type FaqItem = { q: string; a: string };
 
 export type FamilyContentRecord = {
   slug: string;
+  /** Set when the client renames a category, or names one the seed does not have. */
+  name: string;
+  /** Which nav group it belongs to: seating, tables-desks, furniture. */
+  groupSlug: string;
+  /** The category's own artwork, chosen in admin. Beats any product shot. */
+  cover: string;
+  order: number;
+  status: string;
   heading: string;
   intro: string;
   bodyHtml: string;
@@ -865,6 +873,11 @@ export type FamilyContentRecord = {
 function mapFamilyContent(row: Row): FamilyContentRecord {
   return {
     slug: String(row.slug),
+    name: String(row.name ?? ''),
+    groupSlug: String(row.groupSlug ?? ''),
+    cover: String(row.cover ?? ''),
+    order: Number(row.ord ?? 0),
+    status: String(row.status ?? 'published') || 'published',
     heading: String(row.heading ?? ''),
     intro: String(row.intro ?? ''),
     bodyHtml: String(row.bodyHtml ?? ''),
@@ -885,37 +898,57 @@ export async function allFamilyContent(): Promise<FamilyContentRecord[]> {
   return rows.map(mapFamilyContent);
 }
 
+/**
+ * Which columns this connection can see.
+ *
+ * Same reason as the banners: Turso can hand two clients different schema versions for a while
+ * after a migration, so a write naming a brand-new column fails in one process and works in
+ * another. Writing only what PRAGMA reports means a new field waits rather than 500s.
+ */
+let familyColumns: Promise<Set<string>> | null = null;
+async function familyCols(): Promise<Set<string>> {
+  if (!familyColumns) {
+    familyColumns = all(`PRAGMA table_info(family_content)`)
+      .then((rows) => new Set(rows.map((row) => String(row.name))))
+      .catch(() => new Set<string>());
+  }
+  return familyColumns;
+}
+
+export async function deleteFamilyContent(slug: string) {
+  await run(`DELETE FROM family_content WHERE slug = ?`, [slug]);
+}
+
 /** Upsert — the admin screen saves the whole record for one family at a time. */
 export async function saveFamilyContent(
   slug: string,
   data: Partial<Omit<FamilyContentRecord, 'slug' | 'updatedAt'>>,
 ): Promise<FamilyContentRecord> {
   const current = await familyContent(slug);
-  const merged = {
+  const cols = await familyCols();
+
+  const values: Record<string, Arg> = {
+    slug,
+    name: data.name ?? current?.name ?? '',
+    groupSlug: data.groupSlug ?? current?.groupSlug ?? '',
+    cover: data.cover ?? current?.cover ?? '',
+    ord: data.order ?? current?.order ?? 0,
+    status: data.status ?? current?.status ?? 'published',
     heading: data.heading ?? current?.heading ?? '',
     intro: data.intro ?? current?.intro ?? '',
     bodyHtml: data.bodyHtml ?? current?.bodyHtml ?? '',
-    faq: data.faq ?? current?.faq ?? [],
+    faq: J(data.faq ?? current?.faq ?? []),
     seoTitle: data.seoTitle ?? current?.seoTitle ?? '',
     seoDescription: data.seoDescription ?? current?.seoDescription ?? '',
+    updatedAt: now(),
   };
+
+  const fields = Object.keys(values).filter((field) => !cols.size || cols.has(field));
+  const updates = fields.filter((field) => field !== 'slug').map((field) => `${field} = excluded.${field}`);
   await run(
-    `INSERT INTO family_content (slug, heading, intro, bodyHtml, faq, seoTitle, seoDescription, updatedAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-     ON CONFLICT(slug) DO UPDATE SET
-       heading = excluded.heading, intro = excluded.intro, bodyHtml = excluded.bodyHtml,
-       faq = excluded.faq, seoTitle = excluded.seoTitle, seoDescription = excluded.seoDescription,
-       updatedAt = excluded.updatedAt`,
-    [
-      slug,
-      merged.heading,
-      merged.intro,
-      merged.bodyHtml,
-      J(merged.faq),
-      merged.seoTitle,
-      merged.seoDescription,
-      now(),
-    ],
+    `INSERT INTO family_content (${fields.join(', ')}) VALUES (${fields.map(() => '?').join(', ')})
+     ON CONFLICT(slug) DO UPDATE SET ${updates.join(', ')}`,
+    fields.map((field) => values[field]),
   );
   return (await familyContent(slug))!;
 }

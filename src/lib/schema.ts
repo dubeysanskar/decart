@@ -319,6 +319,18 @@ const ADDED_COLUMNS: { table: string; column: string; ddl: string }[] = [
   { table: 'banners', column: 'page', ddl: "page TEXT NOT NULL DEFAULT 'home'" },
   { table: 'banners', column: 'models', ddl: "models TEXT NOT NULL DEFAULT ''" },
   { table: 'banners', column: 'eyebrow', ddl: "eyebrow TEXT NOT NULL DEFAULT ''" },
+  /*
+    family_content started as "the copy under a category listing" and is now the category
+    record itself: the client's own list of 27 categories has names, an order and artwork the
+    seed never carried, and three of them are ranges the seed does not have at all. A row can
+    therefore name a category, place it, give it a cover and hide it — and a row for a slug the
+    seed has never heard of simply is a category.
+  */
+  { table: 'family_content', column: 'name', ddl: "name TEXT NOT NULL DEFAULT ''" },
+  { table: 'family_content', column: 'groupSlug', ddl: "groupSlug TEXT NOT NULL DEFAULT ''" },
+  { table: 'family_content', column: 'cover', ddl: "cover TEXT NOT NULL DEFAULT ''" },
+  { table: 'family_content', column: 'ord', ddl: 'ord INTEGER NOT NULL DEFAULT 0' },
+  { table: 'family_content', column: 'status', ddl: "status TEXT NOT NULL DEFAULT 'published'" },
 ];
 
 /**

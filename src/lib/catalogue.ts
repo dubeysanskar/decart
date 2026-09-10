@@ -68,12 +68,80 @@ export async function getFamilyCounts(): Promise<Record<string, number>> {
   return withDb(() => repo.familyCounts(), seedCounts);
 }
 
-/** Families that should appear in nav: not hidden, and holding at least one published product. */
+/** Category rows the client manages in /admin/categories, keyed by slug. */
+async function categoryRows(): Promise<Record<string, repo.FamilyContentRecord>> {
+  const rows = await withDb(() => repo.allFamilyContent(), [] as repo.FamilyContentRecord[]);
+  return Object.fromEntries(rows.map((row) => [row.slug, row]));
+}
+
+/**
+ * The categories the site shows.
+ *
+ * The seed's thirty-one families are the starting point; the client's own list is the authority.
+ * A row in /admin/categories renames, re-orders, re-groups, re-covers or hides a family — and a
+ * row for a slug the seed never had is a category in its own right, which is how the three
+ * ranges on the client's list that we had never modelled (director and manager tables, metal
+ * storage) exist at all.
+ *
+ * A seed family still has to hold a published model to appear, or the nav fills with empty
+ * pages. A category the client added by hand appears regardless: they asked for it, and its
+ * page invites an enquiry rather than listing nothing.
+ */
 export async function getNavFamilies() {
-  const counts = await getFamilyCounts();
-  return visibleFamilies()
-    .filter((f) => (counts[f.slug] ?? 0) > 0)
-    .map((f) => ({ ...f, count: counts[f.slug] ?? 0, lede: FAMILY_LEDE[f.slug] ?? '' }));
+  const [counts, rows] = await Promise.all([getFamilyCounts(), categoryRows()]);
+
+  const fromSeed = visibleFamilies()
+    .map((family) => {
+      const row = rows[family.slug];
+      return {
+        ...family,
+        name: row?.name || family.name,
+        group: (row?.groupSlug || family.group) as typeof family.group,
+        count: counts[family.slug] ?? 0,
+        lede: row?.intro || FAMILY_LEDE[family.slug] || '',
+        order: row?.order ?? 0,
+        managed: Boolean(row),
+        hiddenByAdmin: row?.status === 'hidden',
+      };
+    })
+    .filter((family) => !family.hiddenByAdmin && (family.count > 0 || family.managed));
+
+  const seedSlugs = new Set(FAMILIES.map((family) => family.slug));
+  const fromAdmin = Object.values(rows)
+    .filter((row) => !seedSlugs.has(row.slug) && row.status !== 'hidden' && row.name)
+    .map((row) => ({
+      slug: row.slug,
+      name: row.name,
+      singular: row.name.replace(/s$/, ''),
+      group: (row.groupSlug || 'seating') as (typeof FAMILIES)[number]['group'],
+      pages: '',
+      spec: 'task' as (typeof FAMILIES)[number]['spec'],
+      named: [] as string[],
+      tags: [] as string[],
+      count: counts[row.slug] ?? 0,
+      lede: row.intro || '',
+      order: row.order ?? 0,
+      managed: true,
+      hiddenByAdmin: false,
+    }));
+
+  // the client's numbering wins where they gave one; everything else keeps catalogue order
+  return [...fromSeed, ...fromAdmin].sort((a, b) => {
+    const left = a.order || Number.MAX_SAFE_INTEGER;
+    const right = b.order || Number.MAX_SAFE_INTEGER;
+    return left - right;
+  });
+}
+
+/**
+ * One category by slug, seed or admin-created.
+ *
+ * familyBySlug only knows the seed, so a category the client added in /admin/categories used to
+ * 404 on its own page. This resolves against the merged list instead.
+ */
+export async function getFamily(slug: string) {
+  const families = await getNavFamilies();
+  return families.find((family) => family.slug === slug) ?? null;
 }
 
 /**
@@ -88,12 +156,18 @@ export async function getFamilyTiles() {
     return acc;
   }, {});
 
+  const rows = await categoryRows();
+
   /**
-   * Cover priority: a real studio shot of a product in the family, else the client's own
-   * category artwork lifted from decartseatings.in into /public/families, else nothing
-   * (the tile then renders the branded placeholder).
+   * Cover priority: the image the client set in /admin/categories, else a real studio shot of a
+   * product in the family, else the category artwork in /public/families, else nothing — the
+   * tile then renders the branded placeholder.
+   *
+   * The admin choice comes first on purpose: it is the one someone picked deliberately.
    */
   const cover = (slug: string) => {
+    const chosen = rows[slug]?.cover;
+    if (chosen) return chosen;
     const shot = products.find((p) => p.family === slug && p.images?.length)?.images?.[0]?.src;
     if (shot) return shot;
     const artwork = `/families/${slug}.webp`;

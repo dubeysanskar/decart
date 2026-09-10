@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Plus, Trash2, ExternalLink, Layers, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Input, Textarea } from '@/components/ui/form';
+import { Input, Select, Textarea } from '@/components/ui/form';
+import { ImageField } from './ImageField';
 import { useToast } from '@/components/ui/Toast';
 import { HexSpinner } from '@/components/ui/bits';
 
@@ -14,6 +15,14 @@ export type CategoryDraft = {
   slug: string;
   name: string;
   count: number;
+  /** Which nav group it sits in: seating, tables-desks, furniture. */
+  groupSlug: string;
+  /** The category's own artwork. Beats a product shot and the shipped /families art. */
+  cover: string;
+  order: number;
+  status: string;
+  /** False for a category the client added, which can therefore be deleted outright. */
+  fromCatalogue: boolean;
   heading: string;
   intro: string;
   bodyHtml: string;
@@ -29,6 +38,13 @@ export type CategoryDraft = {
 /** The pseudo-category that writes to every family at once. */
 const ALL = '__all__';
 
+/** The three shelves the nav is built from. */
+const GROUP_OPTIONS = [
+  { value: 'seating', label: 'Office Seating' },
+  { value: 'tables-desks', label: 'Tables & Desks' },
+  { value: 'furniture', label: 'Furniture & Institutional' },
+];
+
 type BulkPayload = Partial<Pick<CategoryDraft, 'heading' | 'intro' | 'bodyHtml' | 'faq' | 'seoTitle' | 'seoDescription'>>;
 
 export function CategoryEditor({ categories }: { categories: CategoryDraft[] }) {
@@ -42,10 +58,17 @@ export function CategoryEditor({ categories }: { categories: CategoryDraft[] }) 
   const [progress, setProgress] = useState('');
 
   const totalModels = categories.reduce((sum, c) => sum + c.count, 0);
+  const [adding, setAdding] = useState(false);
+  const [newName, setNewName] = useState('');
   const [bulk, setBulk] = useState<CategoryDraft>({
     slug: ALL,
     name: 'All categories',
     count: totalModels,
+    groupSlug: '',
+    cover: '',
+    order: 0,
+    status: 'published',
+    fromCatalogue: true,
     heading: '',
     intro: '',
     bodyHtml: '',
@@ -141,6 +164,11 @@ export function CategoryEditor({ categories }: { categories: CategoryDraft[] }) 
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        name: draft.name,
+        groupSlug: draft.groupSlug,
+        cover: draft.cover,
+        order: draft.order,
+        status: draft.status,
         heading: draft.heading,
         intro: draft.intro,
         bodyHtml: draft.bodyHtml,
@@ -155,6 +183,43 @@ export function CategoryEditor({ categories }: { categories: CategoryDraft[] }) 
       res.ok ? 'success' : 'error',
     );
     if (res.ok) router.refresh();
+  }
+
+  /** Adds a category the catalogue does not ship with — the client's list has three. */
+  async function createCategory() {
+    const name = newName.trim();
+    if (!name) return;
+    setBusy(true);
+    const res = await fetch('/api/categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, order: categories.length + 1, status: 'published' }),
+    });
+    const json = await res.json().catch(() => null);
+    setBusy(false);
+    if (!res.ok) {
+      toast.push(json?.errors ? (Object.values(json.errors)[0] as string) : 'Could not add that category.', 'error');
+      return;
+    }
+    toast.push(`${name} added.`, 'success');
+    setNewName('');
+    setAdding(false);
+    router.refresh();
+  }
+
+  async function removeCategory() {
+    if (isAll || draft.fromCatalogue) return;
+    if (!window.confirm(`Delete ${draft.name}? Its page and its description go with it.`)) return;
+    setBusy(true);
+    const res = await fetch(`/api/categories/${active}`, { method: 'DELETE' });
+    setBusy(false);
+    if (!res.ok) {
+      toast.push('Could not delete that category.', 'error');
+      return;
+    }
+    toast.push(`${draft.name} deleted.`, 'success');
+    setActive(categories[0]?.slug ?? ALL);
+    router.refresh();
   }
 
   if (!draft) {
@@ -192,6 +257,34 @@ export function CategoryEditor({ categories }: { categories: CategoryDraft[] }) 
             ))}
           </select>
 
+          <div className="mb-2 hidden lg:block">
+            {adding ? (
+              <div className="rounded-card border border-decart-300 bg-paper p-3">
+                <Input
+                  label="New category"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="Metal Storages"
+                  hint="Its web address is made from the name."
+                />
+                <div className="mt-3 flex gap-2">
+                  <Button size="sm" onClick={createCategory} disabled={busy || !newName.trim()}>
+                    {busy ? <HexSpinner /> : null}
+                    Add
+                  </Button>
+                  <Button size="sm" variant="secondary" onClick={() => setAdding(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button size="sm" variant="secondary" className="w-full" onClick={() => setAdding(true)}>
+                <Plus className="h-4 w-4" />
+                New category
+              </Button>
+            )}
+          </div>
+
           <ul className="hidden max-h-[70vh] flex-col gap-0.5 overflow-y-auto rounded-card border border-line bg-paper p-2 lg:flex">
             {/* write once, apply to every family — pinned above the list so it is never lost in
                 a scroll of thirty */}
@@ -221,7 +314,12 @@ export function CategoryEditor({ categories }: { categories: CategoryDraft[] }) 
                       active === c.slug ? 'bg-porcelain font-semibold text-ink-950' : 'text-steel-600 hover:bg-porcelain'
                     }`}
                   >
-                    <span className="truncate">{c.name}</span>
+                    <span className="truncate">
+                      {c.name}
+                      {drafts[c.slug]?.status === 'hidden' ? (
+                        <span className="ml-1.5 font-mono text-[9px] uppercase text-steel-400">hidden</span>
+                      ) : null}
+                    </span>
                     <span
                       aria-label={filled ? 'Has content' : 'Empty'}
                       className={`h-1.5 w-1.5 shrink-0 rounded-full ${filled ? 'bg-success' : 'bg-line'}`}
@@ -268,6 +366,72 @@ export function CategoryEditor({ categories }: { categories: CategoryDraft[] }) 
               </div>
             </div>
           ) : null}
+
+          {/*
+            The category itself, not just its copy: what it is called, where it sits, the picture
+            it shows on the home rail and the /products directory, and whether it appears at all.
+            Hidden on the bulk screen, where these are per-category by definition.
+          */}
+          {isAll ? null : (
+            <section className="rounded-card border border-line bg-paper p-5">
+              <h2 className="text-lg font-semibold text-ink-950">The category</h2>
+              <p className="mt-1 text-sm text-steel-600">
+                Its name, its place in the menu and the picture that represents it.
+              </p>
+
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <Input label="Name" value={draft.name} onChange={(e) => set('name', e.target.value)} />
+                <Select
+                  label="Menu group"
+                  value={draft.groupSlug || 'seating'}
+                  onChange={(e) => set('groupSlug', e.target.value)}
+                >
+                  {GROUP_OPTIONS.map((group) => (
+                    <option key={group.value} value={group.value}>
+                      {group.label}
+                    </option>
+                  ))}
+                </Select>
+                <Input
+                  label="Order"
+                  type="number"
+                  value={String(draft.order)}
+                  onChange={(e) => set('order', Number(e.target.value))}
+                  hint="Lower comes first. 0 sends it to the end."
+                />
+                <Select label="Status" value={draft.status} onChange={(e) => set('status', e.target.value)}>
+                  <option value="published">Published</option>
+                  <option value="hidden">Hidden</option>
+                </Select>
+              </div>
+
+              <div className="mt-4">
+                <ImageField
+                  label="Category image"
+                  value={draft.cover}
+                  onChange={(src) => set('cover', src)}
+                  hint="Shown on the home rail and the catalogue directory. Beats the studio shot the site picks by itself."
+                />
+              </div>
+
+              {draft.fromCatalogue ? (
+                <p className="mt-4 text-xs text-steel-600">
+                  This category comes with the catalogue, so it cannot be deleted — set it to Hidden to take it off
+                  the site without stranding the models filed under it.
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={removeCategory}
+                  disabled={busy}
+                  className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-danger hover:underline"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Delete this category
+                </button>
+              )}
+            </section>
+          )}
 
           <section className="rounded-card border border-line bg-paper p-5">
             <h2 className="text-lg font-semibold text-ink-950">Description</h2>

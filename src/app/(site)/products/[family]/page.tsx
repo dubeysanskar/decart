@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { PageHeader } from '@/components/site/PageHeader';
 import { FamilyBrowser } from '@/components/product/FamilyBrowser';
 import { QuoteBand } from '@/components/home/sections';
-import { getFamilyProducts, getNavFamilies, familyBySlug, FAMILY_LEDE, getFamilyContent } from '@/lib/catalogue';
+import { getFamilyProducts, getNavFamilies, getFamily, FAMILY_LEDE, getFamilyContent } from '@/lib/catalogue';
 import { FAMILIES } from '@/data/catalogue.seed';
 import { buildMetadata, breadcrumbLd } from '@/lib/seo';
 import { CategoryContent, categoryFaqLd } from '@/components/product/CategoryContent';
@@ -19,7 +19,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: { family: string } }): Promise<Metadata> {
-  const family = familyBySlug(params.family);
+  const family = await getFamily(params.family);
   if (!family) return {};
   // admin-authored SEO wins over the generated default when it has been filled in
   const content = await getFamilyContent(family.slug);
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: { params: { family: string } 
 }
 
 export default async function FamilyPage({ params }: { params: { family: string } }) {
-  const family = familyBySlug(params.family);
+  const family = await getFamily(params.family);
   if (!family) notFound();
 
   const [products, navFamilies, content] = await Promise.all([
@@ -66,9 +66,16 @@ export default async function FamilyPage({ params }: { params: { family: string 
         eyebrow={family.name}
         title={FAMILY_LEDE[family.slug] ?? family.name}
         lede={
-          family.pages !== '—'
+          /*
+            A category the client added has no printed pages and, at first, no models — so the
+            page-number clause and the model count both have to be able to disappear rather than
+            print as "0 models · catalogue pages .".
+          */
+          products.length && family.pages && family.pages !== '—'
             ? `${products.length} models · catalogue pages ${family.pages}. Every unit is built to order in Faridabad — finish, mechanism and base to your specification.`
-            : `Built to order in Faridabad — share the requirement and we will quote it.`
+            : products.length
+              ? `${products.length} models, every one built to order in Faridabad — finish, mechanism and base to your specification.`
+              : `Built to order in Faridabad. Tell us the specification and quantity and we will quote it — this range is not on the website yet.`
         }
         breadcrumbs={[
           { name: 'Home', href: '/' },

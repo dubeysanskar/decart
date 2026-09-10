@@ -15,6 +15,7 @@
     "optimise-images": "tsx scripts/optimise-images.ts",
     "mobile-audit": "node scripts/mobile-audit.mjs",
     "hero-crops": "node scripts/hero-cutouts.mjs",
+    "import-categories": "tsx scripts/import-categories.ts",
     "brand": "tsx scripts/brand-assets.ts"
   },
   "dependencies": {

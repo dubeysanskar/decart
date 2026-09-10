@@ -20,12 +20,17 @@ export default async function AdminCategoriesPage() {
   const [content, counts] = await Promise.all([allFamilyContent(), familyCounts()]);
   const byslug = Object.fromEntries(content.map((row) => [row.slug, row]));
 
-  const categories: CategoryDraft[] = FAMILIES.filter((family) => !family.hidden).map((family) => {
-    const saved = byslug[family.slug];
+  const draft = (slug: string, name: string, group: string, fromCatalogue: boolean): CategoryDraft => {
+    const saved = byslug[slug];
     return {
-      slug: family.slug,
-      name: family.name,
-      count: counts[family.slug] ?? 0,
+      slug,
+      name: saved?.name || name,
+      count: counts[slug] ?? 0,
+      groupSlug: saved?.groupSlug || group,
+      cover: saved?.cover ?? '',
+      order: saved?.order ?? 0,
+      status: saved?.status || 'published',
+      fromCatalogue,
       heading: saved?.heading ?? '',
       intro: saved?.intro ?? '',
       bodyHtml: saved?.bodyHtml ?? '',
@@ -33,7 +38,21 @@ export default async function AdminCategoriesPage() {
       seoTitle: saved?.seoTitle ?? '',
       seoDescription: saved?.seoDescription ?? '',
     };
-  });
+  };
+
+  const seeded = FAMILIES.filter((family) => !family.hidden).map((family) =>
+    draft(family.slug, family.name, family.group, true),
+  );
+
+  // rows for slugs the catalogue does not ship: categories the client added themselves
+  const seedSlugs = new Set(FAMILIES.map((family) => family.slug));
+  const added = content
+    .filter((row) => !seedSlugs.has(row.slug))
+    .map((row) => draft(row.slug, row.name || row.slug, row.groupSlug || 'seating', false));
+
+  const categories: CategoryDraft[] = [...seeded, ...added].sort(
+    (a, b) => (a.order || 999) - (b.order || 999) || a.name.localeCompare(b.name),
+  );
 
   return <CategoryEditor categories={categories} />;
 }
