@@ -310,7 +310,36 @@ const ADDED_COLUMNS: { table: string; column: string; ddl: string }[] = [
   { table: 'admin_users', column: 'designation', ddl: "designation TEXT NOT NULL DEFAULT ''" },
   { table: 'admin_users', column: 'office', ddl: "office TEXT NOT NULL DEFAULT ''" },
   { table: 'admin_users', column: 'active', ddl: 'active INTEGER NOT NULL DEFAULT 1' },
+  /*
+    Banners grew from "the home artwork" into the hero content for any page: `page` says which
+    one it belongs to, `models` lists the product slugs to stage with it, and `eyebrow` is the
+    small line above the headline. Existing rows default to the home page with no models, which
+    is exactly what they were.
+  */
+  { table: 'banners', column: 'page', ddl: "page TEXT NOT NULL DEFAULT 'home'" },
+  { table: 'banners', column: 'models', ddl: "models TEXT NOT NULL DEFAULT ''" },
+  { table: 'banners', column: 'eyebrow', ddl: "eyebrow TEXT NOT NULL DEFAULT ''" },
 ];
+
+/**
+ * Applied once per process on first use, not just by the seed scripts.
+ *
+ * Columns added after launch — the banner page, its models, the eyebrow — only existed on a
+ * database somebody had re-seeded, which meant a deploy could ship a feature the schema did not
+ * support. The statements are all idempotent, so running them on the first query is cheap
+ * insurance against exactly that.
+ */
+let migrated: Promise<void> | null = null;
+export function ensureSchemaOnce(db: Client): Promise<void> {
+  if (!migrated) {
+    migrated = ensureSchema(db).catch((error) => {
+      // a failed migration must not take the request with it: reset so the next one retries
+      migrated = null;
+      console.error('[schema] migration failed:', (error as Error).message);
+    });
+  }
+  return migrated;
+}
 
 export async function ensureSchema(db: Client) {
   for (const statement of SCHEMA_STATEMENTS) {
@@ -324,7 +353,12 @@ export async function ensureSchema(db: Client) {
       seen.set(table, new Set(info.rows.map((row) => String(row.name))));
     }
     if (seen.get(table)!.has(column)) continue;
-    await db.execute(`ALTER TABLE ${table} ADD COLUMN ${ddl}`);
+    try {
+      await db.execute(`ALTER TABLE ${table} ADD COLUMN ${ddl}`);
+    } catch (error) {
+      // two instances can reach the same ALTER at once; whoever loses has nothing to do
+      if (!/duplicate column name/i.test((error as Error).message)) throw error;
+    }
     seen.get(table)!.add(column);
   }
 }

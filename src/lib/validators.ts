@@ -156,12 +156,25 @@ export const familyContentSchema = z.object({
 
 /** Home banners, client logos and Latest Projects — all edited from /admin. */
 export const bannerSchema = z.object({
+  /** Which page's hero this row drives. Free text so a new page needs no migration. */
+  page: z.string().trim().max(40).default('home'),
+  eyebrow: z.string().trim().max(60).default(''),
   title: z.string().trim().max(120).default(''),
   subtitle: z.string().trim().max(240).default(''),
   image: z.string().trim().min(1, 'An image is required').max(600),
   imageAlt: z.string().trim().max(300).default(''),
   href: z.string().trim().max(300).default(''),
   ctaLabel: z.string().trim().max(40).default(''),
+  /** Product slugs staged with the slide; accepted as a list or a comma-separated string. */
+  models: z
+    .union([z.array(z.string().trim().max(120)), z.string().trim().max(600)])
+    .default([])
+    .transform((value) =>
+      (Array.isArray(value) ? value : value.split(','))
+        .map((slug) => slug.trim())
+        .filter(Boolean)
+        .slice(0, 6),
+    ),
   status: z.enum(['published', 'draft']).default('published'),
   order: z.coerce.number().int().default(0),
 });

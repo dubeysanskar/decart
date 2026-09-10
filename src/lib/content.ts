@@ -8,8 +8,20 @@ import * as content from './repo-content';
  * that depend on this content simply do not appear.
  */
 
-export async function getBanners() {
-  return withDb(() => content.listBanners(true), [] as content.BannerRecord[]);
+export async function getBanners(page = 'home') {
+  return withDb(() => content.listBanners(true, page), [] as content.BannerRecord[]);
+}
+
+/**
+ * The hero row for a page that has one, or null.
+ *
+ * Every page's opener used to be hardcoded in its own file, so changing a headline meant a
+ * deploy. A published banner filed under that page now overrides the eyebrow, title, lede and
+ * artwork; with no row the page keeps the copy it ships with.
+ */
+export async function getPageHero(page: string) {
+  const rows = await getBanners(page);
+  return rows[0] ?? null;
 }
 
 export async function getClientLogos() {

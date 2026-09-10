@@ -12,12 +12,17 @@ import { all, one, run, now, newId, J, parse, bool, type Row, type Arg } from '.
 
 export type BannerRecord = {
   _id: string;
+  /** Which page's hero this belongs to — 'home' for the campaign slider. */
+  page: string;
+  eyebrow: string;
   title: string;
   subtitle: string;
   image: string;
   imageAlt: string;
   href: string;
   ctaLabel: string;
+  /** Product slugs to stage with this slide, in order. */
+  models: string[];
   status: string;
   order: number;
 };
@@ -25,45 +30,92 @@ export type BannerRecord = {
 function mapBanner(row: Row): BannerRecord {
   return {
     _id: String(row.id),
+    page: String(row.page ?? 'home') || 'home',
+    eyebrow: String(row.eyebrow ?? ''),
     title: String(row.title ?? ''),
     subtitle: String(row.subtitle ?? ''),
     image: String(row.image ?? ''),
     imageAlt: String(row.imageAlt ?? ''),
     href: String(row.href ?? ''),
     ctaLabel: String(row.ctaLabel ?? ''),
+    // stored as a comma-separated list: a JSON array in a text column buys nothing here
+    models: String(row.models ?? '')
+      .split(',')
+      .map((slug) => slug.trim())
+      .filter(Boolean),
     status: String(row.status),
     order: Number(row.ord ?? 0),
   };
 }
 
-const BANNER_TEXT_FIELDS = ['title', 'subtitle', 'image', 'imageAlt', 'href', 'ctaLabel', 'status'] as const;
+const BANNER_TEXT_FIELDS = [
+  'page',
+  'eyebrow',
+  'title',
+  'subtitle',
+  'image',
+  'imageAlt',
+  'href',
+  'ctaLabel',
+  'models',
+  'status',
+] as const;
 
-export async function listBanners(publishedOnly = false): Promise<BannerRecord[]> {
+/**
+ * Which columns this connection can actually see.
+ *
+ * Turso hands different clients different schema versions for a while after a migration — the
+ * Node client saw the new banner columns immediately while the bundled one still reported the
+ * old table, so a query naming `page` failed for one process and worked for another. Reading
+ * with SELECT * and writing only the columns PRAGMA reports takes the ordering hazard out of
+ * the deployment entirely: new fields simply start working when the connection catches up.
+ */
+let bannerColumns: Promise<Set<string>> | null = null;
+async function bannerCols(): Promise<Set<string>> {
+  if (!bannerColumns) {
+    bannerColumns = all(`PRAGMA table_info(banners)`)
+      .then((rows) => new Set(rows.map((row) => String(row.name))))
+      .catch(() => new Set<string>());
+  }
+  return bannerColumns;
+}
+
+export async function listBanners(publishedOnly = false, page?: string): Promise<BannerRecord[]> {
   const rows = publishedOnly
     ? await all(`SELECT * FROM banners WHERE status = 'published' ORDER BY ord ASC, createdAt ASC`)
     : await all(`SELECT * FROM banners ORDER BY ord ASC, createdAt ASC`);
-  return rows.map(mapBanner);
+  const mapped = rows.map(mapBanner);
+  // rows written before the column existed read as 'home', which is what they were
+  return page ? mapped.filter((banner) => (banner.page || 'home') === page) : mapped;
 }
 
 export async function insertBanner(data: Record<string, unknown>): Promise<BannerRecord> {
   const id = newId();
   const stamp = now();
+  const cols = await bannerCols();
+
+  const values: Record<string, Arg> = {
+    id,
+    page: String(data.page ?? 'home') || 'home',
+    eyebrow: String(data.eyebrow ?? ''),
+    title: String(data.title ?? ''),
+    subtitle: String(data.subtitle ?? ''),
+    image: String(data.image ?? ''),
+    imageAlt: String(data.imageAlt ?? ''),
+    href: String(data.href ?? ''),
+    ctaLabel: String(data.ctaLabel ?? ''),
+    models: Array.isArray(data.models) ? data.models.join(',') : String(data.models ?? ''),
+    status: String(data.status ?? 'published'),
+    ord: Number(data.order ?? 0),
+    createdAt: stamp,
+    updatedAt: stamp,
+  };
+
+  // only what this connection can see: a column it does not know about is skipped, not fatal
+  const fields = Object.keys(values).filter((field) => !cols.size || cols.has(field));
   await run(
-    `INSERT INTO banners (id, title, subtitle, image, imageAlt, href, ctaLabel, status, ord, createdAt, updatedAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      id,
-      String(data.title ?? ''),
-      String(data.subtitle ?? ''),
-      String(data.image ?? ''),
-      String(data.imageAlt ?? ''),
-      String(data.href ?? ''),
-      String(data.ctaLabel ?? ''),
-      String(data.status ?? 'published'),
-      Number(data.order ?? 0),
-      stamp,
-      stamp,
-    ],
+    `INSERT INTO banners (${fields.join(', ')}) VALUES (${fields.map(() => '?').join(', ')})`,
+    fields.map((field) => values[field]),
   );
   return mapBanner((await one(`SELECT * FROM banners WHERE id = ?`, [id]))!);
 }
@@ -71,11 +123,13 @@ export async function insertBanner(data: Record<string, unknown>): Promise<Banne
 export async function updateBanner(id: string, patch: Record<string, unknown>): Promise<BannerRecord | null> {
   const sets: string[] = [];
   const args: Arg[] = [];
+  const cols = await bannerCols();
   for (const field of BANNER_TEXT_FIELDS) {
-    if (patch[field] !== undefined) {
-      sets.push(`${field} = ?`);
-      args.push(String(patch[field]));
-    }
+    // skip a column this connection cannot see yet rather than failing the whole save
+    if (patch[field] === undefined || (cols.size && !cols.has(field))) continue;
+    sets.push(`${field} = ?`);
+    const value = patch[field];
+    args.push(field === 'models' && Array.isArray(value) ? value.join(',') : String(value));
   }
   if (patch.order !== undefined) {
     sets.push('ord = ?');

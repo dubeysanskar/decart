@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { getDb } from './db';
+import { readyDb } from './db';
 
 /**
  * Repository layer over Turso (libSQL). Every function returns plain objects in the same
@@ -29,7 +29,7 @@ export const bool = (value: unknown) => Boolean(Number(value));
 const likeArg = (q: string) => `%${q.replace(/[\\%_]/g, (m) => `\\${m}`)}%`;
 
 export async function all(sql: string, args: Arg[] = []): Promise<Row[]> {
-  const result = await getDb().execute({ sql, args });
+  const result = await (await readyDb()).execute({ sql, args });
   return result.rows as unknown as Row[];
 }
 
@@ -39,7 +39,7 @@ export async function one(sql: string, args: Arg[] = []): Promise<Row | null> {
 }
 
 export async function run(sql: string, args: Arg[] = []) {
-  return getDb().execute({ sql, args });
+  return (await readyDb()).execute({ sql, args });
 }
 
 async function count(sql: string, args: Arg[] = []): Promise<number> {

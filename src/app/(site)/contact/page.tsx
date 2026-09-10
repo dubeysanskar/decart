@@ -19,6 +19,7 @@ import { buildMetadata } from "@/lib/seo";
 import { CONTACT_DESKS, CONTACT_SUBJECTS, SITE } from "@/lib/site";
 import { waLink, WA } from "@/lib/whatsapp";
 import { listPublic } from "@/lib/assets";
+import { getPageHero } from "@/lib/content";
 
 export const revalidate = 3600;
 
@@ -38,11 +39,13 @@ const PROOF = [
 
 type Search = { desk?: string };
 
-export default function ContactPage({
+export default async function ContactPage({
   searchParams,
 }: {
   searchParams: Search;
 }) {
+  // headline and lede are editable in /admin/banners under the Contact page
+  const hero = await getPageHero("contact");
   const desk =
     CONTACT_DESKS.find((option) => option.id === searchParams.desk) ??
     CONTACT_DESKS[0];
@@ -65,15 +68,14 @@ export default function ContactPage({
               items={[{ name: "Home", href: "/" }, { name: "Contact" }]}
             />
             <p className="mt-5 font-mono text-[11px] uppercase tracking-[0.18em] text-decart-700">
-              We&rsquo;re here to help
+              {hero?.eyebrow || "We’re here to help"}
             </p>
             <h1 className="mt-3 font-display text-h2 text-ink-950">
-              Let&rsquo;s build your workspace
+              {hero?.title || "Let’s build your workspace"}
             </h1>
             <p className="mt-4 max-w-lg text-[0.9375rem] leading-relaxed text-steel-600">
-              Talk straight to the people who make the furniture — one cabin or
-              a full floor, dealer stock, OEM production and custom builds. No
-              call-centre in between.
+              {hero?.subtitle ||
+                "Talk straight to the people who make the furniture — one cabin or a full floor, dealer stock, OEM production and custom builds. No call-centre in between."}
             </p>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">

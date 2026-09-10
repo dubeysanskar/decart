@@ -18,7 +18,7 @@ import { HeroCategorySlider } from '@/components/home/HeroCategorySlider';
 import { ContactBand } from '@/components/site/ContactBand';
 import { SectionHeading } from '@/components/ui/typography';
 import { ButtonLink } from '@/components/ui/Button';
-import { getFeatured, getFamilyTiles, getFeaturedReviews, getProduct } from '@/lib/catalogue';
+import { getAllProducts, getFeatured, getFamilyTiles, getFeaturedReviews, getProduct } from '@/lib/catalogue';
 import { getBanners, getHomeProjects, getClientLogos } from '@/lib/content';
 import { getPublishedPosts } from '@/lib/blog';
 import { HERO_CROPS } from '@/data/hero-cutouts.generated';
@@ -28,7 +28,7 @@ import { ProductImage } from '@/components/ui/ProductImage';
 export const revalidate = 3600;
 
 export default async function HomePage() {
-  const [families, bestsellers, reviews, posts, colourHero, banners, projects, clientLogos] = await Promise.all([
+  const [families, bestsellers, reviews, posts, colourHero, banners, projects, clientLogos, catalogue] = await Promise.all([
     // every visible family, so the directory can show all three groups
     getFamilyTiles(),
     getFeatured(10),
@@ -40,6 +40,8 @@ export default async function HomePage() {
     getBanners(),
     getHomeProjects(3),
     getClientLogos(),
+    // the hero stages a slide's own family, so it needs the photographed catalogue, not the top ten
+    getAllProducts(),
   ]);
 
 
@@ -55,7 +57,7 @@ export default async function HomePage() {
       */}
       <Hero
         banners={banners}
-        lineup={bestsellers
+        lineup={catalogue
           .filter((product) => product.images?.[0]?.src)
           .map((product) => ({
             slug: product.slug,

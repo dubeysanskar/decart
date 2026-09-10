@@ -6,6 +6,7 @@ import { QuoteBand } from '@/components/home/sections';
 import { EmptyState } from '@/components/ui/bits';
 import { ButtonLink } from '@/components/ui/Button';
 import { getAllProducts, getNavFamilies, GROUPS } from '@/lib/catalogue';
+import { getPageHero } from '@/lib/content';
 import { CHECKLIST_CATEGORIES } from '@/data/catalogue.seed';
 import { buildMetadata } from '@/lib/seo';
 import { cn } from '@/lib/utils';
@@ -22,7 +23,7 @@ export const metadata: Metadata = buildMetadata({
 type Search = { group?: string; tag?: string; view?: string };
 
 export default async function ProductsPage({ searchParams }: { searchParams: Search }) {
-  const [families, products] = await Promise.all([getNavFamilies(), getAllProducts()]);
+  const [families, products, hero] = await Promise.all([getNavFamilies(), getAllProducts(), getPageHero('products')]);
 
   const activeGroup = GROUPS.find((g) => g.slug === searchParams.group)?.slug;
   const activeTag = searchParams.tag;
@@ -48,9 +49,12 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
   return (
     <>
       <PageHeader
-        eyebrow="Catalogue"
-        title="Every model we make"
-        lede="Thirty families, 350+ printed models, and a growing set shot in our own studio. Prices are quoted per requirement — send us quantities and a site city."
+        eyebrow={hero?.eyebrow || 'Catalogue'}
+        title={hero?.title || 'Every model we make'}
+        lede={
+          hero?.subtitle ||
+          'Thirty families, 350+ printed models, and a growing set shot in our own studio. Prices are quoted per requirement — send us quantities and a site city.'
+        }
         breadcrumbs={[{ name: 'Home', href: '/' }, { name: 'Products' }]}
       >
         <div className="flex flex-wrap gap-2">

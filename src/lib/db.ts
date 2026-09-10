@@ -1,4 +1,5 @@
 import { createClient, type Client } from '@libsql/client';
+import { ensureSchemaOnce } from './schema';
 
 /**
  * Turso (libSQL) connection with a hot-reload-safe global cache.
@@ -25,6 +26,19 @@ export function getDb(): Client {
 }
 
 /** Run a query when a DB is configured; fall back to `fallback` when it isn't (or when it fails). */
+/**
+ * The client, with the schema brought up to date first.
+ *
+ * Every query goes through here so a database created before a column existed migrates itself
+ * on first use. It used to happen only when somebody ran the seed script, which meant a deploy
+ * could ship a feature its own schema did not support.
+ */
+export async function readyDb(): Promise<Client> {
+  const client = getDb();
+  await ensureSchemaOnce(client);
+  return client;
+}
+
 export async function withDb<T>(run: () => Promise<T>, fallback: T): Promise<T> {
   if (!hasDb()) return fallback;
   try {

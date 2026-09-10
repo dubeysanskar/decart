@@ -25,12 +25,15 @@ import { cn } from '@/lib/utils';
 
 export type HeroBanner = {
   _id: string;
+  eyebrow?: string;
   title: string;
   subtitle: string;
   image: string;
   imageAlt: string;
   href: string;
   ctaLabel?: string;
+  /** Product slugs to stage with this slide, chosen in /admin/banners. */
+  models?: string[];
 };
 
 /** One chair on the stage. Kept minimal so the page can pass catalogue rows straight in. */
@@ -54,10 +57,11 @@ export type HeroModel = {
  * product pages, the number dials, and the headline, supporting line and button still come from
  * /admin/banners, so the hero still rotates.
  *
- * What those banner rows no longer supply is the picture: a room photograph behind the copy is
- * what forced the white veil over the whole frame, and it is not what the campaign looks like.
- * The stage shows photographed models instead, and the banner images stay available for a
- * scenes band elsewhere on the page.
+ * Everything the hero says is editable in /admin/banners — the eyebrow, the two-tone headline,
+ * the supporting line, the button, and which models stand on the stage. What a banner no longer
+ * supplies is a backdrop: a room photograph behind the copy is what forced a white veil across
+ * the whole frame to keep the text readable. It leads the stage instead, on the slides whose
+ * family has nothing photographed yet.
  */
 
 const FEATURES = [
@@ -78,6 +82,12 @@ const SOCIALS = [
 const SLIDE_MS = 6500;
 /** Chairs on the stage at once. Three fills the width without shrinking them to thumbnails. */
 const STAGE = 3;
+
+/** "/products/cafe" and "/products/cafe/comfort-hi-stool" are both the cafe family. */
+function familyFromHref(href?: string): string {
+  const match = /^\/products\/([^/?#]+)/.exec(href ?? '');
+  return match ? match[1] : '';
+}
 
 /**
  * The campaign headline is two-tone, so a banner title can be split the same way: put a "|"
@@ -110,14 +120,57 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
   }, [paused, slides.length]);
 
   const active = hasBanners ? slides[index] : null;
-  const [headline, accent] = active
-    ? splitTitle(active.title)
-    : ['Smart seating', 'for every space.'];
+  const [headline, accent] = active ? splitTitle(active.title) : ['Smart seating', 'for every space.'];
 
-  // a different trio each slide, wrapping, so the stage changes with the copy
-  const trio = shots.length
+  /**
+   * What the slide stages, in the order the slide itself decides.
+   *
+   * 1. the models picked for this banner in /admin/banners,
+   * 2. else the photographed models of the family its button points at,
+   * 3. else nothing — the fallback below leads with the slide's own photograph rather than
+   *    staging chairs that contradict the headline.
+   */
+  const picked = active?.models?.length
+    ? (active.models.map((slug) => shots.find((model) => model.slug === slug)).filter(Boolean) as HeroModel[])
+    : [];
+  const family = familyFromHref(active?.href);
+  const fromFamily = picked.length ? [] : shots.filter((model) => model.family === family);
+  const chosen = (picked.length ? picked : fromFamily).slice(0, STAGE);
+
+  // with no banners at all the hero is the static campaign lockup, and any chairs suit it
+  const fallbackTrio = shots.length
     ? Array.from({ length: Math.min(STAGE, shots.length) }, (_, i) => shots[(index * STAGE + i) % shots.length])
     : [];
+  const staged = hasBanners ? chosen : fallbackTrio;
+
+  /** The big card: the leading model, or the slide's own photograph when it has no models. */
+  const lead =
+    staged[0]
+      ? {
+          kind: 'model' as const,
+          key: staged[0].slug,
+          href: `/products/${staged[0].family}/${staged[0].slug}`,
+          image: staged[0].image,
+          alt: `${staged[0].name} — ${staged[0].code}`,
+          title: `${staged[0].name} (${staged[0].code})`,
+          name: staged[0].name,
+          meta: staged[0].code,
+        }
+      : active
+        ? {
+            kind: 'scene' as const,
+            key: active._id,
+            href: active.href || '/products',
+            image: active.image,
+            alt: active.imageAlt || active.title,
+            title: active.title,
+            name: active.ctaLabel || 'See the range',
+            // the headline is inches away; repeating it under the picture said nothing
+            meta: active.subtitle || 'Explore the range',
+          }
+        : null;
+
+  const support = staged.slice(lead?.kind === 'model' ? 1 : 0, STAGE);
 
   const socials = SOCIALS.map((social) => ({ ...social, href: SITE.social[social.key] })).filter((s) => s.href);
 
@@ -155,9 +208,15 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
               className="inline-flex items-center gap-2 rounded-full border border-white bg-paper/80 py-1.5 pl-2.5 pr-3.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-steel-600 shadow-[0_1px_2px_rgb(15_19_23/0.04)]"
             >
               <MapPin aria-hidden className="h-3.5 w-3.5 text-decart-600" />
-              Own factory, Faridabad
-              <span aria-hidden className="h-1 w-1 rounded-full bg-steel-400" />
-              Since {SITE.established}
+              {active?.eyebrow ? (
+                active.eyebrow
+              ) : (
+                <>
+                  Own factory, Faridabad
+                  <span aria-hidden className="h-1 w-1 rounded-full bg-steel-400" />
+                  Since {SITE.established}
+                </>
+              )}
             </p>
 
             {/* keyed on the slide so the copy animates in with the stage. It must not carry
@@ -284,38 +343,70 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
               ) : null}
 
               {/*
-                One model leads, two support it.
+                One subject leads, the rest support it.
                 Three equal cards gave every chair a third of the width and none of them any
-                presence — the client's word for it was that it needed to be better. A hero has
-                to have a subject, so the first model of the slide takes the big card with its
-                name on it and the other two sit beside it as the range it belongs to.
+                presence. Worse, the models had nothing to do with the headline: a slide reading
+                CAFE CHAIRS staged three mesh task chairs, because the line-up was drawn from the
+                featured pool rather than from the slide. Now the slide decides — the models
+                picked in /admin/banners, else the family its link points at, and if nothing in
+                that family is photographed yet, the slide's own photograph leads instead.
               */}
-              <div className="relative grid gap-2.5 sm:grid-cols-[1.55fr_1fr] sm:gap-3">
-                {trio[0] ? (
+              <div
+                className={cn(
+                  'relative grid gap-2.5 sm:gap-3',
+                  support.length ? 'sm:grid-cols-[1.55fr_1fr]' : 'grid-cols-1',
+                )}
+              >
+                {lead ? (
                   <Link
-                    key={trio[0].slug}
-                    href={`/products/${trio[0].family}/${trio[0].slug}`}
-                    title={`${trio[0].name} (${trio[0].code})`}
-                    className="group relative flex animate-fade-up flex-col rounded-[16px] bg-paper p-2.5 ring-1 ring-white transition-all duration-300 hover:-translate-y-1 hover:shadow-podium sm:p-3"
+                    key={lead.key}
+                    href={lead.href}
+                    title={lead.title}
+                    className={cn(
+                      'group relative flex animate-fade-up flex-col rounded-[16px] bg-paper p-2.5 ring-1 ring-white transition-all duration-300 hover:-translate-y-1 hover:shadow-podium sm:p-3',
+                      // one chair alone would otherwise stretch to the full width of the stage
+                      !support.length && lead?.kind === 'model' && 'mx-auto w-full max-w-[23rem]',
+                    )}
                   >
-                    <div className="relative aspect-[5/4] sm:aspect-[4/5]">
+                    <div
+                      className={cn(
+                        'relative overflow-hidden rounded-[12px]',
+                        lead.kind === 'scene'
+                          ? support.length
+                            ? 'aspect-[5/4] sm:aspect-[4/5]'
+                            : 'aspect-[16/10]'
+                          : 'aspect-[5/4] sm:aspect-[4/5]',
+                      )}
+                    >
                       <Image
-                        src={trio[0].image}
-                        alt={`${trio[0].name} — ${trio[0].code}`}
+                        src={lead.image}
+                        alt={lead.alt}
                         fill
                         priority
                         sizes="(max-width: 640px) 92vw, 340px"
-                        className="object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+                        className={cn(
+                          'transition-transform duration-500 ease-out group-hover:scale-[1.03]',
+                          // a room is cropped to fill; a chair on white is contained
+                          lead.kind === 'scene' ? 'object-cover' : 'object-contain',
+                        )}
                       />
                     </div>
 
                     <div className="mt-2 flex items-end justify-between gap-3 border-t border-line/70 pt-2.5">
                       <span className="min-w-0">
                         <span className="block truncate text-[0.9375rem] font-semibold leading-tight text-ink-950">
-                          {trio[0].name}
+                          {lead.name}
                         </span>
-                        <span className="mt-0.5 block font-mono text-[10px] uppercase tracking-[0.1em] text-steel-400">
-                          {trio[0].code}
+                        <span
+                          className={cn(
+                            'mt-0.5 block truncate text-steel-400',
+                            // a model code wants mono caps; a sentence of copy does not
+                            lead.kind === 'model'
+                              ? 'font-mono text-[10px] uppercase tracking-[0.1em]'
+                              : 'text-[11px]',
+                          )}
+                        >
+                          {lead.meta}
                         </span>
                       </span>
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-line text-ink-900 transition-colors group-hover:border-decart-500 group-hover:bg-decart-600 group-hover:text-white">
@@ -327,8 +418,8 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
                   <div className="aspect-[4/5] rounded-[16px] bg-paper/70" />
                 )}
 
-                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-1 sm:gap-3">
-                  {(trio.length ? trio.slice(1) : [null, null]).map((model, i) => (
+                <div className={cn('grid gap-2.5 sm:gap-3', support.length ? 'grid-cols-2 sm:grid-cols-1' : 'hidden')}>
+                  {support.map((model, i) => (
                     <div key={model?.slug ?? `empty-${i}`} className="min-w-0">
                       {model ? (
                         <Link

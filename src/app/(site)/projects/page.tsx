@@ -5,7 +5,7 @@ import { ArrowRight, MapPin } from 'lucide-react';
 import { PageHeader } from '@/components/site/PageHeader';
 import { QuoteBand } from '@/components/home/sections';
 import { buildMetadata } from '@/lib/seo';
-import { getProjects } from '@/lib/content';
+import { getProjects, getPageHero } from '@/lib/content';
 
 export const revalidate = 3600;
 
@@ -17,14 +17,15 @@ export const metadata: Metadata = buildMetadata({
 });
 
 export default async function ProjectsPage() {
-  const projects = await getProjects();
+  // the opener is editable in /admin/banners under the Projects page
+  const [projects, hero] = await Promise.all([getProjects(), getPageHero('projects')]);
 
   return (
     <>
       <PageHeader
-        eyebrow="Latest projects"
-        title="Floors we have just finished."
-        lede="Recent installations — what the brief was, what we built, and where it went."
+        eyebrow={hero?.eyebrow || 'Latest projects'}
+        title={hero?.title || 'Floors we have just finished.'}
+        lede={hero?.subtitle || 'Recent installations — what the brief was, what we built, and where it went.'}
         breadcrumbs={[{ name: 'Home', href: '/' }, { name: 'Projects' }]}
       />
 

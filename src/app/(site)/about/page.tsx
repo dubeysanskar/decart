@@ -7,6 +7,7 @@ import { QuoteBand } from '@/components/home/sections';
 import { buildMetadata } from '@/lib/seo';
 import { SITE } from '@/lib/site';
 import { listPublic } from '@/lib/assets';
+import { getPageHero } from '@/lib/content';
 
 export const revalidate = 3600;
 
@@ -34,15 +35,20 @@ const MISSION = [
   'Stand behind every piece with real after-sales service.',
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  // the opener is editable in /admin/banners under the About page
+  const hero = await getPageHero('about');
   const portrait = listPublic('team')[0];
 
   return (
     <>
       <PageHeader
-        eyebrow="About DecArt"
-        title="Ten years of building what the working day sits on."
-        lede="DecArt Industries Private Limited designs and manufactures office seating and modular furniture in Faridabad, Haryana. Everything critical happens under our own roof."
+        eyebrow={hero?.eyebrow || 'About DecArt'}
+        title={hero?.title || 'Ten years of building what the working day sits on.'}
+        lede={
+          hero?.subtitle ||
+          'DecArt Industries Private Limited designs and manufactures office seating and modular furniture in Faridabad, Haryana. Everything critical happens under our own roof.'
+        }
         breadcrumbs={[{ name: 'Home', href: '/' }, { name: 'About' }]}
       >
         <div className="flex flex-wrap gap-2">

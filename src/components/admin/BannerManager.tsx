@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Trash2, Pencil, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -9,26 +9,49 @@ import { Input, Select } from '@/components/ui/form';
 import { ImageField } from './ImageField';
 import { useToast } from '@/components/ui/Toast';
 import { HexSpinner } from '@/components/ui/bits';
+import { cn } from '@/lib/utils';
 
 export type BannerRow = {
   _id: string;
+  page: string;
+  eyebrow: string;
   title: string;
   subtitle: string;
   image: string;
   imageAlt: string;
   href: string;
   ctaLabel: string;
+  models: string[];
   status: string;
   order: number;
 };
 
+/**
+ * Which page's hero a row drives. Home is the campaign slider; the rest override that page's
+ * opener — eyebrow, headline and lede — so changing a headline no longer needs a deploy.
+ */
+const PAGES = [
+  { value: 'home', label: 'Home - hero slider' },
+  { value: 'products', label: 'Products' },
+  { value: 'projects', label: 'Projects' },
+  { value: 'blog', label: 'Blog' },
+  { value: 'about', label: 'About' },
+  { value: 'contact', label: 'Contact' },
+  { value: 'quote', label: 'Get a quote' },
+] as const;
+
+type PickerProduct = { slug: string; name: string; code: string; family: string; hasPhoto: boolean };
+
 const EMPTY: Omit<BannerRow, '_id'> = {
+  page: 'home',
+  eyebrow: '',
   title: '',
   subtitle: '',
   image: '',
   imageAlt: '',
   href: '',
   ctaLabel: '',
+  models: [],
   status: 'published',
   order: 0,
 };
@@ -40,6 +63,51 @@ export function BannerManager({ banners }: { banners: BannerRow[] }) {
   const [editing, setEditing] = useState<string | 'new' | null>(null);
   const [draft, setDraft] = useState<Omit<BannerRow, '_id'>>(EMPTY);
   const [busy, setBusy] = useState(false);
+  const [catalogue, setCatalogue] = useState<PickerProduct[]>([]);
+  const [modelQuery, setModelQuery] = useState('');
+
+  // the catalogue is only needed once an editor is open, and only once per visit
+  useEffect(() => {
+    if (!editing || catalogue.length) return;
+    let live = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/products?perPage=600');
+        const json = await res.json().catch(() => null);
+        const rows = (json?.data?.rows ?? json?.data ?? []) as Record<string, unknown>[];
+        if (!live) return;
+        setCatalogue(
+          rows.map((row) => ({
+            slug: String(row.slug ?? ''),
+            name: String(row.name ?? ''),
+            code: String(row.code ?? ''),
+            family: String(row.family ?? ''),
+            hasPhoto: Array.isArray(row.images) && row.images.length > 0,
+          })),
+        );
+      } catch {
+        /* the field still accepts slugs typed by hand */
+      }
+    })();
+    return () => {
+      live = false;
+    };
+  }, [editing, catalogue.length]);
+
+  /** Photographed models first: those are the only ones the hero stage can show. */
+  const modelOptions = useMemo(() => {
+    const q = modelQuery.trim().toLowerCase();
+    return catalogue
+      .filter((product) => product.hasPhoto)
+      .filter((product) => !q || `${product.name} ${product.code} ${product.family}`.toLowerCase().includes(q))
+      .slice(0, 24);
+  }, [catalogue, modelQuery]);
+
+  const toggleModel = (slug: string) =>
+    setDraft((d) => ({
+      ...d,
+      models: d.models.includes(slug) ? d.models.filter((s) => s !== slug) : [...d.models, slug].slice(0, 6),
+    }));
 
   const set = <K extends keyof typeof draft>(key: K, value: (typeof draft)[K]) =>
     setDraft((d) => ({ ...d, [key]: value }));
@@ -51,7 +119,7 @@ export function BannerManager({ banners }: { banners: BannerRow[] }) {
 
   function openEdit(banner: BannerRow) {
     const { _id, ...rest } = banner;
-    setDraft(rest);
+    setDraft({ ...rest, models: rest.models ?? [] });
     setEditing(banner._id);
   }
 
@@ -92,7 +160,8 @@ export function BannerManager({ banners }: { banners: BannerRow[] }) {
         <div>
           <h1 className="font-display text-3xl text-ink-950">Banners</h1>
           <p className="mt-1 text-sm text-steel-600">
-            Campaign artwork for the home page. {banners.length} in the rotation.
+            Hero content for every page — headline, artwork and the models on the stage.{' '}
+            {banners.length} in total.
           </p>
         </div>
         <Button onClick={openNew}>
@@ -124,6 +193,20 @@ export function BannerManager({ banners }: { banners: BannerRow[] }) {
               hint="Wide artwork works best — around 1600×600."
             />
             <div className="grid gap-4 md:grid-cols-2">
+              <Select label="Page" value={draft.page} onChange={(e) => set('page', e.target.value)}>
+                {PAGES.map((page) => (
+                  <option key={page.value} value={page.value}>
+                    {page.label}
+                  </option>
+                ))}
+              </Select>
+              <Input
+                label="Eyebrow"
+                value={draft.eyebrow}
+                onChange={(e) => set('eyebrow', e.target.value)}
+                placeholder="Catalogue"
+                hint="The small line above the headline."
+              />
               <Input
                 label="Title"
                 value={draft.title}
@@ -160,6 +243,78 @@ export function BannerManager({ banners }: { banners: BannerRow[] }) {
                 <option value="draft">Draft (hidden)</option>
               </Select>
             </div>
+
+            {/*
+              Which models stand on the hero stage with this slide. Only photographed models are
+              offered — the stage has nothing to show for the rest, and a slide reading "cafe
+              chairs" over a row of mesh task chairs is exactly what this fixes.
+            */}
+            {draft.page === 'home' ? (
+              <div className="rounded-card border border-line p-4">
+                <p className="text-sm font-medium text-ink-900">Models on the stage</p>
+                <p className="mt-1 text-xs leading-relaxed text-steel-600">
+                  Up to six, staged in the order you pick them. Leave it empty and the slide stages models from the
+                  family its link points at — or its own photograph, if nothing in that family is shot yet.
+                </p>
+
+                {draft.models.length ? (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {draft.models.map((slug) => (
+                      <button
+                        key={slug}
+                        type="button"
+                        onClick={() => toggleModel(slug)}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-decart-300 bg-decart-50 px-2.5 py-1 font-mono text-[11px] text-decart-700 hover:border-danger hover:text-danger"
+                      >
+                        {catalogue.find((product) => product.slug === slug)?.code ?? slug}
+                        <X className="h-3 w-3" />
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+
+                <Input
+                  label="Find a model"
+                  value={modelQuery}
+                  onChange={(e) => setModelQuery(e.target.value)}
+                  placeholder="Mustang, DS-701, mesh"
+                  wrapperClassName="mt-3"
+                />
+
+                <div className="mt-2 max-h-56 overflow-y-auto rounded-btn border border-line">
+                  {modelOptions.length ? (
+                    modelOptions.map((product) => {
+                      const picked = draft.models.includes(product.slug);
+                      return (
+                        <button
+                          key={product.slug}
+                          type="button"
+                          onClick={() => toggleModel(product.slug)}
+                          className={cn(
+                            'flex w-full items-center justify-between gap-3 border-b border-line px-3 py-2 text-left last:border-0 hover:bg-porcelain',
+                            picked && 'bg-decart-50',
+                          )}
+                        >
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm text-ink-950">{product.name}</span>
+                            <span className="block font-mono text-[10px] uppercase tracking-[0.08em] text-steel-400">
+                              {product.code} · {product.family}
+                            </span>
+                          </span>
+                          <span className="shrink-0 text-xs font-semibold text-decart-700">
+                            {picked ? 'Remove' : 'Add'}
+                          </span>
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <p className="px-3 py-4 text-sm text-steel-600">
+                      {catalogue.length ? 'No photographed model matches that.' : 'Loading the catalogue…'}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : null}
           </div>
 
           <div className="mt-6 flex justify-end gap-3">
@@ -192,7 +347,10 @@ export function BannerManager({ banners }: { banners: BannerRow[] }) {
                 <div className="min-w-0">
                   <p className="truncate font-semibold text-ink-950">{banner.title || 'Untitled banner'}</p>
                   <p className="truncate text-sm text-steel-600">{banner.subtitle || banner.href || '—'}</p>
-                  <p className="mt-1 font-mono text-[10px] text-steel-400">order {banner.order}</p>
+                  <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.08em] text-steel-400">
+                    {banner.page || 'home'} · order {banner.order}
+                    {banner.models?.length ? ` · ${banner.models.length} models` : ''}
+                  </p>
                 </div>
                 <div className="flex shrink-0 gap-1">
                   <button

@@ -7,6 +7,7 @@ import { ButtonLink } from '@/components/ui/Button';
 import { QuoteBand } from '@/components/home/sections';
 import { FeaturedSlider } from '@/components/blog/FeaturedSlider';
 import { getPublishedPosts } from '@/lib/blog';
+import { getPageHero } from '@/lib/content';
 import { buildMetadata } from '@/lib/seo';
 import { formatDate } from '@/lib/utils';
 
@@ -20,7 +21,7 @@ export const metadata: Metadata = buildMetadata({
 });
 
 export default async function BlogIndexPage() {
-  const posts = await getPublishedPosts();
+  const [posts, hero] = await Promise.all([getPublishedPosts(), getPageHero('blog')]);
   // the three newest carry the slider, the remainder fill the grid under it
   const featured = posts.slice(0, 3);
   const rest = posts.slice(3);
@@ -28,9 +29,12 @@ export default async function BlogIndexPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Blog"
-        title="Notes from the factory."
-        lede="Specification, ergonomics and procurement — written by the people who build the product, not a content agency."
+        eyebrow={hero?.eyebrow || 'Blog'}
+        title={hero?.title || 'Notes from the factory.'}
+        lede={
+          hero?.subtitle ||
+          'Specification, ergonomics and procurement — written by the people who build the product, not a content agency.'
+        }
         breadcrumbs={[{ name: 'Home', href: '/' }, { name: 'Blog' }]}
       />
 
