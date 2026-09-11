@@ -14,6 +14,10 @@ import { Input, Textarea, Select } from '@/components/ui/form';
 import { useToast } from '@/components/ui/Toast';
 import { HexSpinner } from '@/components/ui/bits';
 import { slugify, truncate, readingMinutes, cn } from '@/lib/utils';
+import { SITE } from '@/lib/site';
+
+/** The live host, for the search-result preview — never a hardcoded domain again. */
+const SITE_HOST = SITE.url.replace(/^https?:\/\//, '');
 
 export type PostDraft = {
   title: string;
@@ -284,7 +288,7 @@ export function BlogEditor({ initial, isNew }: { initial: PostDraft; isNew: bool
             />
             <div className="mt-4 rounded-card border border-line bg-porcelain p-3">
               <p className="text-[#1a0dab]">{truncate(draft.seo.metaTitle || draft.title, 60)}</p>
-              <p className="text-xs text-success">decartseatings.in › blog › {draft.slug}</p>
+              <p className="text-xs text-success">{SITE_HOST} › blog › {draft.slug}</p>
               <p className="mt-1 text-xs text-steel-600">
                 {truncate(draft.seo.metaDescription || draft.excerpt, 160)}
               </p>

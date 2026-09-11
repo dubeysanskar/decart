@@ -7,7 +7,12 @@ export const SITE = {
   brandName: 'DecArt Furniture',
   tagline: 'Trust Is Our Sign',
   established: 2015,
-  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://decartseatings.in',
+  /**
+   * The canonical domain. decart.co.in went live on Vercel on 11 Sep 2026 with its own
+   * certificate; decartseatings.in still serves the old WordPress site, so it must never be the
+   * fallback again — every canonical, sitemap entry and robots Host line came from this value.
+   */
+  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://decart.co.in',
 
   phone: '+91 93119 42001',
   phoneHref: 'tel:+919311942001',

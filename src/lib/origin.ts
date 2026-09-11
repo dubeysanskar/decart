@@ -6,10 +6,10 @@ import { SITE } from './site';
  * The origin this request actually arrived on.
  *
  * SITE.url is the canonical domain and is right for metadata and the sitemap — but it is a
- * build-time constant, and decartseatings.in still serves the old WordPress site while this app
- * runs on Vercel. A quotation link built from SITE.url therefore landed on a 404 on somebody
- * else's site. Anything a person is meant to click has to be built from the host that served
- * them, so it keeps working before and after the domain is pointed here.
+ * build-time constant. While the site lived on a vercel.app preview and SITE.url pointed at
+ * the old WordPress domain, a quotation link built from it landed on a 404 on somebody else's
+ * site. Anything a person is meant to click is built from the host that served them, so it
+ * keeps working on the live domain, on a preview, and on localhost alike.
  */
 export function requestOrigin(): string {
   try {

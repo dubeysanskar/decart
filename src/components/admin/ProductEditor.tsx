@@ -11,6 +11,10 @@ import { useToast } from '@/components/ui/Toast';
 import { HexSpinner } from '@/components/ui/bits';
 import { SPEC_PROFILES, type SpecProfile } from '@/data/specs';
 import { slugify, truncate, cn } from '@/lib/utils';
+import { SITE } from '@/lib/site';
+
+/** The live host, for the search-result preview — never a hardcoded domain again. */
+const SITE_HOST = SITE.url.replace(/^https?:\/\//, '');
 
 export type ProductDraft = {
   code: string;
@@ -435,7 +439,7 @@ export function ProductEditor({
             <div className="rounded-card border border-line bg-porcelain p-4">
               <p className="text-xs uppercase tracking-[0.1em] text-steel-600">Search preview</p>
               <p className="mt-2 text-[#1a0dab]">{truncate(draft.seo.title || draft.name, 60)}</p>
-              <p className="text-xs text-success">decartseatings.in › products › {draft.family} › {draft.slug}</p>
+              <p className="text-xs text-success">{SITE_HOST} › products › {draft.family} › {draft.slug}</p>
               <p className="mt-1 text-sm text-steel-600">
                 {truncate(draft.seo.description || draft.summary, 160)}
               </p>
