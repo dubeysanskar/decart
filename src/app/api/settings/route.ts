@@ -26,7 +26,17 @@ const defaults = () => ({
   replySignature: '',
 });
 
+/**
+ * GET /api/settings — the settings document, admin only.
+ *
+ * It was readable without a session. The secrets were masked, but the SMTP login name, the
+ * Cloudinary cloud name and API key, and the internal mail-routing addresses were not — half
+ * a credential set, handed to anyone who asked. The public site reads settings server-side and
+ * never through this route, so nothing loses access.
+ */
 export async function GET() {
+  const denied = await requireAdmin();
+  if (denied) return denied;
   if (!hasDb()) return NextResponse.json({ ok: true, data: defaults() });
 
   const doc = (await getSettings()) as Record<string, unknown> | null;
