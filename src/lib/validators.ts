@@ -242,8 +242,19 @@ export const smtpSchema = z.object({
   fromEmail: z.union([z.literal(''), z.string().trim().email('Enter a valid address')]).optional().default(''),
 });
 
+/**
+ * Image uploads. Same shape of secret handling as SMTP: the secret is write-only, and the
+ * `__unchanged__` sentinel on PATCH keeps the stored one.
+ */
+export const cloudinarySchema = z.object({
+  cloudName: z.string().trim().max(80).optional().default(''),
+  apiKey: z.string().trim().max(80).optional().default(''),
+  apiSecret: z.string().max(200).optional().default(''),
+});
+
 export const settingsSchema = z.object({
   smtp: smtpSchema.optional(),
+  cloudinary: cloudinarySchema.optional(),
   phone: z.string().max(40).optional(),
   whatsapp: z.string().max(20).optional(),
   emailPrimary: z.union([z.literal(''), z.string().email()]).optional(),

@@ -20,6 +20,7 @@ const defaults: SettingsDraft = {
   announcement: '',
   // blank means "fall back to the environment", which is how an existing deployment keeps working
   smtp: { host: '', port: 587, user: '', pass: '', fromName: '', fromEmail: '', hasPassword: false },
+  cloudinary: { cloudName: '', apiKey: '', apiSecret: '', hasSecret: false },
   replySignature: `${SITE.legalName}\n${SITE.addressFactory}\n${SITE.phone} · ${SITE.emailPrimary}\nTrust is our Sign.`,
 };
 
@@ -50,6 +51,13 @@ export default async function AdminSettingsPage() {
           // the browser is told a password exists, never what it is
           pass: '',
           hasPassword: Boolean((doc.smtp as { pass?: string } | undefined)?.pass),
+        },
+        cloudinary: {
+          ...defaults.cloudinary,
+          ...((doc.cloudinary as SettingsDraft['cloudinary']) ?? {}),
+          // same rule as the SMTP password: the secret stays on the server
+          apiSecret: '',
+          hasSecret: Boolean((doc.cloudinary as { apiSecret?: string } | undefined)?.apiSecret),
         },
         counters: { ...defaults.counters, ...((doc.counters as SettingsDraft['counters']) ?? {}) },
       }

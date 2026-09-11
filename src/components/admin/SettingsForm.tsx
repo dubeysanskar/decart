@@ -32,6 +32,13 @@ export type SettingsDraft = {
     fromEmail: string;
     hasPassword?: boolean;
   };
+  /** Image uploads. hasSecret plays the same role as hasPassword above. */
+  cloudinary: {
+    cloudName: string;
+    apiKey: string;
+    apiSecret: string;
+    hasSecret?: boolean;
+  };
 };
 
 export function SettingsForm({ initial }: { initial: SettingsDraft }) {
@@ -66,6 +73,7 @@ export function SettingsForm({ initial }: { initial: SettingsDraft }) {
         mailRouting,
         // an empty box means "leave the stored password alone", never "clear it"
         smtp: { ...draft.smtp, pass: draft.smtp.pass || SMTP_UNCHANGED },
+        cloudinary: { ...draft.cloudinary, apiSecret: draft.cloudinary.apiSecret || SMTP_UNCHANGED },
       }),
     });
     setBusy(false);
@@ -76,6 +84,9 @@ export function SettingsForm({ initial }: { initial: SettingsDraft }) {
 
   const setSmtp = <K extends keyof SettingsDraft['smtp']>(key: K, value: SettingsDraft['smtp'][K]) =>
     setDraft((d) => ({ ...d, smtp: { ...d.smtp, [key]: value } }));
+
+  const setCloud = <K extends keyof SettingsDraft['cloudinary']>(key: K, value: SettingsDraft['cloudinary'][K]) =>
+    setDraft((d) => ({ ...d, cloudinary: { ...d.cloudinary, [key]: value } }));
 
   async function sendTest() {
     setTesting(true);
@@ -271,6 +282,44 @@ export function SettingsForm({ initial }: { initial: SettingsDraft }) {
           Save first — the test uses the stored settings, and reports the mail server&rsquo;s own error
           if it fails.
         </p>
+      </section>
+
+      {/* Image uploads. Every product, blog and category picture goes through this; without the
+          keys the upload button answers 503 and the catalogue stays a wall of plates. */}
+      <section className="rounded-card border border-line bg-paper p-5">
+        <h2 className="text-lg font-semibold text-ink-950">Image uploads (Cloudinary)</h2>
+        <p className="mt-1 text-sm text-steel-600">
+          From the Cloudinary console under <em>Product Environment Credentials</em>. The secret is
+          stored write-only — it never comes back to the browser.
+        </p>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <Input
+            label="Cloud name"
+            value={draft.cloudinary.cloudName}
+            onChange={(e) => setCloud('cloudName', e.target.value)}
+            placeholder="zmnl5voq"
+          />
+          <Input
+            label="API key"
+            value={draft.cloudinary.apiKey}
+            onChange={(e) => setCloud('apiKey', e.target.value)}
+            inputMode="numeric"
+          />
+          <Input
+            label="API secret"
+            type="password"
+            autoComplete="new-password"
+            value={draft.cloudinary.apiSecret}
+            onChange={(e) => setCloud('apiSecret', e.target.value)}
+            placeholder={draft.cloudinary.hasSecret ? 'Stored — type to replace it' : 'API secret'}
+            hint={
+              draft.cloudinary.hasSecret
+                ? 'A secret is stored. Leave this empty to keep it.'
+                : 'No secret stored yet — uploads are off until one is.'
+            }
+          />
+        </div>
       </section>
     </div>
   );

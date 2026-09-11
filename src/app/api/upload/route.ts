@@ -1,33 +1,50 @@
 import { NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
 import { requireAdmin } from '@/lib/auth';
+import { getSettings } from '@/lib/repo';
+import { hasDb } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 
-const configured = () =>
-  Boolean(
-    process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET,
-  );
+/**
+ * Where the keys come from: /admin/settings first, the environment as the fallback.
+ *
+ * Same rule as SMTP. Keys pasted into the admin go live at once on every instance, with no
+ * deploy and no hosting dashboard — which is what unblocked uploads on the day the client
+ * finally sent them.
+ */
+async function cloudinaryConfig() {
+  let saved: { cloudName?: string; apiKey?: string; apiSecret?: string } = {};
+  if (hasDb()) {
+    try {
+      const doc = (await getSettings()) as { cloudinary?: typeof saved } | null;
+      saved = doc?.cloudinary ?? {};
+    } catch {
+      /* settings unreadable — the environment still stands on its own */
+    }
+  }
+  return {
+    cloud_name: saved.cloudName || process.env.CLOUDINARY_CLOUD_NAME || '',
+    api_key: saved.apiKey || process.env.CLOUDINARY_API_KEY || '',
+    api_secret: saved.apiSecret || process.env.CLOUDINARY_API_SECRET || '',
+  };
+}
 
 /** POST /api/upload — admin-only signed upload for blog covers and extra product images. */
 export async function POST(req: Request) {
   const denied = await requireAdmin();
   if (denied) return denied;
 
-  if (!configured()) {
+  const keys = await cloudinaryConfig();
+  if (!keys.cloud_name || !keys.api_key || !keys.api_secret) {
     return NextResponse.json(
-      { ok: false, error: 'Cloudinary is not configured. Add the CLOUDINARY_* env vars, or use a /public path.' },
+      { ok: false, error: 'Image uploads are not set up yet — add the Cloudinary keys under Settings, or use a /public path.' },
       { status: 503 },
     );
   }
 
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-    secure: true,
-  });
+  cloudinary.config({ ...keys, secure: true });
 
   const form = await req.formData();
   const file = form.get('file');
