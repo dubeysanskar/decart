@@ -73,7 +73,8 @@ export async function getTransport() {
 
 type Routing = Record<string, string[]>;
 
-export function mailRouting(): Routing {
+/** The routing table from the environment alone — the fallback, and the admin form's default. */
+export function envRouting(): Routing {
   try {
     const parsed = JSON.parse(process.env.MAIL_ROUTING_JSON || '{}') as Routing;
     if (!parsed.default?.length) parsed.default = [SITE.emailPrimary];
@@ -83,7 +84,28 @@ export function mailRouting(): Routing {
   }
 }
 
-export function recipientsFor(type: string, routing = mailRouting()) {
+/**
+ * Who each kind of enquiry goes to: /admin/settings first, the environment as the fallback.
+ *
+ * The admin has had a "mail routing" box for months and it was never read — every enquiry
+ * went wherever MAIL_ROUTING_JSON pointed, which on this deployment was a developer's test
+ * inbox. Same rule as the SMTP login now: what the client edits is what the site does.
+ */
+export async function mailRouting(): Promise<Routing> {
+  try {
+    const doc = (await getSettings()) as { mailRouting?: Routing } | null;
+    const saved = doc?.mailRouting;
+    if (saved && Object.values(saved).some((list) => Array.isArray(list) && list.length)) {
+      return saved.default?.length ? saved : { ...saved, default: envRouting().default };
+    }
+  } catch {
+    /* settings unreadable — the environment still stands on its own */
+  }
+  return envRouting();
+}
+
+export async function recipientsFor(type: string) {
+  const routing = await mailRouting();
   return routing[type]?.length ? routing[type] : routing.default;
 }
 
@@ -272,7 +294,7 @@ async function send(opts: nodemailer.SendMailOptions) {
 }
 
 export async function sendAdminNotify(d: LeadMailData) {
-  const to = recipientsFor(String(d.type));
+  const to = await recipientsFor(String(d.type));
   return send({
     to,
     replyTo: d.email || undefined,

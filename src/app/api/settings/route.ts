@@ -5,7 +5,7 @@ import { getSettings, upsertSettings } from '@/lib/repo';
 import { requireAdmin } from '@/lib/auth';
 import { settingsSchema, fieldErrors, SMTP_UNCHANGED } from '@/lib/validators';
 import { SITE } from '@/lib/site';
-import { mailRouting } from '@/lib/mail';
+import { envRouting } from '@/lib/mail';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +14,7 @@ const defaults = () => ({
   phone: SITE.phone,
   whatsapp: SITE.whatsapp,
   emailPrimary: SITE.emailPrimary,
-  mailRouting: mailRouting(),
+  mailRouting: envRouting(),
   addressFactory: SITE.addressFactory,
   addressShowroom: '',
   mapUrl: SITE.mapUrl,
