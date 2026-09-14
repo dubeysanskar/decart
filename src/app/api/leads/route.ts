@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { waitUntil } from '@vercel/functions';
 import { hasDb } from '@/lib/db';
 import {
   insertLead,
@@ -17,6 +18,8 @@ import { absoluteUrl } from '@/lib/origin';
 import { allSeedProducts } from '@/data/catalogue.seed';
 
 export const dynamic = 'force-dynamic';
+// the sends now run after the reply, but the function still has to live long enough to finish them
+export const maxDuration = 30;
 
 const MIN_FILL_MS = 3000;
 
@@ -123,37 +126,54 @@ export async function POST(req: Request) {
     createdAt: new Date(),
   };
 
-  const mailStatus = { admin: '', ack: '' };
+  /*
+    The lead is saved. The e-mails go out AFTER the response, not before it.
 
-  if (await mailConfigured()) {
-    try {
-      await sendAdminNotify(mailData);
-      mailStatus.admin = 'sent';
-    } catch (err) {
-      mailStatus.admin = `failed:${(err as Error).message}`.slice(0, 200);
-      console.error('[leads] admin notify failed', err);
-    }
+    Two Gmail sends in series took 13 seconds here, inside a request that never raised Vercel's
+    ten-second function limit — so the platform killed the request, the visitor saw a failed
+    form, and the enquiry sat safely in the inbox with nobody told. When Gmail was also
+    rejecting the password each attempt hung longer still. From the client's chair that read
+    as "the website is down".
 
-    if (data.email) {
+    waitUntil lets the function finish the sends after the reply has gone; where it is not
+    available (a plain Node server, a script) the sends are simply awaited as before.
+  */
+  const deliver = async () => {
+    const mailStatus = { admin: '', ack: '' };
+    if (await mailConfigured()) {
       try {
-        await sendCustomerAck(mailData);
-        mailStatus.ack = 'sent';
+        await sendAdminNotify(mailData);
+        mailStatus.admin = 'sent';
       } catch (err) {
-        mailStatus.ack = `failed:${(err as Error).message}`.slice(0, 200);
-        console.error('[leads] ack failed', err);
+        mailStatus.admin = `failed:${(err as Error).message}`.slice(0, 200);
+        console.error('[leads] admin notify failed', err);
+      }
+      if (data.email) {
+        try {
+          await sendCustomerAck(mailData);
+          mailStatus.ack = 'sent';
+        } catch (err) {
+          mailStatus.ack = `failed:${(err as Error).message}`.slice(0, 200);
+          console.error('[leads] ack failed', err);
+        }
+      } else {
+        mailStatus.ack = 'skipped:no-email';
       }
     } else {
-      mailStatus.ack = 'skipped:no-email';
+      mailStatus.admin = 'skipped:smtp-not-configured';
+      mailStatus.ack = 'skipped:smtp-not-configured';
     }
-  } else {
-    mailStatus.admin = 'skipped:smtp-not-configured';
-    mailStatus.ack = 'skipped:smtp-not-configured';
-  }
+    try {
+      await setLeadMailStatus(lead._id, mailStatus);
+    } catch (err) {
+      console.error('[leads] mailStatus update failed', err);
+    }
+  };
 
-  try {
-    await setLeadMailStatus(lead._id, mailStatus);
-  } catch (err) {
-    console.error('[leads] mailStatus update failed', err);
+  if (process.env.VERCEL) {
+    waitUntil(deliver());
+  } else {
+    await deliver();
   }
 
   return NextResponse.json({ ok: true, data: { id: lead._id } }, { status: 202 });

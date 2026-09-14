@@ -6,6 +6,8 @@ import { sendReply, mailConfigured } from '@/lib/mail';
 import { SITE } from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
+// an SMTP round trip or a PDF render must not be cut off at the platform's ten-second default
+export const maxDuration = 30;
 
 const DEFAULT_SIGNATURE = `${SITE.legalName}\n${SITE.addressFactory}\n${SITE.phone} · ${SITE.emailPrimary}\nTrust is our Sign.`;
 

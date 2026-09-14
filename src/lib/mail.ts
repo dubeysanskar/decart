@@ -65,6 +65,11 @@ export async function getTransport() {
       // 465 is implicit TLS; 587 upgrades with STARTTLS
       secure: c.port === 465,
       auth: { user: c.user, pass: c.pass },
+      // a mail server that stops answering must fail the send, not hold the request open
+      // until the platform kills it
+      connectionTimeout: 8000,
+      greetingTimeout: 8000,
+      socketTimeout: 15000,
     });
     transportKey = key;
   }

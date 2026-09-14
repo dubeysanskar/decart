@@ -5,6 +5,8 @@ import { SITE } from '@/lib/site';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+// an SMTP round trip or a PDF render must not be cut off at the platform's ten-second default
+export const maxDuration = 30;
 
 /**
  * POST /api/settings/test-mail — proves the saved SMTP settings actually work.

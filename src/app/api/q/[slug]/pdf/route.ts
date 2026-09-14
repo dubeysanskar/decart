@@ -6,6 +6,8 @@ import { buildQuotationPdf, quotationFilename } from '@/lib/quote-pdf';
 // pdf-lib needs the Node runtime; it will not run on the edge
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+// an SMTP round trip or a PDF render must not be cut off at the platform's ten-second default
+export const maxDuration = 30;
 
 /**
  * GET /api/q/[slug]/pdf — the client's own copy from the shared link.

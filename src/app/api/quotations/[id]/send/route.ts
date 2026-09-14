@@ -11,6 +11,8 @@ import { absoluteUrl } from '@/lib/origin';
 // pdf-lib needs the Node runtime
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+// an SMTP round trip or a PDF render must not be cut off at the platform's ten-second default
+export const maxDuration = 30;
 
 /**
  * POST /api/quotations/[id]/send — mark a quotation sent and, for the email channel, mail the
