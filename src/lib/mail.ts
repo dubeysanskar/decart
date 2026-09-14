@@ -17,8 +17,8 @@ export type MailConfig = {
 };
 
 /**
- * Two complete SMTP accounts, in order: the client's own from the Settings screen, and the
- * one in the environment as the fallback.
+ * Up to three complete SMTP accounts, in order: the client's own from the Settings screen,
+ * the deployment's SMTP_* environment, and the developer's SMTP_FALLBACK_* environment.
  *
  * They are resolved as whole accounts, never field by field. The old code took each field
  * from Settings and only the *missing* ones from the environment — so a Settings row with the
@@ -36,14 +36,20 @@ function complete(c: Partial<MailConfig>): c is MailConfig {
   return Boolean(c.host && c.user && c.pass);
 }
 
-function envAccount(): MailAccount | null {
+/**
+ * An account from the environment under a prefix: SMTP_* is the deployment's own account,
+ * SMTP_FALLBACK_* the developer's. Separate names, so the two can sit side by side on the host
+ * without one overwriting the other.
+ */
+function envAccount(prefix: 'SMTP_' | 'SMTP_FALLBACK_'): MailAccount | null {
+  const env = (key: string) => process.env[`${prefix}${key}`] || '';
   const c = {
-    host: process.env.SMTP_HOST || '',
-    port: Number(process.env.SMTP_PORT || 587),
-    user: process.env.SMTP_USER || '',
-    pass: process.env.SMTP_PASS || '',
-    fromName: process.env.SMTP_FROM_NAME || process.env.MAIL_FROM_NAME || SITE.shortName,
-    fromEmail: process.env.SMTP_FROM || process.env.SMTP_USER || SITE.emailPrimary,
+    host: env('HOST'),
+    port: Number(env('PORT') || 587),
+    user: env('USER'),
+    pass: env('PASS'),
+    fromName: env('FROM_NAME') || process.env.MAIL_FROM_NAME || SITE.shortName,
+    fromEmail: env('FROM') || env('USER') || SITE.emailPrimary,
   };
   return complete(c) ? { ...c, source: 'env' } : null;
 }
@@ -67,11 +73,11 @@ async function settingsAccount(): Promise<MailAccount | null> {
   }
 }
 
-/** Primary first, fallback second; either may be absent. */
+/** In order of preference: Settings, then SMTP_*, then SMTP_FALLBACK_*. Any may be absent. */
 export async function mailAccounts(): Promise<MailAccount[]> {
-  const primary = await settingsAccount();
-  const fallback = envAccount();
-  const list = [primary, fallback].filter(Boolean) as MailAccount[];
+  const list = [await settingsAccount(), envAccount('SMTP_'), envAccount('SMTP_FALLBACK_')].filter(
+    Boolean,
+  ) as MailAccount[];
   // the same account twice is not a fallback
   return list.filter((a, i) => list.findIndex((b) => b.host === a.host && b.user === a.user) === i);
 }
@@ -357,7 +363,7 @@ async function send(opts: nodemailer.SendMailOptions) {
     try {
       const name = account.fromName || fromName();
       const info = await transportFor(account).sendMail({ ...opts, from: `${name} <${account.fromEmail}>` });
-      if (account.source === 'env' && accounts[0].source === 'settings') {
+      if (account !== accounts[0]) {
         console.warn(`[mail] primary SMTP (${accounts[0].user}) failed; sent via fallback (${account.user})`);
       }
       return info.messageId as string;
