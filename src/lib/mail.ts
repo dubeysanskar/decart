@@ -17,49 +17,93 @@ export type MailConfig = {
 };
 
 /**
- * SMTP comes from the Settings screen first and the environment second.
+ * Two complete SMTP accounts, in order: the client's own from the Settings screen, and the
+ * one in the environment as the fallback.
  *
- * The environment cannot be edited on a deployed host without a redeploy, which is why the
- * client can set this themselves. Anything they leave blank falls back to the env value, so an
- * existing deployment keeps working untouched.
+ * They are resolved as whole accounts, never field by field. The old code took each field
+ * from Settings and only the *missing* ones from the environment — so a Settings row with the
+ * client's login name and no password borrowed the fallback's password, and every send failed
+ * with a credentials error that looked like nobody's fault. An account is either complete
+ * (host, user, password) or it is not there.
+ *
+ * The fallback is exactly that: used when the primary is not configured, and tried again when
+ * the primary refuses a send — an app password Google revoked, a server that stopped
+ * answering. The lead is already safe in the inbox either way; this is about the alert.
  */
-export async function mailConfig(): Promise<MailConfig> {
-  let saved: Partial<MailConfig> = {};
-  try {
-    const doc = (await getSettings()) as { smtp?: Partial<MailConfig> } | null;
-    saved = doc?.smtp ?? {};
-  } catch {
-    // settings unreadable (no database yet) — the environment still stands on its own
-  }
+export type MailAccount = MailConfig & { source: 'settings' | 'env' };
 
-  const port = Number(saved.port || process.env.SMTP_PORT || 587);
-  return {
-    host: saved.host || process.env.SMTP_HOST || '',
-    port,
-    user: saved.user || process.env.SMTP_USER || '',
-    pass: saved.pass || process.env.SMTP_PASS || '',
-    fromName: saved.fromName || process.env.SMTP_FROM_NAME || SITE.shortName,
-    fromEmail: saved.fromEmail || process.env.SMTP_FROM || process.env.SMTP_USER || SITE.emailPrimary,
-  };
-}
-
-export async function mailConfigured() {
-  const c = await mailConfig();
+function complete(c: Partial<MailConfig>): c is MailConfig {
   return Boolean(c.host && c.user && c.pass);
 }
 
-// cached per configuration, so saving new settings builds a fresh transport instead of
-// silently reusing a connection pointed at the old server
-let transport: nodemailer.Transporter | null = null;
-let transportKey = '';
+function envAccount(): MailAccount | null {
+  const c = {
+    host: process.env.SMTP_HOST || '',
+    port: Number(process.env.SMTP_PORT || 587),
+    user: process.env.SMTP_USER || '',
+    pass: process.env.SMTP_PASS || '',
+    fromName: process.env.SMTP_FROM_NAME || process.env.MAIL_FROM_NAME || SITE.shortName,
+    fromEmail: process.env.SMTP_FROM || process.env.SMTP_USER || SITE.emailPrimary,
+  };
+  return complete(c) ? { ...c, source: 'env' } : null;
+}
 
-export async function getTransport() {
-  const c = await mailConfig();
-  if (!c.host || !c.user || !c.pass) throw new Error('SMTP is not configured');
+async function settingsAccount(): Promise<MailAccount | null> {
+  try {
+    const doc = (await getSettings()) as { smtp?: Partial<MailConfig> } | null;
+    const saved = doc?.smtp ?? {};
+    const c = {
+      host: saved.host || '',
+      port: Number(saved.port || 587),
+      user: saved.user || '',
+      pass: saved.pass || '',
+      fromName: saved.fromName || SITE.shortName,
+      fromEmail: saved.fromEmail || saved.user || SITE.emailPrimary,
+    };
+    return complete(c) ? { ...c, source: 'settings' } : null;
+  } catch {
+    // settings unreadable (no database yet) — the environment still stands on its own
+    return null;
+  }
+}
 
+/** Primary first, fallback second; either may be absent. */
+export async function mailAccounts(): Promise<MailAccount[]> {
+  const primary = await settingsAccount();
+  const fallback = envAccount();
+  const list = [primary, fallback].filter(Boolean) as MailAccount[];
+  // the same account twice is not a fallback
+  return list.filter((a, i) => list.findIndex((b) => b.host === a.host && b.user === a.user) === i);
+}
+
+/** The account a send will try first — what the settings screen and the test mail report. */
+export async function mailConfig(): Promise<MailConfig & { source?: 'settings' | 'env' }> {
+  const [first] = await mailAccounts();
+  return (
+    first ?? {
+      host: '',
+      port: 587,
+      user: '',
+      pass: '',
+      fromName: SITE.shortName,
+      fromEmail: SITE.emailPrimary,
+    }
+  );
+}
+
+export async function mailConfigured() {
+  return (await mailAccounts()).length > 0;
+}
+
+// cached per account, so saving new settings builds a fresh transport instead of silently
+// reusing a connection pointed at the old server
+const transports = new Map<string, nodemailer.Transporter>();
+
+function transportFor(c: MailConfig) {
   const key = `${c.host}:${c.port}:${c.user}:${c.pass.length}`;
-  if (!transport || transportKey !== key) {
-    transport = nodemailer.createTransport({
+  let tx = transports.get(key);
+  if (!tx) {
+    tx = nodemailer.createTransport({
       host: c.host,
       port: c.port,
       // 465 is implicit TLS; 587 upgrades with STARTTLS
@@ -71,9 +115,16 @@ export async function getTransport() {
       greetingTimeout: 8000,
       socketTimeout: 15000,
     });
-    transportKey = key;
+    transports.set(key, tx);
   }
-  return transport;
+  return tx;
+}
+
+/** Kept for callers that want the primary transport alone. */
+export async function getTransport() {
+  const c = await mailConfig();
+  if (!complete(c)) throw new Error('SMTP is not configured');
+  return transportFor(c);
 }
 
 type Routing = Record<string, string[]>;
@@ -291,11 +342,31 @@ export function replyHtml(bodyHtml: string, signature: string) {
 
 // ---------------------------------------------------------------- senders
 
+/**
+ * Sends through the primary account, and through the fallback if the primary refuses.
+ *
+ * Whichever account sends is the From line — Gmail rewrites From to the authenticated user
+ * anyway, so pretending the fallback's message came from the primary would only bounce.
+ */
 async function send(opts: nodemailer.SendMailOptions) {
-  const [tx, config] = await Promise.all([getTransport(), mailConfig()]);
-  const name = config.fromName || fromName();
-  const info = await tx.sendMail({ ...opts, from: `${name} <${config.fromEmail}>` });
-  return info.messageId as string;
+  const accounts = await mailAccounts();
+  if (!accounts.length) throw new Error('SMTP is not configured');
+
+  let lastError: unknown = null;
+  for (const account of accounts) {
+    try {
+      const name = account.fromName || fromName();
+      const info = await transportFor(account).sendMail({ ...opts, from: `${name} <${account.fromEmail}>` });
+      if (account.source === 'env' && accounts[0].source === 'settings') {
+        console.warn(`[mail] primary SMTP (${accounts[0].user}) failed; sent via fallback (${account.user})`);
+      }
+      return info.messageId as string;
+    } catch (error) {
+      lastError = error;
+      console.error(`[mail] send via ${account.source} (${account.user}) failed:`, (error as Error).message.split('\n')[0]);
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('The send failed');
 }
 
 export async function sendAdminNotify(d: LeadMailData) {

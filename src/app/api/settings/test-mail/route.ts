@@ -41,7 +41,10 @@ export async function POST(req: Request) {
 
   try {
     const messageId = await sendReply(to, `Test email from ${SITE.shortName}`, html, 'Admin');
-    return NextResponse.json({ ok: true, data: { to, messageId, host: config.host, port: config.port } });
+    return NextResponse.json({
+      ok: true,
+      data: { to, messageId, host: config.host, port: config.port, user: config.user, source: config.source ?? 'env' },
+    });
   } catch (error) {
     // hand the SMTP server's own words back — "invalid login" is far more useful than "failed"
     return NextResponse.json(
