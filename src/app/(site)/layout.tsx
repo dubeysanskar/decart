@@ -5,7 +5,7 @@ import { SmoothScroll } from '@/components/site/SmoothScroll';
 import { ToastProvider } from '@/components/ui/Toast';
 import { EnquiryProvider } from '@/components/enquiry/EnquiryProvider';
 import { getNavFamilies, GROUPS } from '@/lib/catalogue';
-import { organisationLd, localBusinessLd } from '@/lib/seo';
+import { organisationLd, localBusinessLd, websiteLd, siteNavigationLd } from '@/lib/seo';
 
 export const revalidate = 3600;
 
@@ -35,7 +35,9 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       </EnquiryProvider>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify([organisationLd(), localBusinessLd()]) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([organisationLd(), websiteLd(), siteNavigationLd(), localBusinessLd()]),
+        }}
       />
     </ToastProvider>
   );

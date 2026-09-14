@@ -18,16 +18,22 @@ const mono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500'], display
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   ...buildMetadata({
-    title: 'Trusted Office Furniture Manufacturer in India | DecArt Furniture',
+    // brand first: for the query that matters most — the company's own name — Google shows
+    // the title, and "DecArt Furniture: …" is what earns the brand result and its sitelinks
+    title: 'DecArt Furniture: Trusted Office Furniture Manufacturer in India',
     description:
       'DecArt Furniture is a leading office furniture manufacturer in Faridabad, offering ergonomic seating, workstations and modular designs. Since 2015, 350+ models, BIFMA/SGS-tested components, pan-India delivery.',
     path: '/',
   }),
   title: {
-    default: 'Trusted Office Furniture Manufacturer in India | DecArt Furniture',
+    default: 'DecArt Furniture: Trusted Office Furniture Manufacturer in India',
     template: '%s | DecArt Furniture',
   },
   robots: { index: true, follow: true },
+  // Search Console's HTML-tag method: paste the token into NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+    : undefined,
   manifest: undefined,
 };
 

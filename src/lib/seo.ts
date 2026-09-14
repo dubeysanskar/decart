@@ -52,8 +52,10 @@ export function buildMetadata({
 export const organisationLd = () => ({
   '@context': 'https://schema.org',
   '@type': 'Organization',
+  '@id': `${SITE.url}/#organization`,
   name: SITE.legalName,
-  alternateName: SITE.shortName,
+  // every name the company goes by, so a search for any of them resolves to this site
+  alternateName: [SITE.shortName, SITE.brandName, 'DecArt'],
   url: SITE.url,
   logo: `${SITE.url}/brand/logo.png`,
   slogan: SITE.tagline,
@@ -68,6 +70,49 @@ export const organisationLd = () => ({
     },
   ],
   sameAs: Object.values(SITE.social).filter(Boolean),
+});
+
+/**
+ * The site as a thing Google can name and search.
+ *
+ * WebSite with a SearchAction is what the sitelinks search box is built from, and `name` is
+ * what Google prefers for the site name in results. The navigation list mirrors the header —
+ * it is not an official sitelinks signal, but it states in one place which six sections the
+ * site considers primary, which is what sitelinks are.
+ */
+export const websiteLd = () => ({
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': `${SITE.url}/#website`,
+  url: SITE.url,
+  name: SITE.brandName,
+  alternateName: ['DecArt', SITE.shortName],
+  publisher: { '@id': `${SITE.url}/#organization` },
+  inLanguage: 'en-IN',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: { '@type': 'EntryPoint', urlTemplate: `${SITE.url}/search?q={search_term_string}` },
+    'query-input': 'required name=search_term_string',
+  },
+});
+
+export const siteNavigationLd = () => ({
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  itemListElement: [
+    { name: 'Products', url: '/products', description: 'The full catalogue: 350+ models across thirty families.' },
+    { name: 'Office Seating', url: '/products?group=seating', description: 'Director, executive, mesh, task and visitor chairs.' },
+    { name: 'Tables & Desks', url: '/products?group=tables-desks', description: 'Workstations, conference, reception and executive desks.' },
+    { name: 'Our Company', url: '/about', description: 'Ten years of manufacturing office furniture in Faridabad.' },
+    { name: 'Projects', url: '/projects', description: 'Floors we have recently furnished.' },
+    { name: 'Contact', url: '/contact', description: 'Sales, support and general enquiries.' },
+  ].map((item, i) => ({
+    '@type': 'SiteNavigationElement',
+    position: i + 1,
+    name: item.name,
+    description: item.description,
+    url: `${SITE.url}${item.url}`,
+  })),
 });
 
 export const localBusinessLd = () => ({
