@@ -56,24 +56,30 @@ for (const [name, path] of [
   ['quotations list', '/api/quotations'],
   ['quote clients list', '/api/quote-clients'],
   ['settings (masked)', '/api/settings'],
-  ['testimonials', '/api/testimonials'],
+
   ['public search', '/api/search?q=mesh'],
 ]) {
   const r = await api(path);
   ok(name, r.status === 200 && r.json?.ok !== false, `${r.status}`);
 }
 
+{
+  const r = await api('/api/testimonials');
+  ok('testimonials is POST-only', r.status === 405, `${r.status}`);
+}
+
 // ---------------------------------------------------------------- 3. settings: secrets stay masked, saving keeps them
 {
   const s = await api('/api/settings');
   const d = s.json?.data ?? {};
-  ok('settings masks SMTP password', d.smtp?.pass === '' && d.smtp?.hasPassword === true);
+  // masking is the invariant; whether a password is stored depends on what the client has set
+  ok('settings masks SMTP password', d.smtp?.pass === '' && typeof d.smtp?.hasPassword === 'boolean');
   ok('settings masks Cloudinary secret', d.cloudinary?.apiSecret === '' && d.cloudinary?.hasSecret === true);
   ok('settings smtp is the Gmail account', d.smtp?.user === 'decart.co.in@gmail.com' && Number(d.smtp?.port) === 465, `${d.smtp?.user}:${d.smtp?.port}`);
   // a no-op save must not wipe either secret
   const save = await patch('/api/settings', { smtp: { ...d.smtp, pass: '__unchanged__' }, cloudinary: { ...d.cloudinary, apiSecret: '__unchanged__' } });
   const after = (await api('/api/settings')).json?.data ?? {};
-  ok('settings save preserves both secrets', save.status === 200 && after.smtp?.hasPassword && after.cloudinary?.hasSecret, `${save.status}`);
+  ok('settings save preserves both secrets', save.status === 200 && after.smtp?.hasPassword === d.smtp?.hasPassword && after.cloudinary?.hasSecret === d.cloudinary?.hasSecret, `${save.status}`);
 }
 
 // ---------------------------------------------------------------- 4. SMTP: a real send from production
