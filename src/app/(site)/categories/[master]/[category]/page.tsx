@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { PageHeader } from '@/components/site/PageHeader';
+import { CatalogueHero } from '@/components/catalogue/CatalogueHero';
+import { CatalogueNav } from '@/components/catalogue/CatalogueNav';
 import { FamilyBrowser } from '@/components/product/FamilyBrowser';
 import { QuoteBand } from '@/components/home/sections';
 import { ButtonLink } from '@/components/ui/Button';
-import { getCategory, getCategoryProducts } from '@/lib/taxonomy';
+import { getCategory, getCategoryProducts, getTaxonomy } from '@/lib/taxonomy';
 import { buildMetadata, breadcrumbLd } from '@/lib/seo';
 
 export const revalidate = 3600;
@@ -28,6 +29,7 @@ export async function generateMetadata({
           category.count ? `${category.count} models, ` : ''
         }built to order, delivered pan-India.`,
       path: `/categories/${master.slug}/${category.slug}`,
+      image: category.cover || undefined,
     }),
     // a range with no model online is a made-to-order page, not something to put in a search index
     ...(category.count === 0 ? { robots: { index: false, follow: true } } : {}),
@@ -35,7 +37,7 @@ export async function generateMetadata({
 }
 
 export default async function CategoryPage({ params }: { params: { master: string; category: string } }) {
-  const found = await getCategory(params.master, params.category);
+  const [found, all] = await Promise.all([getCategory(params.master, params.category), getTaxonomy()]);
   if (!found) notFound();
   const { master, category } = found;
 
@@ -43,11 +45,10 @@ export default async function CategoryPage({ params }: { params: { master: strin
   const tags = [...new Set(products.flatMap((p) => p.tags ?? []))].sort();
   // a card in a category says which series it came from, not the category's own name
   const seriesNames = Object.fromEntries(category.series.map((s) => [s.slug, s.name]));
-  const siblings = master.categories.filter((c) => c.slug !== category.slug);
 
   return (
     <>
-      <PageHeader
+      <CatalogueHero
         eyebrow={master.name}
         title={category.name}
         lede={
@@ -63,6 +64,12 @@ export default async function CategoryPage({ params }: { params: { master: strin
           { name: 'Products', href: '/products' },
           { name: master.name, href: master.href },
           { name: category.name },
+        ]}
+        cover={category.cover}
+        stats={[
+          { value: products.length ? String(products.length) : '—', label: 'Models online' },
+          { value: category.series.length ? String(category.series.length) : 'Custom', label: 'Series' },
+          { value: 'Faridabad', label: 'Made in' },
         ]}
       >
         {category.series.length > 1 ? (
@@ -82,7 +89,9 @@ export default async function CategoryPage({ params }: { params: { master: strin
             </div>
           </div>
         ) : null}
-      </PageHeader>
+      </CatalogueHero>
+
+      <CatalogueNav masters={all} activeMaster={master.slug} activeCategory={category.slug} />
 
       {products.length ? (
         <FamilyBrowser products={products} familyName={category.name} tags={tags} seriesNames={seriesNames} />
@@ -105,28 +114,6 @@ export default async function CategoryPage({ params }: { params: { master: strin
           </div>
         </section>
       )}
-
-      {siblings.length ? (
-        <section className="border-t border-line bg-porcelain py-12">
-          <div className="container-x">
-            <p className="text-eyebrow font-semibold uppercase tracking-[0.14em] text-decart-600">More in {master.name}</p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {siblings.map((sibling) => (
-                <Link
-                  key={sibling.slug}
-                  href={sibling.href}
-                  className="rounded-full border border-line bg-paper px-4 py-2 text-sm text-ink-900 hover:border-decart-300 hover:text-decart-700"
-                >
-                  {sibling.name}
-                  {sibling.count > 0 ? (
-                    <span className="ml-2 font-mono text-[10px] text-steel-400">{sibling.count}</span>
-                  ) : null}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
 
       <QuoteBand />
 

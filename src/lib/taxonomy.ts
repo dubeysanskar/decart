@@ -27,6 +27,8 @@ export type CategoryNode = {
   intro: string;
   /** Resolved: the admin's choice, else the best picture among the series it holds. */
   cover: string;
+  /** Only the admin's choice, '' when the picture is automatic — what the editor edits. */
+  coverOwn: string;
   series: SeriesRef[];
   order: number;
   status: string;
@@ -40,6 +42,7 @@ export type MasterNode = {
   name: string;
   intro: string;
   cover: string;
+  coverOwn: string;
   order: number;
   status: string;
   categories: CategoryNode[];
@@ -108,6 +111,7 @@ export async function getTaxonomy({ includeHidden = false }: { includeHidden?: b
             name: c.name,
             intro: c.intro,
             cover: c.cover || bestCover,
+            coverOwn: c.cover,
             series,
             order: c.order,
             status: c.status,
@@ -122,7 +126,9 @@ export async function getTaxonomy({ includeHidden = false }: { includeHidden?: b
         slug: m.slug,
         name: m.name,
         intro: m.intro,
-        cover: m.cover || categories.find((c) => c.cover)?.cover || '',
+        // the fullest category's picture stands for the master, not merely the first one with a picture
+        cover: m.cover || [...categories].filter((c) => c.cover).sort((a, b) => b.count - a.count)[0]?.cover || '',
+        coverOwn: m.cover,
         order: m.order,
         status: m.status,
         categories,

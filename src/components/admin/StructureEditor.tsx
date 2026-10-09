@@ -18,6 +18,7 @@ export type CategoryAdmin = {
   name: string;
   intro: string;
   cover: string;
+  coverOwn: string;
   series: { slug: string; name: string; count: number }[];
   order: number;
   status: string;
@@ -30,6 +31,7 @@ export type MasterAdmin = {
   name: string;
   intro: string;
   cover: string;
+  coverOwn: string;
   order: number;
   status: string;
   categories: CategoryAdmin[];
@@ -73,7 +75,7 @@ export function StructureEditor({
   // the first master category is selected on load, so its draft has to exist from the first render
   const first = initialMasters[0];
   const [masterDraft, setMasterDraft] = useState<MasterDraft | null>(
-    first ? { name: first.name, intro: first.intro, cover: first.cover, order: first.order, status: first.status } : null,
+    first ? { name: first.name, intro: first.intro, cover: first.coverOwn, order: first.order, status: first.status } : null,
   );
   const [categoryDraft, setCategoryDraft] = useState<CategoryDraft | null>(null);
 
@@ -90,7 +92,7 @@ export function StructureEditor({
       setSeriesQuery('');
       if (next?.kind === 'master') {
         const m = source.find((x) => x.slug === next.slug);
-        setMasterDraft(m ? { name: m.name, intro: m.intro, cover: m.cover, order: m.order, status: m.status } : null);
+        setMasterDraft(m ? { name: m.name, intro: m.intro, cover: m.coverOwn, order: m.order, status: m.status } : null);
         setCategoryDraft(null);
       } else if (next?.kind === 'category') {
         const c = source.flatMap((x) => x.categories).find((x) => x.slug === next.slug);
@@ -99,7 +101,7 @@ export function StructureEditor({
             ? {
                 name: c.name,
                 intro: c.intro,
-                cover: c.cover,
+                cover: c.coverOwn,
                 order: c.order,
                 status: c.status,
                 master: c.master,
@@ -377,7 +379,11 @@ export function StructureEditor({
                     label="Picture"
                     value={masterDraft.cover}
                     onChange={(src) => setMasterDraft({ ...masterDraft, cover: src })}
-                    hint="Leave empty to use the best picture from the categories inside."
+                    hint={
+                      masterDraft.cover
+                        ? 'Shown as the large picture at the top of the master category page, and on its tiles.'
+                        : `Automatic for now (${selectedMaster.cover ? selectedMaster.cover.split('/').slice(-2).join('/') : 'no picture'}). Upload one to choose it yourself.`
+                    }
                   />
                 </div>
               </section>
@@ -442,7 +448,11 @@ export function StructureEditor({
                     label="Picture"
                     value={categoryDraft.cover}
                     onChange={(src) => setCategoryDraft({ ...categoryDraft, cover: src })}
-                    hint="Leave empty to use the best picture from the series below."
+                    hint={
+                      categoryDraft.cover
+                        ? 'Shown at the top of the category page and on its tile in menus and the home page.'
+                        : `Automatic for now (${selectedCategory.cover ? selectedCategory.cover.split('/').slice(-2).join('/') : 'no picture'}). Upload one to choose it yourself.`
+                    }
                   />
                 </div>
               </section>
