@@ -12,8 +12,21 @@ import { SITE } from '@/lib/site';
 import { waLink, WA } from '@/lib/whatsapp';
 import { cn } from '@/lib/utils';
 
-export type NavFamily = { slug: string; name: string; group: string; count: number; lede: string; cover?: string };
-export type NavGroup = { slug: string; name: string; families: NavFamily[] };
+/**
+ * One link in the product menu. `href` is carried by the data because the menu now lists
+ * categories (/categories/<master>/<category>) while other callers still pass series
+ * (/products/<series>); rebuilding the address from a slug would only ever suit one of them.
+ */
+export type NavFamily = {
+  slug: string;
+  name: string;
+  group: string;
+  count: number;
+  lede: string;
+  cover?: string;
+  href?: string;
+};
+export type NavGroup = { slug: string; name: string; families: NavFamily[]; href?: string };
 
 /** Client brief: group the corporate pages behind a "Company" dropdown (AFC-style). */
 const COMPANY = [
@@ -30,6 +43,9 @@ const LINKS = [
   { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
 ];
+
+/** Tailwind needs whole class names, so the column count is looked up rather than interpolated. */
+const MEGA_COLS = ['', 'xl:grid-cols-1', 'xl:grid-cols-2', 'xl:grid-cols-3', 'xl:grid-cols-4', 'xl:grid-cols-5', 'xl:grid-cols-6'];
 
 export function Header({ groups }: { groups: NavGroup[] }) {
   const pathname = usePathname();
@@ -143,7 +159,7 @@ export function Header({ groups }: { groups: NavGroup[] }) {
             className={cn(
               'flex items-center gap-1 rounded-btn px-2.5 py-2 text-sm font-medium transition-colors',
               onDark ? 'text-porcelain hover:bg-white/10' : 'text-ink-900 hover:bg-porcelain',
-              pathname.startsWith('/products') && (onDark ? 'bg-white/10' : 'bg-porcelain'),
+              (pathname.startsWith('/products') || pathname.startsWith('/categories')) && (onDark ? 'bg-white/10' : 'bg-porcelain'),
             )}
           >
             Products
@@ -274,19 +290,34 @@ export function Header({ groups }: { groups: NavGroup[] }) {
           onMouseLeave={closeMega}
           className="hidden border-t border-line bg-paper shadow-lift lg:block"
         >
-          <div className="container-x grid grid-cols-3 gap-8 py-8">
+          <div
+            className={cn(
+              'container-x grid grid-cols-3 gap-x-6 gap-y-8 py-8',
+              MEGA_COLS[Math.min(groups.length, 6)],
+            )}
+          >
             {groups.map((group) => (
-              <div key={group.slug}>
-                <p className="text-eyebrow font-semibold uppercase tracking-[0.14em] text-decart-600">{group.name}</p>
+              <div key={group.slug} className="min-w-0">
+                <p className="text-eyebrow font-semibold uppercase tracking-[0.14em] text-decart-600">
+                  {group.href ? (
+                    <Link href={group.href} className="hover:text-decart-700">
+                      {group.name}
+                    </Link>
+                  ) : (
+                    group.name
+                  )}
+                </p>
                 <ul className="mt-4 space-y-0.5">
                   {group.families.map((family) => (
                     <li key={family.slug}>
                       <Link
-                        href={`/products/${family.slug}`}
+                        href={family.href ?? `/products/${family.slug}`}
                         className="group flex items-baseline justify-between gap-3 rounded-btn px-2 py-1.5 hover:bg-porcelain"
                       >
                         <span className="text-sm text-ink-900 group-hover:text-decart-700">{family.name}</span>
-                        <span className="font-mono text-[10px] tracking-[0.08em] text-steel-400">{family.count}</span>
+                        <span className="font-mono text-[10px] tracking-[0.08em] text-steel-400">
+                          {family.count > 0 ? family.count : ''}
+                        </span>
                       </Link>
                     </li>
                   ))}
@@ -357,14 +388,24 @@ export function Header({ groups }: { groups: NavGroup[] }) {
                   </button>
                   {open ? (
                     <ul className="pb-3">
+                      {/* the master category's own page: its whole range in one place */}
+                      {group.href ? (
+                        <li>
+                          <Link href={group.href} className="block py-3 text-[0.9375rem] font-semibold text-decart-700">
+                            All {group.name.toLowerCase()} →
+                          </Link>
+                        </li>
+                      ) : null}
                       {group.families.map((family) => (
                         <li key={family.slug}>
                           <Link
-                            href={`/products/${family.slug}`}
+                            href={family.href ?? `/products/${family.slug}`}
                             className="flex items-center justify-between py-3 text-[0.9375rem] text-steel-600"
                           >
                             {family.name}
-                            <span className="font-mono text-[10px] text-steel-400">{family.count}</span>
+                            <span className="font-mono text-[10px] text-steel-400">
+                              {family.count > 0 ? family.count : ''}
+                            </span>
                           </Link>
                         </li>
                       ))}

@@ -5,7 +5,7 @@ import { ButtonLink } from '@/components/ui/Button';
 import { PriceListSignup } from './PriceListSignup';
 import { SITE } from '@/lib/site';
 import { waLink, WA } from '@/lib/whatsapp';
-import type { NavFamily } from './Header';
+import type { NavFamily, NavGroup } from './Header';
 
 const COMPANY = [
   { href: '/about', label: 'About DecArt' },
@@ -43,7 +43,9 @@ const SOCIALS = [
   { key: 'facebook', label: 'Facebook', Icon: Facebook },
 ] as const;
 
-export function Footer({ families }: { families: NavFamily[] }) {
+export function Footer({ masters }: { families?: NavFamily[]; masters: NavGroup[] }) {
+  // the two columns the footer has room for: the first two master categories on the client's list
+  const columns = masters.slice(0, 2);
   const year = new Date().getFullYear();
   const socials = SOCIALS.map((s) => ({ ...s, href: SITE.social[s.key] })).filter((s) => Boolean(s.href));
 
@@ -81,24 +83,18 @@ export function Footer({ families }: { families: NavFamily[] }) {
 
       {/* ---- link columns, five across like the reference footer ---- */}
       <div className="container-x grid grid-cols-2 gap-x-6 gap-y-10 py-14 md:grid-cols-3 lg:grid-cols-5 lg:gap-8">
-        <FooterColumn title="Seating">
-          {families.slice(0, 6).map((family) => (
-            <FooterLink key={family.slug} href={`/products/${family.slug}`}>
-              {family.name}
+        {columns.map((master) => (
+          <FooterColumn key={master.slug} title={master.name}>
+            {master.families.slice(0, 7).map((category) => (
+              <FooterLink key={category.slug} href={category.href ?? '/products'}>
+                {category.name}
+              </FooterLink>
+            ))}
+            <FooterLink href={master.href ?? '/products'} accent>
+              All {master.name.toLowerCase()}
             </FooterLink>
-          ))}
-          <FooterLink href="/products" accent>
-            All products
-          </FooterLink>
-        </FooterColumn>
-
-        <FooterColumn title="Desks & storage">
-          {families.slice(6, 13).map((family) => (
-            <FooterLink key={family.slug} href={`/products/${family.slug}`}>
-              {family.name}
-            </FooterLink>
-          ))}
-        </FooterColumn>
+          </FooterColumn>
+        ))}
 
         <FooterColumn title="Company">
           {COMPANY.map((link) => (

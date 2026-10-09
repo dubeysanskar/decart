@@ -128,6 +128,49 @@ for (const [name, path] of [
   }
 }
 
+// ---------------------------------------------------------------- 7b. structure: master -> category -> series, end to end
+{
+  const m = await post('/api/structure/masters', { name: 'Audit Master', order: 99 });
+  const mslug = m.json?.data?.slug;
+  ok('master category create', m.status === 201 && mslug, mslug || m.text);
+  if (mslug) {
+    const c = await post('/api/structure/categories', { name: 'Audit Category', master: mslug, order: 1, series: ['cafe', 'lounge', 'not-a-real-series'] });
+    const cslug = c.json?.data?.slug;
+    ok('category create (unknown series dropped)', c.status === 201 && cslug && JSON.stringify(c.json.data.series) === JSON.stringify(['cafe', 'lounge']), JSON.stringify(c.json?.data?.series));
+    const dup = await post('/api/structure/categories', { name: 'Audit Category', master: mslug });
+    ok('duplicate category name refused', dup.status === 409, `${dup.status}`);
+    const noMaster = await post('/api/structure/categories', { name: 'Audit Orphan', master: 'does-not-exist' });
+    ok('category under a missing master refused', noMaster.status === 400, `${noMaster.status}`);
+
+    if (cslug) {
+      const tree = (await api('/api/structure')).json?.data;
+      const node = tree?.masters?.find((x) => x.slug === mslug)?.categories?.find((x) => x.slug === cslug);
+      // cafe 37 + lounge 37 — the count is computed from the series, not stored
+      ok('admin tree resolves the count from its series', node?.count === 74, `count ${node?.count}`);
+
+      const e = await patch(`/api/structure/categories/${cslug}`, { series: ['cafe'], status: 'published' });
+      ok('category edit (series changed)', e.status === 200 && e.json?.data?.series?.length === 1, `${e.status}`);
+
+      // the public page renders it
+      const page = await p.evaluate(async (url) => { const r = await fetch(url); return { status: r.status, text: (await r.text()).slice(0, 300000) }; }, `/categories/${mslug}/${cslug}`);
+      ok('public category page renders', page.status === 200 && /Audit Category/.test(page.text), `${page.status}`);
+
+      // a master with categories cannot be deleted from under them
+      const blocked = await del(`/api/structure/masters/${mslug}`);
+      ok('master with categories cannot be deleted', blocked.status === 409, `${blocked.status}`);
+
+      const dc = await del(`/api/structure/categories/${cslug}`);
+      ok('category delete', dc.status === 200);
+    }
+    const dm = await del(`/api/structure/masters/${mslug}`);
+    ok('master delete', dm.status === 200);
+    const gone = await p.evaluate(async (url) => (await fetch(url)).status, `/categories/${mslug}`);
+    ok('deleted master is a 404', gone === 404, `${gone}`);
+  }
+  const anon = await p.evaluate(async () => { const r = await fetch('/api/structure', { credentials: 'omit' }); return r.status; });
+  ok('structure API refuses a request with no session', anon === 401, `${anon}`);
+}
+
 // ---------------------------------------------------------------- 8. products: edit a field and restore it
 {
   const list = (await api('/api/products?perPage=1&q=mustang')).json?.data;
@@ -179,7 +222,7 @@ for (const [name, path] of [
 }
 
 // ---------------------------------------------------------------- 11. admin pages render
-for (const path of ['/admin', '/admin/products', '/admin/categories', '/admin/banners', '/admin/inbox', '/admin/quotations', '/admin/settings', '/admin/blog', '/admin/projects', '/admin/clients', '/admin/reviews']) {
+for (const path of ['/admin', '/admin/products', '/admin/categories', '/admin/structure', '/admin/banners', '/admin/inbox', '/admin/quotations', '/admin/settings', '/admin/blog', '/admin/projects', '/admin/clients', '/admin/reviews']) {
   const r = await p.goto(B + path, { waitUntil: 'domcontentloaded' });
   await new Promise((res) => setTimeout(res, 600));
   const h1 = await p.evaluate(() => document.querySelector('h1')?.textContent?.trim() ?? '');

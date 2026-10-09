@@ -2,6 +2,7 @@ import 'server-only';
 import { getAllProducts, getNavFamilies, type CatalogueProduct } from './catalogue';
 import { getPublishedPosts } from './blog';
 import { getProjects } from './content';
+import { getAllCategories } from './taxonomy';
 
 /**
  * One search across the catalogue, the families, the writing and the projects.
@@ -18,12 +19,22 @@ import { getProjects } from './content';
 
 export type ProductHit = { kind: 'product'; product: CatalogueProduct; score: number };
 export type FamilyHit = { kind: 'family'; slug: string; name: string; count: number; lede: string; score: number };
+export type CategoryHit = {
+  kind: 'category';
+  slug: string;
+  name: string;
+  masterName: string;
+  count: number;
+  href: string;
+  score: number;
+};
 export type PostHit = { kind: 'post'; slug: string; title: string; excerpt: string; score: number };
 export type ProjectHit = { kind: 'project'; slug: string; title: string; client: string; location: string; score: number };
 
 export type SearchResults = {
   query: string;
   products: ProductHit[];
+  categories: CategoryHit[];
   families: FamilyHit[];
   posts: PostHit[];
   projects: ProjectHit[];
@@ -82,18 +93,19 @@ function allTokensIn(text: string, tokens: string[]): boolean {
   return tokens.every((token) => hay.includes(token) || hayLoose.includes(loose(token)));
 }
 
-export async function siteSearch(rawQuery: string, limits = { products: 24, families: 6, posts: 4, projects: 4 }): Promise<SearchResults> {
+export async function siteSearch(rawQuery: string, limits = { products: 24, categories: 6, families: 6, posts: 4, projects: 4 }): Promise<SearchResults> {
   const q = norm(rawQuery);
-  const empty: SearchResults = { query: rawQuery, products: [], families: [], posts: [], projects: [], total: 0 };
+  const empty: SearchResults = { query: rawQuery, products: [], categories: [], families: [], posts: [], projects: [], total: 0 };
   if (q.length < MIN_QUERY) return empty;
 
   const qLoose = loose(q);
   const tokens = tokenise(q);
-  const [products, families, posts, projects] = await Promise.all([
+  const [products, families, posts, projects, categories] = await Promise.all([
     getAllProducts(),
     getNavFamilies(),
     getPublishedPosts(),
     getProjects(),
+    getAllCategories(),
   ]);
 
   const productHits = products
@@ -101,6 +113,37 @@ export async function siteSearch(rawQuery: string, limits = { products: 24, fami
     .filter((hit) => hit.score > 0)
     .sort((a, b) => b.score - a.score || a.product.order - b.product.order)
     .slice(0, limits.products);
+
+  // the client's own vocabulary: "mesh office chair", "student desk", "almirah"
+  const categoryHits = categories
+    .map((category) => {
+      const name = norm(category.name);
+      const score =
+        name === q
+          ? 100
+          : name.startsWith(q)
+            ? 80
+            : name.includes(q)
+              ? 60
+              : norm(category.masterName).includes(q)
+                ? 25
+                : allTokensIn(`${category.name} ${category.masterName}`, tokens)
+                  ? 18
+                  : 0;
+      return {
+        kind: 'category' as const,
+        slug: category.slug,
+        name: category.name,
+        masterName: category.masterName,
+        count: category.count,
+        href: category.href,
+        score,
+      };
+    })
+    .filter((hit) => hit.score > 0)
+    // among equals, the range with models online is the more useful answer
+    .sort((a, b) => b.score - a.score || b.count - a.count)
+    .slice(0, limits.categories);
 
   const familyHits = families
     .map((family) => {
@@ -161,9 +204,10 @@ export async function siteSearch(rawQuery: string, limits = { products: 24, fami
   return {
     query: rawQuery,
     products: productHits,
+    categories: categoryHits,
     families: familyHits,
     posts: postHits,
     projects: projectHits,
-    total: productHits.length + familyHits.length + postHits.length + projectHits.length,
+    total: productHits.length + categoryHits.length + familyHits.length + postHits.length + projectHits.length,
   };
 }

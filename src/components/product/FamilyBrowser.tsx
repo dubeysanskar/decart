@@ -17,9 +17,12 @@ export function FamilyBrowser({
   products,
   familyName,
   tags,
+  seriesNames,
 }: {
   products: CatalogueProduct[];
   familyName: string;
+  /** In a category that spans several series, each card names its own series, not the category. */
+  seriesNames?: Record<string, string>;
   tags: string[];
 }) {
   const [query, setQuery] = useState('');
@@ -126,7 +129,7 @@ export function FamilyBrowser({
           <>
             <div className="mt-6 grid grid-cols-2 gap-4 md:mt-8 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
               {filtered.slice(0, shown).map((product, i) => (
-                <ProductCard key={product.slug} product={product} familyName={familyName} priority={i < 4} />
+                <ProductCard key={product.slug} product={product} familyName={seriesNames?.[product.family] ?? familyName} priority={i < 4} />
               ))}
             </div>
 

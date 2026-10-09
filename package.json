@@ -16,6 +16,7 @@
     "mobile-audit": "node scripts/mobile-audit.mjs",
     "hero-crops": "node scripts/hero-cutouts.mjs",
     "import-categories": "tsx scripts/import-categories.ts",
+    "import-structure": "tsx scripts/import-structure.ts",
     "audit:backend": "node scripts/backend-audit.mjs",
     "brand": "tsx scripts/brand-assets.ts"
   },

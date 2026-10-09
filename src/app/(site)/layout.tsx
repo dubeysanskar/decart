@@ -4,19 +4,34 @@ import { WhatsAppFloat } from '@/components/site/WhatsAppFloat';
 import { SmoothScroll } from '@/components/site/SmoothScroll';
 import { ToastProvider } from '@/components/ui/Toast';
 import { EnquiryProvider } from '@/components/enquiry/EnquiryProvider';
-import { getNavFamilies, GROUPS } from '@/lib/catalogue';
+import { getNavFamilies } from '@/lib/catalogue';
+import { getTaxonomy } from '@/lib/taxonomy';
 import { organisationLd, localBusinessLd, websiteLd, siteNavigationLd } from '@/lib/seo';
 
 export const revalidate = 3600;
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const families = await getNavFamilies();
+  const [families, masters] = await Promise.all([getNavFamilies(), getTaxonomy()]);
 
-  const groups: NavGroup[] = GROUPS.map((group) => ({
-    slug: group.slug,
-    name: group.name,
-    families: families.filter((f) => f.group === group.slug),
-  })).filter((group) => group.families.length > 0);
+  /*
+    The product menu follows the client's structure: one column per master category, with its
+    categories under it. Series (the thirty-one product lines) are still reachable — from a
+    category's page, from /products, and from search — they just are not the top of the menu.
+  */
+  const groups: NavGroup[] = masters.map((master) => ({
+    slug: master.slug,
+    name: master.name,
+    href: master.href,
+    families: master.categories.map((category) => ({
+      slug: category.slug,
+      name: category.name,
+      group: master.slug,
+      count: category.count,
+      lede: category.intro,
+      cover: category.cover || undefined,
+      href: category.href,
+    })),
+  }));
 
   return (
     <ToastProvider>
@@ -30,13 +45,13 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <main id="content" className="min-h-screen">
         {children}
       </main>
-      <Footer families={families} />
+      <Footer families={families} masters={groups} />
       <WhatsAppFloat />
       </EnquiryProvider>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify([organisationLd(), websiteLd(), siteNavigationLd(), localBusinessLd()]),
+          __html: JSON.stringify([organisationLd(), websiteLd(), siteNavigationLd(masters), localBusinessLd()]),
         }}
       />
     </ToastProvider>

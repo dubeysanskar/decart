@@ -22,7 +22,7 @@ export async function GET(req: Request) {
   }
 
   const q = new URL(req.url).searchParams.get('q') ?? '';
-  const results = await siteSearch(q, { products: 6, families: 3, posts: 2, projects: 2 });
+  const results = await siteSearch(q, { products: 6, categories: 4, families: 3, posts: 2, projects: 2 });
 
   return NextResponse.json({
     ok: true,
@@ -37,6 +37,7 @@ export async function GET(req: Request) {
         name: product.name,
         image: product.images?.[0]?.src ?? null,
       })),
+      categories: results.categories.map(({ slug, name, masterName, count, href }) => ({ slug, name, masterName, count, href })),
       families: results.families.map(({ slug, name, count }) => ({ slug, name, count })),
       posts: results.posts.map(({ slug, title }) => ({ slug, title })),
       projects: results.projects.map(({ slug, title, client }) => ({ slug, title, client })),

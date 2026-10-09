@@ -3,15 +3,17 @@ import { SITE } from '@/lib/site';
 import { getAllProducts, getNavFamilies } from '@/lib/catalogue';
 import { getPublishedPosts } from '@/lib/blog';
 import { getProjects } from '@/lib/content';
+import { getTaxonomy } from '@/lib/taxonomy';
 
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [families, products, posts, projects] = await Promise.all([
+  const [families, products, posts, projects, masters] = await Promise.all([
     getNavFamilies(),
     getAllProducts(),
     getPublishedPosts(),
     getProjects(),
+    getTaxonomy(),
   ]);
 
   const staticRoutes = [
@@ -50,6 +52,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     })),
+    // master categories, and only the categories that have a model online — an empty one is a
+    // made-to-order page marked noindex, and listing it here would contradict that
+    ...masters
+      .filter((master) => master.count > 0)
+      .map((master) => ({
+        url: `${SITE.url}${master.href}`,
+        lastModified: now,
+        changeFrequency: 'weekly' as const,
+        priority: 0.85,
+      })),
+    ...masters.flatMap((master) =>
+      master.categories
+        .filter((category) => category.count > 0)
+        .map((category) => ({
+          url: `${SITE.url}${category.href}`,
+          lastModified: now,
+          changeFrequency: 'weekly' as const,
+          priority: 0.8,
+        })),
+    ),
     ...products.map((product) => ({
       url: `${SITE.url}/products/${product.family}/${product.slug}`,
       lastModified: now,

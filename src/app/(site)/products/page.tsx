@@ -2,49 +2,46 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { PageHeader } from '@/components/site/PageHeader';
 import { ProductCard } from '@/components/product/ProductCard';
+import { MasterDirectory } from '@/components/catalogue/MasterDirectory';
 import { QuoteBand } from '@/components/home/sections';
 import { EmptyState } from '@/components/ui/bits';
 import { ButtonLink } from '@/components/ui/Button';
 import { getAllProducts, getNavFamilies, GROUPS } from '@/lib/catalogue';
 import { getPageHero } from '@/lib/content';
-import { CHECKLIST_CATEGORIES } from '@/data/catalogue.seed';
+import { getTaxonomy } from '@/lib/taxonomy';
 import { buildMetadata } from '@/lib/seo';
-import { cn } from '@/lib/utils';
 
 export const revalidate = 3600;
 
 export const metadata: Metadata = buildMetadata({
   title: 'All Products — Office Chairs, Desks & Furniture',
   description:
-    'The full DecArt catalogue: 350+ models across 30 families — director and executive chairs, ergonomic mesh, task seating, workstations, conference tables and institutional furniture.',
+    'The full DecArt catalogue: 350+ models by master category — seating, tables, storage, sofas and loungers, institutional and health care furniture, built in our Faridabad factory.',
   path: '/products',
 });
 
-type Search = { group?: string; tag?: string; view?: string };
+type Search = { view?: string };
 
 export default async function ProductsPage({ searchParams }: { searchParams: Search }) {
-  const [families, products, hero] = await Promise.all([getNavFamilies(), getAllProducts(), getPageHero('products')]);
+  const [families, products, hero, masters] = await Promise.all([
+    getNavFamilies(),
+    getAllProducts(),
+    getPageHero('products'),
+    getTaxonomy(),
+  ]);
 
-  const activeGroup = GROUPS.find((g) => g.slug === searchParams.group)?.slug;
-  const activeTag = searchParams.tag;
+  const categoryCount = masters.reduce((sum, m) => sum + m.categories.length, 0);
+
   /**
    * The catalogue holds 540+ printed model codes but only the photographed range has imagery.
    * Showing every code by default fills the grid with placeholders and reads as broken, so the
    * default view is "photographed" and the full printed list is one click away.
    */
   const showAll = searchParams.view === 'all';
-
-  const visible = products.filter((p) => {
-    if (activeGroup && p.group !== activeGroup) return false;
-    if (activeTag && !p.tags?.includes(activeTag)) return false;
-    if (!showAll && !p.images?.length) return false;
-    return true;
-  });
-
+  const visible = products.filter((p) => showAll || p.images?.length);
   const photographed = products.filter((p) => p.images?.length).length;
   const ordered = [...visible].sort((a, b) => (b.images?.length ? 1 : 0) - (a.images?.length ? 1 : 0));
   const familyName = (slug: string) => families.find((f) => f.slug === slug)?.name;
-  const withView = (base: string) => (showAll ? `${base}${base.includes('?') ? '&' : '?'}view=all` : base);
 
   return (
     <>
@@ -53,64 +50,64 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
         title={hero?.title || 'Every model we make'}
         lede={
           hero?.subtitle ||
-          'Thirty families, 350+ printed models, and a growing set shot in our own studio. Prices are quoted per requirement — send us quantities and a site city.'
+          `${masters.length} master categories, ${categoryCount} categories, 350+ printed models and a growing set shot in our own studio. Prices are quoted per requirement — send us quantities and a site city.`
         }
         breadcrumbs={[{ name: 'Home', href: '/' }, { name: 'Products' }]}
       >
+        {/* straight to a master category — the same six places the menu opens onto */}
         <div className="flex flex-wrap gap-2">
-          <FilterChip href={withView('/products')} active={!activeGroup && !activeTag}>
-            All
-          </FilterChip>
-          {GROUPS.map((group) => (
-            <FilterChip
-              key={group.slug}
-              href={withView(`/products?group=${group.slug}`)}
-              active={activeGroup === group.slug}
+          {masters.map((master) => (
+            <Link
+              key={master.slug}
+              href={master.href}
+              className="rounded-full border border-line bg-paper px-4 py-2 text-sm font-medium text-ink-900 transition-colors hover:border-ink-800"
             >
-              {group.name}
-            </FilterChip>
+              {master.name}
+            </Link>
           ))}
         </div>
-
-        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-btn border border-line bg-paper p-3">
-          <span className="text-sm text-steel-600">
-            {showAll
-              ? `Showing all ${products.length} printed model codes — ${products.length - photographed} are still awaiting photography.`
-              : `Showing the ${photographed} models we hold studio photography for.`}
-          </span>
-          <a
-            href={showAll ? '/products' : '/products?view=all'}
-            className="ml-auto text-sm font-semibold text-decart-700 hover:underline"
-          >
-            {showAll ? 'Show photographed only' : `Show all ${products.length} model codes →`}
-          </a>
-        </div>
-
-        <div className="mt-5">
-          <p className="text-eyebrow font-semibold uppercase tracking-[0.14em] text-steel-600">Popular categories</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {CHECKLIST_CATEGORIES.filter((c) => families.some((f) => c.families.includes(f.slug))).map((category) => (
-              <Link
-                key={category.slug}
-                href={`/products/${category.families[0]}`}
-                className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-xs font-medium text-steel-600 hover:border-decart-300 hover:text-decart-700"
-              >
-                {category.name}
-              </Link>
-            ))}
-          </div>
-        </div>
       </PageHeader>
+
+      {/* master category -> category, the structure the catalogue is organised by */}
+      <section className="bg-paper pt-10 md:pt-14">
+        <div className="container-x">
+          <h2 className="font-display text-h3 text-ink-950">Browse by category</h2>
+          <p className="mt-2 max-w-2xl text-[0.9375rem] text-steel-600">
+            Start with the kind of furniture, then narrow to the category. Ranges marked <em>Made to order</em> are
+            built in our factory but not listed online yet — send the specification and we will quote it.
+          </p>
+        </div>
+        <div className="mt-6">
+          <MasterDirectory masters={masters} />
+        </div>
+      </section>
 
       <section className="section bg-paper">
         <div className="container-x">
           <div className="mb-8 flex flex-wrap items-baseline justify-between gap-3">
-            <p className="font-mono text-xs uppercase tracking-[0.1em] text-steel-600">
-              {ordered.length} models{activeGroup ? ` · ${GROUPS.find((g) => g.slug === activeGroup)?.name}` : ''}
-            </p>
+            <div>
+              <h2 className="font-display text-h3 text-ink-950">{showAll ? 'Every model code' : 'Models we have photographed'}</h2>
+              <p className="mt-1 font-mono text-xs uppercase tracking-[0.1em] text-steel-600">
+                {ordered.length} models
+              </p>
+            </div>
             <Link href="/downloads" className="text-sm font-semibold text-decart-700 hover:underline">
               Download the full catalogue (PDF) →
             </Link>
+          </div>
+
+          <div className="mb-8 flex flex-wrap items-center gap-3 rounded-btn border border-line bg-paper p-3">
+            <span className="text-sm text-steel-600">
+              {showAll
+                ? `Showing all ${products.length} printed model codes — ${products.length - photographed} are still awaiting photography.`
+                : `Showing the ${photographed} models we hold studio photography for.`}
+            </span>
+            <a
+              href={showAll ? '/products' : '/products?view=all'}
+              className="ml-auto text-sm font-semibold text-decart-700 hover:underline"
+            >
+              {showAll ? 'Show photographed only' : `Show all ${products.length} model codes →`}
+            </a>
           </div>
 
           {ordered.length ? (
@@ -126,7 +123,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
             </div>
           ) : (
             <EmptyState
-              title="No models match those filters"
+              title="No models to show"
               body="Tell us what you need — custom builds are our daily work."
               action={<ButtonLink href="/quote?type=custom">Request a custom build</ButtonLink>}
             />
@@ -135,13 +132,14 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
           {ordered.length > 96 ? (
             <div className="mt-10 text-center">
               <p className="text-sm text-steel-600">
-                Showing the first 96 of {ordered.length}. Browse a family for the complete list.
+                Showing the first 96 of {ordered.length}. Browse a category for the complete list.
               </p>
             </div>
           ) : null}
 
+          {/* the product lines themselves: a category is a view over these, so each is still a page */}
           <div className="mt-14 border-t border-line pt-10">
-            <h2 className="font-display text-h3 text-ink-950">Browse by family</h2>
+            <h2 className="font-display text-h3 text-ink-950">Browse by series</h2>
             <div className="mt-6 grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
               {GROUPS.map((group) => {
                 const inGroup = families.filter((f) => f.group === group.slug);
@@ -174,19 +172,5 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
 
       <QuoteBand />
     </>
-  );
-}
-
-function FilterChip({ href, active, children }: { href: string; active?: boolean; children: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className={cn(
-        'rounded-full border px-4 py-2 text-sm font-medium transition-colors',
-        active ? 'border-ink-900 bg-ink-900 text-porcelain' : 'border-line bg-paper text-ink-900 hover:border-ink-800',
-      )}
-    >
-      {children}
-    </Link>
   );
 }

@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Hero } from '@/components/home/Hero';
-import { CategoryDirectory } from '@/components/home/CategoryDirectory';
+import { MasterDirectory } from '@/components/catalogue/MasterDirectory';
+import { getTaxonomy } from '@/lib/taxonomy';
 import { LatestProjects, ClientWall } from '@/components/home/ContentSections';
 import {
   TrustBar,
@@ -28,7 +29,7 @@ import { ProductImage } from '@/components/ui/ProductImage';
 export const revalidate = 3600;
 
 export default async function HomePage() {
-  const [families, bestsellers, reviews, posts, colourHero, banners, projects, clientLogos, catalogue] = await Promise.all([
+  const [families, bestsellers, reviews, posts, colourHero, banners, projects, clientLogos, catalogue, masters] = await Promise.all([
     // every visible family, so the directory can show all three groups
     getFamilyTiles(),
     getFeatured(10),
@@ -42,6 +43,8 @@ export default async function HomePage() {
     getClientLogos(),
     // the hero stages a slide's own family, so it needs the photographed catalogue, not the top ten
     getAllProducts(),
+    // the browse structure: master categories, and the categories inside each
+    getTaxonomy(),
   ]);
 
 
@@ -84,14 +87,33 @@ export default async function HomePage() {
               href="/products"
               className="group inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 transition-colors hover:text-decart-700"
             >
-              All 30 categories
+              All categories
               <ArrowRight aria-hidden className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
         </div>
       </section>
 
-      <CategoryDirectory families={families} />
+      {/* the client's structure: master category -> category -> products */}
+      <section className="bg-paper pt-12 md:pt-16">
+        <div className="container-x">
+          <SectionHeading
+            eyebrow="Every range"
+            index="01"
+            title="Browse every category"
+            lede={`${masters.length} master categories and ${masters.reduce((sum, m) => sum + m.categories.length, 0)} categories — each one manufactured in our own factory in Faridabad.`}
+            action={
+              <ButtonLink href="/products" variant="secondary">
+                All products
+                <ArrowRight aria-hidden className="h-4 w-4" />
+              </ButtonLink>
+            }
+          />
+        </div>
+        <div className="mt-8">
+          <MasterDirectory masters={masters} />
+        </div>
+      </section>
       <BestsellerRail products={bestsellers} />
       <WhyDecArt />
       <ColourStory product={colourHero ?? undefined} />

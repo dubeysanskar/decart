@@ -11,12 +11,13 @@ type Hits = {
   query: string;
   total: number;
   products: { slug: string; family: string; code: string; name: string; image: string | null }[];
+  categories: { slug: string; name: string; masterName: string; count: number; href: string }[];
   families: { slug: string; name: string; count: number }[];
   posts: { slug: string; title: string }[];
   projects: { slug: string; title: string; client: string }[];
 };
 
-const EMPTY: Hits = { query: '', total: 0, products: [], families: [], posts: [], projects: [] };
+const EMPTY: Hits = { query: '', total: 0, products: [], categories: [], families: [], posts: [], projects: [] };
 
 /** Where people actually go. Shown instead of an empty panel before anything is typed. */
 const SUGGESTIONS = [
@@ -59,6 +60,7 @@ export function SearchDialog({ onDark = false, className }: { onDark?: boolean; 
   const rows = useMemo(
     () => [
       ...hits.products.map((p) => ({ href: `/products/${p.family}/${p.slug}`, key: `p:${p.slug}` })),
+      ...hits.categories.map((c) => ({ href: c.href, key: `c:${c.slug}` })),
       ...hits.families.map((f) => ({ href: `/products/${f.slug}`, key: `f:${f.slug}` })),
       ...hits.posts.map((b) => ({ href: `/blog/${b.slug}`, key: `b:${b.slug}` })),
       ...hits.projects.map((j) => ({ href: `/projects/${j.slug}`, key: `j:${j.slug}` })),
@@ -306,10 +308,35 @@ export function SearchDialog({ onDark = false, className }: { onDark?: boolean; 
                     </Group>
                   ) : null}
 
-                  {hits.families.length ? (
+                  {hits.categories.length ? (
                     <Group title="Categories">
-                      {hits.families.map((family, i) => {
+                      {hits.categories.map((category, i) => {
                         const index = hits.products.length + i;
+                        return (
+                          <Link
+                            key={category.slug}
+                            href={category.href}
+                            onClick={close}
+                            onMouseEnter={() => setActive(index)}
+                            className={cn(rowClass(index), 'justify-between rounded-btn')}
+                          >
+                            <span className="min-w-0">
+                              <span className="block truncate text-sm font-semibold text-ink-950">{category.name}</span>
+                              <span className="block text-[11px] text-steel-400">{category.masterName}</span>
+                            </span>
+                            <span className="shrink-0 font-mono text-[10px] text-steel-400">
+                              {category.count > 0 ? `${category.count} models` : 'Made to order'}
+                            </span>
+                          </Link>
+                        );
+                      })}
+                    </Group>
+                  ) : null}
+
+                  {hits.families.length ? (
+                    <Group title="Series">
+                      {hits.families.map((family, i) => {
+                        const index = hits.products.length + hits.categories.length + i;
                         return (
                           <Link
                             key={family.slug}
@@ -331,7 +358,7 @@ export function SearchDialog({ onDark = false, className }: { onDark?: boolean; 
                   {hits.posts.length ? (
                     <Group title="Articles">
                       {hits.posts.map((post, i) => {
-                        const index = hits.products.length + hits.families.length + i;
+                        const index = hits.products.length + hits.categories.length + hits.families.length + i;
                         return (
                           <Link
                             key={post.slug}
@@ -350,7 +377,7 @@ export function SearchDialog({ onDark = false, className }: { onDark?: boolean; 
                   {hits.projects.length ? (
                     <Group title="Projects">
                       {hits.projects.map((project, i) => {
-                        const index = hits.products.length + hits.families.length + hits.posts.length + i;
+                        const index = hits.products.length + hits.categories.length + hits.families.length + hits.posts.length + i;
                         return (
                           <Link
                             key={project.slug}

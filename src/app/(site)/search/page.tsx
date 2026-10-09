@@ -69,7 +69,7 @@ export default async function SearchPage({ searchParams }: { searchParams: { q?:
 
           {!query.trim() ? (
             <div className="mt-10">
-              <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-steel-400">Browse by category</p>
+              <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-steel-400">Browse by series</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 {families.map((family) => (
                   <Link
@@ -101,9 +101,27 @@ export default async function SearchPage({ searchParams }: { searchParams: { q?:
             />
           ) : (
             <div className="mt-10 flex flex-col gap-12">
-              {results.families.length ? (
+              {results.categories.length ? (
                 <section>
                   <h2 className="font-mono text-[11px] uppercase tracking-[0.16em] text-steel-400">Categories</h2>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {results.categories.map((category) => (
+                      <Link
+                        key={category.slug}
+                        href={category.href}
+                        className="rounded-full border border-line px-3.5 py-1.5 text-sm font-medium text-ink-900 transition-colors hover:border-ink-800 hover:bg-porcelain"
+                      >
+                        {category.name}
+                        <span className="ml-1.5 text-[11px] text-steel-400">{category.masterName}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+
+              {results.families.length ? (
+                <section>
+                  <h2 className="font-mono text-[11px] uppercase tracking-[0.16em] text-steel-400">Series</h2>
                   <div className="mt-4 flex flex-wrap gap-2">
                     {results.families.map((family) => (
                       <Link

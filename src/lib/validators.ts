@@ -185,6 +185,21 @@ export const bannerSchema = z.object({
   order: z.coerce.number().int().default(0),
 });
 
+/** Browse structure: master categories and the categories inside them (see lib/taxonomy.ts). */
+export const masterCategorySchema = z.object({
+  name: z.string().trim().min(1, 'Give it a name').max(80),
+  intro: z.string().trim().max(600).default(''),
+  cover: z.string().trim().max(600).default(''),
+  order: z.coerce.number().int().min(0).max(999).default(0),
+  status: z.enum(['published', 'hidden']).default('published'),
+});
+
+export const catalogueCategorySchema = masterCategorySchema.extend({
+  master: z.string().trim().min(1, 'Pick a master category').max(80),
+  /** Catalogue families shown in this category; unknown slugs are dropped by the route. */
+  series: z.array(z.string().trim().max(80)).max(60).default([]),
+});
+
 export const clientLogoSchema = z.object({
   name: z.string().trim().min(1, 'Client name is required').max(120),
   logo: z.string().trim().max(600).default(''),

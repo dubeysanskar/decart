@@ -5,6 +5,7 @@ import { FamilyBrowser } from '@/components/product/FamilyBrowser';
 import { QuoteBand } from '@/components/home/sections';
 import { getFamilyProducts, getNavFamilies, getFamily, FAMILY_LEDE, getFamilyContent } from '@/lib/catalogue';
 import { FAMILIES } from '@/data/catalogue.seed';
+import { getCategoriesForSeries } from '@/lib/taxonomy';
 import { buildMetadata, breadcrumbLd } from '@/lib/seo';
 import { CategoryContent, categoryFaqLd } from '@/components/product/CategoryContent';
 import { ProductImage } from '@/components/ui/ProductImage';
@@ -37,10 +38,11 @@ export default async function FamilyPage({ params }: { params: { family: string 
   const family = await getFamily(params.family);
   if (!family) notFound();
 
-  const [products, navFamilies, content] = await Promise.all([
+  const [products, navFamilies, content, categories] = await Promise.all([
     getFamilyProducts(family.slug),
     getNavFamilies(),
     getFamilyContent(family.slug),
+    getCategoriesForSeries(family.slug),
   ]);
   const siblings = navFamilies.filter((f) => f.group === family.group && f.slug !== family.slug);
 
@@ -110,6 +112,27 @@ export default async function FamilyPage({ params }: { params: { family: string 
 
       {/* client brief: descriptive copy + an FAQ under every category, both admin-editable */}
       <CategoryContent content={content} familyName={family.name} />
+
+      {/* where this series sits in the master category -> category structure */}
+      {categories.length ? (
+        <section className="border-t border-line bg-paper py-10">
+          <div className="container-x">
+            <p className="text-eyebrow font-semibold uppercase tracking-[0.14em] text-decart-600">Also filed under</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {categories.map((category) => (
+                <a
+                  key={category.slug}
+                  href={category.href}
+                  className="rounded-full border border-line bg-paper px-4 py-2 text-sm text-ink-900 hover:border-decart-300 hover:text-decart-700"
+                >
+                  {category.name}
+                  <span className="ml-2 text-[11px] text-steel-400">{category.masterName}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {siblings.length ? (
         <section className="border-t border-line bg-porcelain py-12">

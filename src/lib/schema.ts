@@ -149,6 +149,36 @@ export const SCHEMA_STATEMENTS = [
   )`,
   `CREATE INDEX IF NOT EXISTS idx_banners_status ON banners (status, ord)`,
 
+  /**
+   * The browse structure the client asked for: master category → category → products.
+   *
+   * `series` on a category is a comma-separated list of catalogue families. Products keep their
+   * single family; a category is a view over one or more of them, which is why a model can show
+   * under "Office Chair" and "Mesh Office Chair" at once without being filed twice. These tables
+   * are the authority once they hold rows; src/data/taxonomy.seed.ts covers the empty case.
+   */
+  `CREATE TABLE IF NOT EXISTS master_categories (
+    slug TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    intro TEXT NOT NULL DEFAULT '',
+    cover TEXT NOT NULL DEFAULT '',
+    ord INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'published',
+    updatedAt TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS catalogue_categories (
+    slug TEXT PRIMARY KEY,
+    master TEXT NOT NULL,
+    name TEXT NOT NULL,
+    intro TEXT NOT NULL DEFAULT '',
+    cover TEXT NOT NULL DEFAULT '',
+    series TEXT NOT NULL DEFAULT '',
+    ord INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'published',
+    updatedAt TEXT NOT NULL
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_catalogue_categories_master ON catalogue_categories (master, ord)`,
+
   /** Client logo wall — replaces the file-system scan of /public/clients once rows exist. */
   `CREATE TABLE IF NOT EXISTS clients (
     id TEXT PRIMARY KEY,

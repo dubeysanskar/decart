@@ -229,9 +229,10 @@ export function CategoryEditor({ categories }: { categories: CategoryDraft[] }) 
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h1 className="font-display text-3xl text-ink-950">Categories</h1>
+        <h1 className="font-display text-3xl text-ink-950">Series</h1>
         <p className="mt-1 text-sm text-steel-600">
-          The description and FAQ shown under each product category. Both appear on the public page and feed
+          The description and FAQ shown under each product series. (The master categories and categories are in
+          Categories.) Both appear on the public page and feed
           Google&rsquo;s FAQ rich results.
         </p>
       </div>

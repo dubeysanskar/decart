@@ -96,13 +96,17 @@ export const websiteLd = () => ({
   },
 });
 
-export const siteNavigationLd = () => ({
+export const siteNavigationLd = (masters: { name: string; href: string }[] = []) => ({
   '@context': 'https://schema.org',
   '@type': 'ItemList',
   itemListElement: [
-    { name: 'Products', url: '/products', description: 'The full catalogue: 350+ models across thirty families.' },
-    { name: 'Office Seating', url: '/products?group=seating', description: 'Director, executive, mesh, task and visitor chairs.' },
-    { name: 'Tables & Desks', url: '/products?group=tables-desks', description: 'Workstations, conference, reception and executive desks.' },
+    { name: 'Products', url: '/products', description: 'The full catalogue, by master category.' },
+    // the first three master categories on the client's list, named and linked as they are
+    ...masters.slice(0, 3).map((m) => ({
+      name: m.name,
+      url: m.href,
+      description: `${m.name} — categories and models.`,
+    })),
     { name: 'Our Company', url: '/about', description: 'Ten years of manufacturing office furniture in Faridabad.' },
     { name: 'Projects', url: '/projects', description: 'Floors we have recently furnished.' },
     { name: 'Contact', url: '/contact', description: 'Sales, support and general enquiries.' },
