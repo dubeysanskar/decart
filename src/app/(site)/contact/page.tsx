@@ -140,10 +140,10 @@ export default async function ContactPage({
 
       {/* --------------------------------------------------- form beside the desks */}
       <section className="bg-paper py-8 md:py-10">
-        <div className="container-x grid gap-8 lg:grid-cols-[minmax(0,22rem)_1fr] lg:gap-12">
+        <div className="container-x grid gap-8 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:items-start lg:gap-10">
           <div
             id="enquiry"
-            className="min-w-0 scroll-mt-24 rounded-card border border-line bg-paper p-5 md:max-w-lg md:p-6 lg:max-w-none"
+            className="min-w-0 scroll-mt-24 rounded-card border border-line bg-paper p-5 md:p-7"
           >
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-steel-400">
               Get in touch

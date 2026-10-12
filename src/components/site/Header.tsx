@@ -49,8 +49,9 @@ const MEGA_COLS = ['', 'xl:grid-cols-1', 'xl:grid-cols-2', 'xl:grid-cols-3', 'xl
 
 export function Header({ groups }: { groups: NavGroup[] }) {
   const pathname = usePathname();
-  // bright "smart seating" design: the header is always the light bar, on every page
-  const overlay = false;
+  // the home hero is a full-bleed photograph, so there the bar floats on it until you scroll;
+  // everywhere else it is the solid light bar
+  const overlay = pathname === '/';
   const [scrolled, setScrolled] = useState(!overlay);
   const [megaOpen, setMegaOpen] = useState(false);
   const [companyOpen, setCompanyOpen] = useState(false);
@@ -95,7 +96,9 @@ export function Header({ groups }: { groups: NavGroup[] }) {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  const onDark = overlay && !scrolled;
+  // the photograph is light, so the text stays dark: only the bar's own background goes clear
+  const onDark = false;
+  const clear = overlay && !scrolled && !megaOpen && !companyOpen && !drawerOpen;
 
   const openMega = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
@@ -123,7 +126,7 @@ export function Header({ groups }: { groups: NavGroup[] }) {
     <header
       className={cn(
         'fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,height] duration-300',
-        onDark ? 'border-b border-transparent bg-transparent' : 'border-b border-line bg-paper/95 backdrop-blur',
+        clear ? 'border-b border-transparent bg-transparent' : 'border-b border-line bg-paper/95 backdrop-blur',
       )}
       onMouseLeave={closeMega}
     >
@@ -292,13 +295,13 @@ export function Header({ groups }: { groups: NavGroup[] }) {
         >
           <div
             className={cn(
-              'container-x grid grid-cols-3 gap-x-6 gap-y-8 py-8',
+              'container-x grid grid-cols-3 gap-x-5 gap-y-8 py-7',
               MEGA_COLS[Math.min(groups.length, 6)],
             )}
           >
             {groups.map((group) => (
               <div key={group.slug} className="min-w-0">
-                <p className="text-eyebrow font-semibold uppercase tracking-[0.14em] text-decart-600">
+                <p className="border-b border-line px-2 pb-3 text-eyebrow font-semibold uppercase tracking-[0.14em] text-decart-600">
                   {group.href ? (
                     <Link href={group.href} className="hover:text-decart-700">
                       {group.name}
@@ -307,15 +310,18 @@ export function Header({ groups }: { groups: NavGroup[] }) {
                     group.name
                   )}
                 </p>
-                <ul className="mt-4 space-y-0.5">
+                <ul className="mt-3 space-y-0.5">
                   {group.families.map((family) => (
                     <li key={family.slug}>
                       <Link
                         href={family.href ?? `/products/${family.slug}`}
-                        className="group flex items-baseline justify-between gap-3 rounded-btn px-2 py-1.5 hover:bg-porcelain"
+                        className="group grid grid-cols-[minmax(0,1fr)_1.75rem] items-start gap-x-2 rounded-btn px-2 py-1.5 hover:bg-porcelain"
                       >
-                        <span className="text-sm text-ink-900 group-hover:text-decart-700">{family.name}</span>
-                        <span className="font-mono text-[10px] tracking-[0.08em] text-steel-400">
+                        <span className="text-[13.5px] leading-snug text-ink-900 group-hover:text-decart-700">
+                          {family.name}
+                        </span>
+                        {/* always rendered, so the count column holds its place on rows with no count */}
+                        <span className="pt-[3px] text-right font-mono text-[10px] tabular-nums text-steel-400">
                           {family.count > 0 ? family.count : ''}
                         </span>
                       </Link>

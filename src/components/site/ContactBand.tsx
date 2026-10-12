@@ -62,11 +62,11 @@ export function ContactBand({
                 key={desk.id}
                 data-anim="up"
                 className={cn(
-                  'flex min-w-0 gap-5 rounded-card border border-line bg-paper p-6 shadow-[0_1px_2px_rgb(15_19_23/0.04),0_10px_28px_-20px_rgb(15_19_23/0.3)] transition-shadow hover:shadow-lift',
-                  stacked ? 'items-center' : 'flex-col',
+                  'min-w-0 rounded-card border border-line bg-paper shadow-[0_1px_2px_rgb(15_19_23/0.04),0_10px_28px_-20px_rgb(15_19_23/0.3)] transition-shadow hover:shadow-lift',
+                  stacked ? 'grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-4 gap-y-4 p-5' : 'flex flex-col gap-5 p-6',
                 )}
               >
-                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-cognac-500/[0.13] text-cognac-700">
+                <span className={cn('flex shrink-0 items-center justify-center rounded-full bg-cognac-500/[0.13] text-cognac-700', stacked ? 'h-12 w-12' : 'h-14 w-14')}>
                   <Icon aria-hidden className="h-6 w-6" strokeWidth={1.5} />
                 </span>
 
@@ -80,7 +80,7 @@ export function ContactBand({
                     <div className="flex min-w-0 items-center gap-2">
                       <Phone aria-hidden className="h-4 w-4 shrink-0 text-steel-400" />
                       <dt className="sr-only">Phone</dt>
-                      <dd className="flex min-w-0 flex-wrap gap-x-2">
+                      <dd className="flex min-w-0 flex-wrap gap-x-2 whitespace-nowrap">
                         {desk.phones.map((phone) => (
                           <a
                             key={phone}
@@ -109,7 +109,7 @@ export function ContactBand({
                   href={`/contact?desk=${desk.id}#enquiry`}
                   className={cn(
                     'group inline-flex shrink-0 items-center justify-center gap-2 rounded-[10px] border border-cognac-500 px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-cognac-700 transition-colors hover:bg-cognac-500 hover:text-white sm:min-w-[11rem]',
-                    stacked ? 'self-center' : 'mt-auto self-start',
+                    stacked ? 'col-span-2 w-full' : 'mt-auto self-start',
                   )}
                 >
                   {desk.cta}
