@@ -49,8 +49,9 @@ const MEGA_COLS = ['', 'xl:grid-cols-1', 'xl:grid-cols-2', 'xl:grid-cols-3', 'xl
 
 export function Header({ groups }: { groups: NavGroup[] }) {
   const pathname = usePathname();
-  // the header is the plain light bar on every page, with nothing shaded over it
-  const overlay = false;
+  // on the home page the bar is clear and sits straight on the hero's own background until you
+  // scroll or open a menu; every other page has the solid light bar
+  const overlay = pathname === '/';
   const [scrolled, setScrolled] = useState(!overlay);
   const [megaOpen, setMegaOpen] = useState(false);
   const [companyOpen, setCompanyOpen] = useState(false);
