@@ -149,7 +149,10 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
   const fallbackTrio = shots.length
     ? Array.from({ length: Math.min(STAGE, shots.length) }, (_, i) => shots[(index * STAGE + i) % shots.length])
     : [];
-  const staged = hasBanners ? chosen : fallbackTrio;
+  // with a slide photograph filling the hero, a white product card on top of it looks pasted in, so
+  // every slide shows the same caption card and the photograph carries the picture; the product cards
+  // only appear on the static fallback, which has no photograph
+  const staged = hasBanners ? [] : fallbackTrio;
 
   /** The big card: the leading model, or the slide's own photograph when it has no models. */
   const lead =
