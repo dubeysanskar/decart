@@ -143,7 +143,7 @@ export default async function ContactPage({
         <div className="container-x grid gap-8 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:items-start lg:gap-10">
           <div
             id="enquiry"
-            className="min-w-0 scroll-mt-24 rounded-card border border-line bg-paper p-5 md:p-7"
+            className="min-w-0 scroll-mt-24 rounded-card border border-line bg-paper p-5 md:p-5 lg:p-5"
           >
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-steel-400">
               Get in touch
@@ -159,7 +159,18 @@ export default async function ContactPage({
               desk — use a button on the right to send it elsewhere.
             </p>
 
-            <div className="mt-6">
+            <div
+              className={[
+                'mt-5',
+                // one screen on a laptop: shorter fields and message box, the small hint lines
+                // folded away, tighter gaps. Phones keep the roomier layout.
+                'lg:mt-3 lg:[&_form]:gap-2',
+                'lg:[&_input]:h-10 lg:[&_select]:h-10 lg:[&_input]:rounded-xl lg:[&_select]:rounded-xl lg:[&_textarea]:rounded-xl',
+                'lg:[&_textarea]:h-[4.5rem] lg:[&_textarea]:min-h-0 lg:[&_textarea]:resize-none',
+                'lg:[&_label]:text-[13px] lg:[&_.flex-col]:gap-1',
+                'lg:[&_p.text-xs:not(.leading-relaxed)]:hidden',
+              ].join(' ')}
+            >
               {/* keyed on the desk so switching gives a clean form, and the lead lands in the
                   admin under the right type */}
               <LeadForm
