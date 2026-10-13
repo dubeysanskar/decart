@@ -68,7 +68,7 @@ export function Breadcrumbs({ items }: { items: { name: string; href?: string }[
         <span key={`${item.name}-${i}`} className="flex items-center gap-1">
           {i > 0 ? <ChevronRight aria-hidden className="h-3.5 w-3.5 text-steel-400" /> : null}
           {item.href ? (
-            <Link href={item.href} className="hover:text-ink-900 hover:underline">
+            <Link href={item.href} className="-my-2 inline-flex min-h-[40px] items-center px-0.5 hover:text-ink-900 hover:underline md:my-0 md:min-h-0">
               {item.name}
             </Link>
           ) : (

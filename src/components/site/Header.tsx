@@ -49,9 +49,8 @@ const MEGA_COLS = ['', 'xl:grid-cols-1', 'xl:grid-cols-2', 'xl:grid-cols-3', 'xl
 
 export function Header({ groups }: { groups: NavGroup[] }) {
   const pathname = usePathname();
-  // the home hero is a full-bleed photograph, so there the bar floats on it until you scroll;
-  // everywhere else it is the solid light bar
-  const overlay = pathname === '/';
+  // the header is the plain light bar on every page, with nothing shaded over it
+  const overlay = false;
   const [scrolled, setScrolled] = useState(!overlay);
   const [megaOpen, setMegaOpen] = useState(false);
   const [companyOpen, setCompanyOpen] = useState(false);
@@ -123,6 +122,7 @@ export function Header({ groups }: { groups: NavGroup[] }) {
   const companyActive = COMPANY.some((item) => pathname.startsWith(item.href));
 
   return (
+    <>
     <header
       className={cn(
         'fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,height] duration-300',
@@ -349,7 +349,10 @@ export function Header({ groups }: { groups: NavGroup[] }) {
         </div>
       ) : null}
 
-      {/* mobile drawer */}
+    </header>
+
+      {/* mobile drawer — a sibling of the header, not a child: the header's backdrop-blur makes it the
+          containing block for fixed descendants, which squeezed the drawer to the bar's 64px height */}
       {drawerOpen ? (
         <div className="fixed inset-0 z-50 flex flex-col bg-paper lg:hidden">
           <div className="flex h-16 shrink-0 items-center justify-between border-b border-line px-5">
@@ -482,6 +485,6 @@ export function Header({ groups }: { groups: NavGroup[] }) {
           </div>
         </div>
       ) : null}
-    </header>
+    </>
   );
 }

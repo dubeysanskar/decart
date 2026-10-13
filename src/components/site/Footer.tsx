@@ -230,7 +230,7 @@ function FooterColumn({ title, children }: { title: string; children: React.Reac
   return (
     <nav aria-label={title} className="min-w-0">
       <h2 className="text-eyebrow font-semibold uppercase tracking-[0.14em] text-decart-300">{title}</h2>
-      <ul className="mt-5 space-y-3">{children}</ul>
+      <ul className="mt-4 md:mt-5 md:space-y-3">{children}</ul>
     </nav>
   );
 }
@@ -240,7 +240,7 @@ function FooterLink({ href, children, accent }: { href: string; children: React.
     <li>
       <Link
         href={href}
-        className={`group inline-flex items-center gap-1.5 text-sm transition-colors ${
+        className={`group inline-flex min-h-[44px] items-center gap-1.5 text-sm transition-colors md:min-h-0 ${
           accent ? 'font-medium text-decart-300 hover:text-porcelain' : 'text-steel-400 hover:text-porcelain'
         }`}
       >
