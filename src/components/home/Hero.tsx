@@ -80,6 +80,14 @@ const SOCIALS = [
 ] as const;
 
 const SLIDE_MS = 6500;
+
+/** Where each photograph is anchored when the hero crops it; a portrait cabin shot would otherwise show the ceiling. */
+const FOCUS: Record<string, string> = {
+  '/scenes/executive-cabin.webp': '50% 62%',
+  '/scenes/cafe-dining.webp': '60% 70%',
+  '/scenes/lounge-lobby.webp': '60% 60%',
+  '/scenes/school-atrium.webp': '65% 55%',
+};
 /** Chairs on the stage at once. Three fills the width without shrinking them to thumbnails. */
 const STAGE = 3;
 
@@ -183,20 +191,44 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
     >
-      {/* the campaign ground: a cool wash falling to white, as on their artwork */}
+      {/* the slide photographs fill the whole hero, stacked and crossfaded so a change never flashes */}
+      {hasBanners
+        ? slides.map((slide, i) => (
+            <Image
+              key={slide._id}
+              src={slide.image}
+              alt=""
+              fill
+              priority={i === 0}
+              sizes="100vw"
+              className={cn(
+                'object-cover transition-opacity duration-700 ease-out',
+                i === index ? 'opacity-100' : 'opacity-0',
+              )}
+              style={{ objectPosition: FOCUS[slide.image] ?? '60% 55%' }}
+            />
+          ))
+        : null}
+      {/* the campaign's cool wash is the ground when there is no photograph at all */}
+      {!hasBanners ? (
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{ background: 'linear-gradient(122deg, #D2E8F8 0%, #E8F4FB 38%, #FFFFFF 72%)' }}
+        />
+      ) : null}
+      {/* readability only: a light wash from the left where the copy sits, clear on the right */}
       <div
         aria-hidden
-        className="absolute inset-0"
+        className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/65 to-white/30 lg:hidden"
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0 hidden lg:block"
         style={{
           background:
-            'linear-gradient(122deg, #D2E8F8 0%, #E8F4FB 38%, #FFFFFF 72%), radial-gradient(44% 42% at 86% 6%, rgb(61 159 224 / 0.20), transparent), radial-gradient(38% 34% at 2% 94%, rgb(61 159 224 / 0.12), transparent)',
-          backgroundBlendMode: 'multiply',
+            'linear-gradient(90deg, rgb(255 255 255 / 0.94) 0%, rgb(255 255 255 / 0.82) 32%, rgb(255 255 255 / 0.3) 58%, rgb(255 255 255 / 0) 78%)',
         }}
-      />
-      <span
-        aria-hidden
-        data-float="14"
-        className="pointer-events-none absolute -right-24 top-6 h-72 w-72 rounded-full bg-decart-300/25 blur-3xl"
       />
 
       <div className="container-x relative z-10 flex flex-1 flex-col justify-center">
@@ -307,7 +339,7 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
 
           {/* ------------------------------------------------------- the showroom stage */}
           <div className="relative min-w-0">
-            <div className="relative overflow-hidden rounded-card p-3.5 shadow-[0_30px_70px_-34px_rgb(21_101_166/0.45)] ring-1 ring-white/70 sm:p-5">
+            <div className="relative overflow-hidden rounded-card bg-white/30 p-3.5 shadow-[0_30px_70px_-34px_rgb(21_101_166/0.45)] ring-1 ring-white/70 backdrop-blur-md sm:p-5">
               {/*
                 A blue stage, with each chair on its own white card.
                 The studio shots are cut-outs on a white ground rather than transparent PNGs, so
@@ -316,21 +348,6 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
                 and lets the campaign's blue back in. Multiplying the shots to remove the box
                 erased the pale models instead — a white chair over a light wash disappears.
               */}
-              <span
-                aria-hidden
-                className="absolute inset-0"
-                style={{
-                  background:
-                    'linear-gradient(150deg, #C4DFF5 0%, #DCEDFA 44%, #F3FAFE 100%), radial-gradient(58% 48% at 84% 0%, rgb(255 255 255 / 0.55), transparent)',
-                }}
-              />
-              {/* the angled flash off the campaign artwork */}
-              <span
-                aria-hidden
-                className="absolute -left-16 -top-16 h-52 w-72 bg-white/35"
-                style={{ clipPath: 'polygon(0 0, 100% 0, 0 100%)' }}
-              />
-
               {/* autoplay meter: it shows the slide running out, and holds while you hover */}
               {slides.length > 1 ? (
                 <div aria-hidden className="absolute inset-x-0 top-0 h-[3px] bg-white/45">
@@ -371,11 +388,7 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
                     <div
                       className={cn(
                         'relative overflow-hidden rounded-[12px]',
-                        lead.kind === 'scene'
-                          ? support.length
-                            ? 'aspect-[5/4] sm:aspect-[4/5]'
-                            : 'aspect-[16/10]'
-                          : 'aspect-[5/4] sm:aspect-[4/5]',
+                        lead.kind === 'scene' ? 'hidden' : 'aspect-[5/4] sm:aspect-[4/5]',
                       )}
                     >
                       <Image
@@ -392,7 +405,12 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
                       />
                     </div>
 
-                    <div className="mt-2 flex items-end justify-between gap-3 border-t border-line/70 pt-2.5">
+                    <div
+                      className={cn(
+                        'flex items-end justify-between gap-3 border-line/70',
+                        lead.kind === 'scene' ? 'p-1.5 sm:p-2' : 'mt-2 border-t pt-2.5',
+                      )}
+                    >
                       <span className="min-w-0">
                         <span className="block truncate text-[0.9375rem] font-semibold leading-tight text-ink-950">
                           {lead.name}
@@ -472,7 +490,7 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
 
             {/* slide controls — dots, a counter and arrows, tucked under the stage's edge */}
             {slides.length > 1 ? (
-              <div className="mt-4 flex items-center justify-center gap-4 lg:justify-end">
+              <div className="mt-4 flex w-fit items-center justify-center gap-4 rounded-full bg-paper/85 px-4 py-1.5 backdrop-blur max-lg:mx-auto lg:ml-auto">
                 <div className="flex items-center gap-1.5">
                   {slides.map((banner, i) => (
                     <button
