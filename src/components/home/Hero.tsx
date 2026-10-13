@@ -388,25 +388,19 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
                       !support.length && lead?.kind === 'model' && 'mx-auto w-full max-w-[23rem]',
                     )}
                   >
-                    <div
-                      className={cn(
-                        'relative overflow-hidden rounded-[12px]',
-                        lead.kind === 'scene' ? 'hidden' : 'aspect-[5/4] sm:aspect-[4/5]',
-                      )}
-                    >
-                      <Image
-                        src={lead.image}
-                        alt={lead.alt}
-                        fill
-                        priority
-                        sizes="(max-width: 640px) 92vw, 340px"
-                        className={cn(
-                          'transition-transform duration-500 ease-out group-hover:scale-[1.03]',
-                          // a room is cropped to fill; a chair on white is contained
-                          lead.kind === 'scene' ? 'object-cover' : 'object-contain',
-                        )}
-                      />
-                    </div>
+                    {/* a scene slide's picture is the hero itself, so only a chair gets its own image here */}
+                    {lead.kind === 'model' ? (
+                      <div className="relative aspect-[5/4] overflow-hidden rounded-[12px] sm:aspect-[4/5]">
+                        <Image
+                          src={lead.image}
+                          alt={lead.alt}
+                          fill
+                          priority
+                          sizes="(max-width: 640px) 92vw, 340px"
+                          className="object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+                        />
+                      </div>
+                    ) : null}
 
                     <div
                       className={cn(
