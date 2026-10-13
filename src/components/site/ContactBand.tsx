@@ -54,7 +54,7 @@ export function ContactBand({
           <h2 className="mt-3 font-display text-h3 text-ink-950">Talk to the desk that can act on it</h2>
         ) : null}
 
-        <div className={cn('mt-5 grid gap-4', stacked ? 'grid-cols-1' : 'lg:grid-cols-3')} data-stagger="0.06">
+        <div className={cn('mt-5 grid gap-4', stacked ? 'grid-cols-1 lg:mt-3 lg:gap-2.5' : 'lg:grid-cols-3')} data-stagger="0.06">
           {desks.map((desk) => {
             const Icon = DESK_ICON[desk.id];
             return (
@@ -63,10 +63,10 @@ export function ContactBand({
                 data-anim="up"
                 className={cn(
                   'min-w-0 rounded-card border border-line bg-paper shadow-[0_1px_2px_rgb(15_19_23/0.04),0_10px_28px_-20px_rgb(15_19_23/0.3)] transition-shadow hover:shadow-lift',
-                  stacked ? 'grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-4 gap-y-4 p-5' : 'flex flex-col gap-5 p-6',
+                  stacked ? 'grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-4 gap-y-4 p-5 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center lg:gap-x-3.5 lg:gap-y-0 lg:p-3.5' : 'flex flex-col gap-5 p-6',
                 )}
               >
-                <span className={cn('flex shrink-0 items-center justify-center rounded-full bg-cognac-500/[0.13] text-cognac-700', stacked ? 'h-12 w-12' : 'h-14 w-14')}>
+                <span className={cn('flex shrink-0 items-center justify-center rounded-full bg-cognac-500/[0.13] text-cognac-700', stacked ? 'h-12 w-12 lg:h-10 lg:w-10' : 'h-14 w-14')}>
                   <Icon aria-hidden className="h-6 w-6" strokeWidth={1.5} />
                 </span>
 
@@ -74,9 +74,9 @@ export function ContactBand({
                   <h3 className="text-[0.9375rem] font-bold uppercase tracking-[0.05em] text-ink-950">
                     {SHORT[desk.id]}
                   </h3>
-                  <p className="mt-1 text-[0.8125rem] text-steel-600">{desk.blurb}</p>
+                  <p className="mt-1 text-[0.8125rem] text-steel-600 lg:mt-0.5 lg:text-xs">{desk.blurb}</p>
 
-                  <dl className="mt-3 flex flex-col gap-2 text-sm">
+                  <dl className="mt-3 flex flex-col gap-2 text-sm lg:mt-1.5 lg:gap-0.5">
                     <div className="flex min-w-0 items-center gap-2">
                       <Phone aria-hidden className="h-4 w-4 shrink-0 text-steel-400" />
                       <dt className="sr-only">Phone</dt>
@@ -109,7 +109,7 @@ export function ContactBand({
                   href={`/contact?desk=${desk.id}#enquiry`}
                   className={cn(
                     'group inline-flex shrink-0 items-center justify-center gap-2 rounded-[10px] border border-cognac-500 px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-cognac-700 transition-colors hover:bg-cognac-500 hover:text-white sm:min-w-[11rem]',
-                    stacked ? 'col-span-2 w-full' : 'mt-auto self-start',
+                    stacked ? 'col-span-2 w-full lg:col-span-1 lg:w-auto lg:min-w-0 lg:px-3.5 lg:py-2.5 lg:text-[10px]' : 'mt-auto self-start',
                   )}
                 >
                   {desk.cta}
