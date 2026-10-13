@@ -23,7 +23,7 @@ export function CatalogueNav({
   return (
     <nav
       aria-label="Product categories"
-      className="sticky top-16 z-30 border-b border-line bg-paper/95 backdrop-blur supports-[backdrop-filter]:bg-paper/85"
+      className="z-30 border-b border-line bg-paper/95 backdrop-blur supports-[backdrop-filter]:bg-paper/85 md:sticky md:top-16"
     >
       <div className="container-x">
         <ul className="no-scrollbar -mx-1 flex gap-1 overflow-x-auto py-2">

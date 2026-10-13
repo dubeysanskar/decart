@@ -41,7 +41,7 @@ export function MasterDirectory({ masters }: { masters: MasterNode[] }) {
               <span aria-hidden className="hidden h-px flex-1 bg-line md:block" />
               <Link
                 href={master.href}
-                className="group inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900 hover:text-decart-700"
+                className="group inline-flex min-h-[44px] items-center gap-1.5 text-sm font-semibold text-ink-900 hover:text-decart-700 md:min-h-0"
               >
                 All {master.name.toLowerCase()}
                 <ArrowRight aria-hidden className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />

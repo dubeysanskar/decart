@@ -96,7 +96,7 @@ export function FamilyBrowser({
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as Sort)}
-          className="h-11 rounded-btn border border-line bg-paper px-3 text-sm text-ink-900 focus:border-decart-600"
+          className="h-11 rounded-btn border border-line bg-paper px-3 text-base text-ink-900 focus:border-decart-600 md:text-sm"
         >
           <option value="featured">Featured</option>
           <option value="newest">Photographed first</option>

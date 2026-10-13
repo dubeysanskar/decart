@@ -85,7 +85,7 @@ export function ContactBand({
                           <a
                             key={phone}
                             href={`tel:${phone.replace(/[^+\d]/g, '')}`}
-                            className="font-semibold text-ink-950 hover:text-cognac-600"
+                            className="inline-flex min-h-[36px] items-center font-semibold text-ink-950 hover:text-cognac-600 md:min-h-0"
                           >
                             {phone}
                           </a>
@@ -96,7 +96,7 @@ export function ContactBand({
                       <Mail aria-hidden className="h-4 w-4 shrink-0 text-steel-400" />
                       <dt className="sr-only">Email</dt>
                       <dd className="min-w-0">
-                        <a href={`mailto:${desk.email}`} className="break-words text-steel-600 hover:text-cognac-600">
+                        <a href={`mailto:${desk.email}`} className="inline-flex min-h-[36px] items-center break-words text-steel-600 hover:text-cognac-600 md:min-h-0">
                           {desk.email}
                         </a>
                       </dd>

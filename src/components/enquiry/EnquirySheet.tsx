@@ -151,7 +151,7 @@ export function EnquirySheet() {
                       const next = Number(event.target.value.replace(/[^\d]/g, ''));
                       setQty(item.slug, next || 1);
                     }}
-                    className="h-full w-12 border-x border-line bg-paper text-center font-mono text-xs text-ink-900 focus:outline-none"
+                    className="h-full w-12 border-x border-line bg-paper text-center font-mono text-base text-ink-900 focus:outline-none md:text-xs"
                   />
                   <button
                     type="button"

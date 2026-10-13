@@ -93,7 +93,7 @@ export function PriceListSignup() {
           onChange={(event) => setCompany(event.target.value)}
           placeholder="Company (optional)"
           autoComplete="organization"
-          className="h-11 min-w-0 flex-1 rounded-2xl border border-white/15 bg-white/[0.06] px-4 text-sm text-porcelain placeholder:text-steel-400 focus:border-decart-300 focus:outline-none"
+          className="h-11 min-w-0 rounded-2xl border border-white/15 bg-white/[0.06] px-4 text-base text-porcelain sm:flex-1 sm:text-sm placeholder:text-steel-400 focus:border-decart-300 focus:outline-none"
         />
         <label className="sr-only" htmlFor="pricelist-email">
           Work email
@@ -107,7 +107,7 @@ export function PriceListSignup() {
           autoComplete="email"
           required
           placeholder="Work email"
-          className="h-11 min-w-0 flex-1 rounded-2xl border border-white/15 bg-white/[0.06] px-4 text-sm text-porcelain placeholder:text-steel-400 focus:border-decart-300 focus:outline-none"
+          className="h-11 min-w-0 rounded-2xl border border-white/15 bg-white/[0.06] px-4 text-base text-porcelain sm:flex-1 sm:text-sm placeholder:text-steel-400 focus:border-decart-300 focus:outline-none"
         />
         <button
           type="submit"

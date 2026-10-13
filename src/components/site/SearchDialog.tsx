@@ -204,7 +204,7 @@ export function SearchDialog({ onDark = false, className }: { onDark?: boolean; 
                 spellCheck={false}
                 /* the site-wide focus ring draws a box round the whole field here, which reads
                    as an error state in a search bar — the caret is the affordance */
-                className="h-10 w-full bg-transparent text-[0.9375rem] text-ink-900 placeholder:text-steel-400 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="h-10 w-full bg-transparent text-base text-ink-900 md:text-[0.9375rem] placeholder:text-steel-400 focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
               />
               {typed ? (
                 <button

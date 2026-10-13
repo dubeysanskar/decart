@@ -92,7 +92,7 @@ export function AddToEnquiryButton({ item }: { item: Target }) {
             const next = Number(event.target.value.replace(/[^\d]/g, ''));
             setQty(next ? Math.min(MAX_QTY, next) : 1);
           }}
-          className="h-full w-14 border-x border-line bg-paper text-center font-mono text-sm text-ink-900 focus:outline-none"
+          className="h-full w-14 border-x border-line bg-paper text-center font-mono text-base text-ink-900 focus:outline-none md:text-sm"
         />
         <button
           type="button"

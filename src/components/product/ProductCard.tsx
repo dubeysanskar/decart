@@ -146,10 +146,10 @@ export function ProductCard({
               ) : null}
             </span>
           ) : (
-            <span className="text-[0.8125rem] text-steel-600">Price on request</span>
+            <span className="min-w-0 text-[0.8125rem] leading-tight text-steel-600">Price on request</span>
           )}
 
-          <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-decart-700 transition-transform duration-300 group-hover:translate-x-0.5">
+          <span className="shrink-0 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.1em] text-decart-700 transition-transform duration-300 group-hover:translate-x-0.5">
             View →
           </span>
         </div>
