@@ -17,6 +17,7 @@
     "hero-crops": "node scripts/hero-cutouts.mjs",
     "import-categories": "tsx scripts/import-categories.ts",
     "import-structure": "tsx scripts/import-structure.ts",
+    "audit:uploads": "node scripts/upload-audit.mjs",
     "audit:backend": "node scripts/backend-audit.mjs",
     "brand": "tsx scripts/brand-assets.ts"
   },
