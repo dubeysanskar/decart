@@ -341,7 +341,11 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
           </div>
 
           {/* ------------------------------------------------------- the showroom stage */}
-          <div className="relative min-w-0">
+          {/* with a slide photograph behind the hero, the caption card only repeated the headline and
+              button (client: "Executive desk wala portion hata do"), so it shows on the no-photo
+              fallback alone; the slide controls stay, at the bottom of the frame */}
+          <div className={cn('relative min-w-0', hasBanners && 'lg:self-end')}>
+            {!hasBanners ? (
             <div className="relative overflow-hidden rounded-card bg-white/30 p-3.5 shadow-[0_30px_70px_-34px_rgb(21_101_166/0.45)] ring-1 ring-white/70 backdrop-blur-md sm:p-5">
               {/*
                 A blue stage, with each chair on its own white card.
@@ -484,8 +488,9 @@ export function Hero({ banners = [], lineup = [] }: { banners?: HeroBanner[]; li
                 </Link>
               </div>
             </div>
+            ) : null}
 
-            {/* slide controls — dots, a counter and arrows, tucked under the stage's edge */}
+            {/* slide controls — dots, a counter and arrows */}
             {slides.length > 1 ? (
               <div className="mt-4 flex w-fit items-center justify-center gap-4 rounded-full bg-paper/85 px-4 py-1.5 backdrop-blur max-lg:mx-auto lg:ml-auto">
                 <div className="flex items-center gap-1.5">
